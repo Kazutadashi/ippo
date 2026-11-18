@@ -117,7 +117,10 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
                 ),
               SectionCard(
                 children: [
-                  const CardHeader(icon: Icons.functions, title: 'Total'),
+                  const CardHeader(
+                    icon: Icons.local_fire_department,
+                    title: 'Total',
+                  ),
                   const SizedBox(height: 8),
                   NutrientInfoRow(nutrients: diary.totalOn(date)),
                 ],
