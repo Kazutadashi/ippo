@@ -74,6 +74,8 @@ void main() {
     // There is nothing about progressions or statistics.
     expect(find.textContaining('rogression'), findsNothing);
     expect(find.text('History'), findsNothing);
+    // No symbols between the fields.
+    expect(find.text('×'), findsNothing);
   });
 
   testWidgets('the reps field starts at the last set', (tester) async {

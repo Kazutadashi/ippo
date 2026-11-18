@@ -44,6 +44,13 @@ class ExerciseModule implements IppoModule {
   }
 
   @override
+  bool hasLoggedToday(AppState appState) {
+    final log = ExerciseLog.fromEvents(appState.eventLog?.events ?? []);
+    final today = formatDate(DateTime.now());
+    return log.sets.any((set) => set.date == today && !set.isDeleted);
+  }
+
+  @override
   Widget buildScreen(AppState appState) =>
       ExerciseHomeScreen(appState: appState);
 }

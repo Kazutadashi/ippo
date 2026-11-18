@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Fields for logging sets straight from a card: `[20] reps × [2] sets`,
-/// then a full-width Add button.
+/// Fields for logging sets straight from a card: Reps and Sets side by
+/// side, then a full-width Add button.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -93,7 +93,6 @@ class _QuickSetRowState extends State<QuickSetRow> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
-              flex: 3,
               child: TextField(
                 controller: _valueField,
                 keyboardType: TextInputType.number,
@@ -105,12 +104,8 @@ class _QuickSetRowState extends State<QuickSetRow> {
                 onSubmitted: (_) => _add(),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Text('×'),
-            ),
+            const SizedBox(width: 12),
             Expanded(
-              flex: 2,
               child: TextField(
                 controller: _setCountField,
                 keyboardType: TextInputType.number,
