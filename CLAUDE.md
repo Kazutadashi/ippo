@@ -27,6 +27,13 @@ plus more, built from modules:
 2. Calisthenics progression: exercise ladders (Hybrid Calisthenics
    style), log sets/reps, prompt to move up a step at a rep target.
 3. Meal diary / calorie tracker.
+4. Time tracker: tap to start an activity; starting the next one ends
+   the last. Shows how each day was spent (for example a pie chart).
+
+The main purpose of every module is longitudinal tracking: data must
+be easy to chart and to use for time series and machine learning.
+Record raw observations (not judgements like "good"), stable IDs,
+the day an entry is about, and explicit units.
 
 More modules should be addable without touching existing ones.
 
