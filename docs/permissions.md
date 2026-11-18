@@ -16,6 +16,14 @@ permission to the release manifest.
 
 ### Not permissions, but worth knowing
 
+**Folder access.** You choose Ippo's data folder in Android's own
+folder picker. Android then lets Ippo read and write files in that one
+folder only, and nowhere else on your device. This needs no permission
+from the list above. If you pick a different folder later, Ippo gives
+back its access to the old one. You can also remove the access in
+Android's settings for the app. The code for this is in
+`android/app/src/main/kotlin/org/ippo/ippo/StorageBridge.kt`.
+
 The main manifest (`android/app/src/main/AndroidManifest.xml`) has a
 `<queries>` entry for the `PROCESS_TEXT` action. Flutter adds this by
 default. It lets the app see which installed apps can act on selected
