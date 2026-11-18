@@ -16,7 +16,8 @@ DateTime _calendarToday() {
 }
 
 /// Shows the chosen day with buttons for the previous and next day.
-/// Tapping the day opens a calendar.
+/// Tapping the day opens a calendar. It goes in a screen's top bar
+/// (`AppBar.actions`), next to the title.
 class DayBar extends StatelessWidget {
   /// Creates the bar showing [day], reporting a new day to [onChanged].
   ///
@@ -53,31 +54,32 @@ class DayBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Compact, so it fits in a screen's top bar next to the title.
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
           tooltip: 'Previous day',
           icon: const Icon(Icons.chevron_left),
           onPressed: () => onChanged(addDays(day, -1)),
         ),
-        Expanded(
-          child: TextButton(
-            onPressed: () => _pickDay(context),
-            child: Text(describeDay(day, today: today)),
-          ),
+        TextButton(
+          onPressed: () => _pickDay(context),
+          child: Text(describeDay(day, today: today)),
         ),
         IconButton(
           tooltip: 'Next day',
           icon: const Icon(Icons.chevron_right),
           onPressed: () => onChanged(addDays(day, 1)),
         ),
+        const SizedBox(width: 4),
       ],
     );
   }
 }
 
 /// Names a day: `Today`, `Yesterday`, `Tomorrow`, or for example
-/// `Mon 2026-11-16`. [today] is the day called "Today", the calendar
+/// `Mon 16 Nov`. [today] is the day called "Today", the calendar
 /// day if not given.
 String describeDay(DateTime day, {DateTime? today}) {
   final todayDate = today ?? _calendarToday();
@@ -90,6 +92,5 @@ String describeDay(DateTime day, {DateTime? today}) {
   if (day == addDays(todayDate, 1)) {
     return 'Tomorrow';
   }
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return '${weekdays[day.weekday - 1]} ${formatDate(day)}';
+  return formatShortDate(day);
 }

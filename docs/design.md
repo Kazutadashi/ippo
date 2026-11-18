@@ -58,15 +58,15 @@ Contents:
 
 ### A module screen, top to bottom
 
-1. **Top bar** with the module's name ("Sleep").
-2. **Day bar** (`DayBar`: ‹ Today ›) if the screen shows one day.
-3. **Cards** (`SectionCard`), one per section, each starting with a
+1. **Top bar** with the module's name ("Sleep") on the left and, if the
+   screen shows one day, the day picker (`DayBar`: ‹ Today ›) on the
+   right, in `AppBar.actions`. It does not take a row of its own.
+2. **Cards** (`SectionCard`), one per section, each starting with a
    `CardHeader`.
 4. **Floating buttons** at the bottom right, for creating things for the
    whole screen (section 4).
 
-Nothing sits outside a card except the day bar and short notes or
-problems directly under it.
+Nothing sits outside a card except short notes or problems at the top.
 
 ### Home
 
@@ -186,12 +186,12 @@ Text styles (from the theme's text styles):
 
 | Use | Style |
 | --- | --- |
-| Home greeting | `headlineMedium` |
-| Home tile values | `headlineMedium` (set by `InfoTile`) |
+| Home greeting | `headlineSmall` |
+| Home tile values | `headlineSmall` (set by `InfoTile`) |
 | Home tile labels | `labelLarge`, grey (set by `InfoTile`) |
 | Home date | `titleMedium`, grey (`onSurfaceVariant`) |
 | Card titles | `titleMedium` (set by `CardHeader`) |
-| Information values | `titleLarge` (set by `InfoValue`) |
+| Information values | `titleMedium` (set by `InfoValue`) |
 | Information labels | `labelMedium`, grey (set by `InfoValue`) |
 | Notes | `bodyMedium`, grey (set by `NoteText`) |
 | Small print (device id) | `bodySmall`, grey |
@@ -264,23 +264,41 @@ Card headers show their icon in the accent colour.
 5. **Never colour alone.** Red text also says what is wrong in words.
 
 
-## 10. Spacing and sizes
+## 10. Density, spacing and sizes
 
-All spacing is a multiple of 4 pixels. The building blocks already use
-these values:
+Ippo is a logging tool, so it is **compact**: more fits on a screen,
+with less scrolling. Compact is about how things *look*; every tap
+target still stays at least 48 × 48 (Android's accessibility
+guidance).
+
+- The theme sets `VisualDensity.compact` and dense text fields
+  (`isDense`), so fields, buttons and list rows are shorter
+  everywhere. Do not undo this per screen.
+- Put things that belong together **on one row** when they fit:
+  Reps · Sets · Add, Protein · Carbs · Fat, Woke up · Went to bed.
+- Leave out lines that only repeat what the screen already shows (no
+  "No sets yet" above empty fields that obviously take sets).
+
+All spacing comes from the scale in `Spacing`
+(`lib/core/widgets/section_card.dart`). **Gaps inside a group are
+always smaller than gaps between groups**, which is what makes the
+grouping visible without extra lines or boxes.
+
+| Name | Size | Where |
+| --- | --- | --- |
+| `Spacing.tight` | 4 | A label and its value; chips in a wrapped row |
+| `Spacing.small` | 8 | Fields side by side; between cards; between Home tiles |
+| `Spacing.medium` | 12 | Inside a card's edge; between groups inside a card |
+| `Spacing.screen` | 16 | The screen's left and right edges |
+
+Fixed sizes:
 
 | Where | Size |
 | --- | --- |
-| Screen edges (left and right) | 16 |
-| Space above each card | 12 |
-| Inside a card | 16 on every side |
-| Card header height | 40 |
-| Between a header icon and its title | 12 |
-| Between fields, side by side or stacked | 12 |
-| Between fields and the Save button | 12 to 24 |
-| Above a Delete button | 8 |
-| Between stacked floating buttons | 12 |
+| Card header height | 36, icon 20 |
+| Home tile icon | 16 |
 | Smallest tap target | 48 × 48 |
+| Room under the last card when there are floating buttons | 96 (one), 160 (two) |
 
 
 ## 11. Feedback: saving, errors, undo

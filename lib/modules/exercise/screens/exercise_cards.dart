@@ -54,14 +54,13 @@ class ExerciseCard extends StatelessWidget {
           title: exercise.name,
           action: HeaderEditButton(onPressed: onEdit),
         ),
-        if (daySets.isEmpty)
-          const NoteText('No sets on this day yet.')
-        else ...[
-          const NoteText('Sets on this day (tap one to change it):'),
-          const SizedBox(height: 8),
+        // The day's sets, if any, as small chips (tap one to change it).
+        // With none yet, the fields below speak for themselves.
+        if (daySets.isNotEmpty) ...[
           _SetChips(sets: daySets, onEditSet: onEditSet),
+          const SizedBox(height: Spacing.small),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: Spacing.tight),
         QuickSetRow(
           measuredIn: exercise.measuredIn,
           startValue: startValue,
@@ -72,7 +71,7 @@ class ExerciseCard extends StatelessWidget {
   }
 }
 
-/// The day's sets as small buttons; tapping one opens it for editing.
+/// The day's sets as small chips; tapping one opens it for changing.
 class _SetChips extends StatelessWidget {
   const _SetChips({required this.sets, required this.onEditSet});
 
@@ -82,11 +81,12 @@ class _SetChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 4,
+      spacing: Spacing.small,
+      runSpacing: Spacing.tight,
       children: [
         for (final set in sets)
           ActionChip(
+            tooltip: 'Change or delete this set',
             label: Text(
               set.weightKg == null
                   ? '${set.value}'

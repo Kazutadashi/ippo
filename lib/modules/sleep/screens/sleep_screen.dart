@@ -53,8 +53,18 @@ class _SleepScreenState extends State<SleepScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final sleepToday = currentSleepDay(DateTime.now());
     return Scaffold(
-      appBar: AppBar(title: const Text('Sleep')),
+      appBar: AppBar(
+        title: const Text('Sleep'),
+        actions: [
+          DayBar(
+            day: _day,
+            today: sleepToday,
+            onChanged: (day) => setState(() => _day = day),
+          ),
+        ],
+      ),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -65,15 +75,9 @@ class _SleepScreenState extends State<SleepScreen> {
           final wakeUp = log.wakeUpOn(date);
           final bedtime = log.bedtimeOf(date);
           final sleptBefore = log.sleepBefore(date);
-          final sleepToday = currentSleepDay(DateTime.now());
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
-              DayBar(
-                day: _day,
-                today: sleepToday,
-                onChanged: (day) => setState(() => _day = day),
-              ),
               if (log.invalidCount > 0)
                 ProblemText(
                   '${log.invalidCount} entries in the data could not be '

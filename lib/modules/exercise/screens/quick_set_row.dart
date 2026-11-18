@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Fields for logging sets straight from a card: Reps and Sets side by
-/// side, then a full-width Add button.
+/// Logging sets straight from a card, in one row: Reps, Sets, Add.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -86,11 +85,11 @@ class _QuickSetRowState extends State<QuickSetRow> {
 
   @override
   Widget build(BuildContext context) {
+    // One row, like a set row in a workout log: Reps, Sets, Add.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: TextField(
@@ -104,7 +103,7 @@ class _QuickSetRowState extends State<QuickSetRow> {
                 onSubmitted: (_) => _add(),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: Spacing.small),
             Expanded(
               child: TextField(
                 controller: _setCountField,
@@ -113,18 +112,18 @@ class _QuickSetRowState extends State<QuickSetRow> {
                 onSubmitted: (_) => _add(),
               ),
             ),
+            const SizedBox(width: Spacing.small),
+            FilledButton(
+              onPressed: _isSaving ? null : _add,
+              child: const Text('Add'),
+            ),
           ],
         ),
         if (_problem != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: Spacing.small),
             child: ProblemText(_problem!),
           ),
-        const SizedBox(height: 12),
-        FilledButton(
-          onPressed: _isSaving ? null : _add,
-          child: const Text('Add'),
-        ),
       ],
     );
   }

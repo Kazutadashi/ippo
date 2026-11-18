@@ -33,9 +33,9 @@ class TodayScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           children: [
-            Text(greetingFor(now), style: textTheme.headlineMedium),
+            Text(greetingFor(now), style: textTheme.headlineSmall),
             const SizedBox(height: 4),
             Text(
               describeToday(now),
@@ -43,7 +43,7 @@ class TodayScreen extends StatelessWidget {
                 color: colors.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: Spacing.medium),
             _TileGrid(facts: facts),
           ],
         ),
@@ -66,14 +66,14 @@ class _TileGrid extends StatelessWidget {
       final hasSecond = index + 1 < facts.length;
       rows.add(
         Padding(
-          padding: EdgeInsets.only(top: index == 0 ? 0 : 12),
+          padding: EdgeInsets.only(top: index == 0 ? 0 : Spacing.small),
           // IntrinsicHeight gives both tiles the same height.
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(child: _tileFor(facts[index])),
-                const SizedBox(width: 12),
+                const SizedBox(width: Spacing.small),
                 Expanded(
                   child: hasSecond
                       ? _tileFor(facts[index + 1])

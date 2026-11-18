@@ -70,7 +70,12 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercise')),
+      appBar: AppBar(
+        title: const Text('Exercise'),
+        actions: [
+          DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _open(ExerciseFormScreen(appState: widget.appState)),
         icon: const Icon(Icons.add),
@@ -85,7 +90,6 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
             // Leave room at the bottom so the button never hides a card.
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             children: [
-              DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (log.invalidCount > 0)
                 ProblemText(
                   '${log.invalidCount} items in the data could not be read '

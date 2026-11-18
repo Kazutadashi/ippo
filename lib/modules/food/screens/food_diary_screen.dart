@@ -71,7 +71,12 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Food')),
+      appBar: AppBar(
+        title: const Text('Food'),
+        actions: [
+          DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
+        ],
+      ),
       // Adding to the whole day: buttons at the bottom right, as on the
       // other screens. Each needs its own hero tag, because Flutter
       // animates floating buttons between screens by this tag.
@@ -109,7 +114,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
             // Room at the bottom, so the buttons never hide an entry.
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
             children: [
-              DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (diary.invalidCount > 0)
                 ProblemText(
                   '${diary.invalidCount} foods or entries in the data '

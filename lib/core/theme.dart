@@ -136,10 +136,19 @@ ThemeData buildTheme(
   );
   return ThemeData(
     colorScheme: colorScheme,
+    // Compact density: Ippo is a logging tool, so it shows more at once.
+    // Fields, buttons and list rows look smaller, but every tap target
+    // stays at least 48 × 48, as accessibility guidance asks.
+    visualDensity: VisualDensity.compact,
+    materialTapTargetSize: MaterialTapTargetSize.padded,
     // Every text field gets an outline, so anything the user can change
     // looks the same on every screen.
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(),
+      isDense: true,
+    ),
+    listTileTheme: const ListTileThemeData(
+      visualDensity: VisualDensity.compact,
     ),
   );
 }

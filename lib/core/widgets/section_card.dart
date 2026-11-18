@@ -11,9 +11,28 @@
 ///   icon and title on the left, the card's action button on the right.
 /// - A screen's main action is a full-width filled button; "Delete" is a
 ///   red text button below it.
+///
+/// Spacing comes from one small scale, so gaps inside a card are always
+/// smaller than gaps between cards: see [Spacing].
 library;
 
 import 'package:material_ui/material_ui.dart';
+
+/// The spacing scale. Every gap and padding in the app is one of these.
+abstract final class Spacing {
+  /// Between closely related things: a label and its value.
+  static const double tight = 4;
+
+  /// Between things in one group: fields side by side, rows in a card,
+  /// and between cards.
+  static const double small = 8;
+
+  /// Inside a card's edge, and between groups within a card.
+  static const double medium = 12;
+
+  /// At the screen's left and right edges.
+  static const double screen = 16;
+}
 
 /// A card holding one section of a screen, with the same margins and
 /// padding everywhere. Its children fill the card's width.
@@ -28,9 +47,9 @@ class SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(top: Spacing.small),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Spacing.medium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: children,
@@ -65,11 +84,11 @@ class CardHeader extends StatelessWidget {
     final action = this.action;
     return SizedBox(
       // The same height with or without a button, so cards line up.
-      height: 40,
+      height: 36,
       child: Row(
         children: [
-          Icon(icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 12),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: Spacing.medium),
           Expanded(
             child: Text(
               title,
@@ -149,7 +168,7 @@ class InfoValue extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Text(value, style: textTheme.titleLarge),
+          child: Text(value, style: textTheme.titleMedium),
         ),
       ],
     );
@@ -361,14 +380,14 @@ class InfoTile extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Spacing.medium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, size: 18, color: colors.primary),
-                const SizedBox(width: 8),
+                Icon(icon, size: 16, color: colors.primary),
+                const SizedBox(width: Spacing.small),
                 Expanded(
                   child: Text(
                     label,
@@ -378,12 +397,12 @@ class InfoTile extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: Spacing.small),
             // Shrink a long value instead of wrapping it.
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(value, style: textTheme.headlineMedium),
+              child: Text(value, style: textTheme.headlineSmall),
             ),
             const SizedBox(height: 4),
             Text(
