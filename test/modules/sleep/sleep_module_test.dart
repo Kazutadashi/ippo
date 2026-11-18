@@ -146,28 +146,43 @@ void main() {
     expect((await logFromDisk()).nightOn(mondayText), isNotNull);
   });
 
-  test('the home summary says how long you slept, and naps', () async {
+  test('today\'s facts: slept, woke up, awake for', () async {
     const module = SleepModule();
-    expect(module.summarizeToday(appState), 'Nothing logged today');
+    final morning = DateTime(2026, 11, 16, 9, 15);
+    expect(module.todayFacts(appState, morning), isEmpty);
 
-    final today = DateTime.now();
-    final todayStart = DateTime(today.year, today.month, today.day);
-    await recordNight(
-      todayStart,
-      const ClockTime(23, 0),
-      const ClockTime(6, 30),
-    );
-    await actions.recordSleep(
-      day: todayStart,
-      kind: SleepKind.nap,
-      period: napPeriod(
-        todayStart,
-        const ClockTime(14, 0),
-        const ClockTime(14, 30),
-      ),
-    );
+    await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
 
-    expect(module.summarizeToday(appState), 'Slept 7 h 30 min · 1 nap');
+    final facts = module.todayFacts(appState, morning);
+    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
+      'Slept: 7 h 30 min',
+      'Woke up: 06:30',
+      'Awake for: 2 h 45 min',
+    ]);
+  });
+
+  test('naps take the place of the wake-up time', () async {
+    const module = SleepModule();
+    await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
+    for (final start in [const ClockTime(13, 0), const ClockTime(16, 0)]) {
+      await actions.recordSleep(
+        day: monday,
+        kind: SleepKind.nap,
+        period: napPeriod(
+          monday,
+          start,
+          ClockTime(start.hour, start.minute + 20),
+        ),
+      );
+    }
+
+    final evening = DateTime(2026, 11, 16, 20, 30);
+    final facts = module.todayFacts(appState, evening);
+    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
+      'Slept: 7 h 30 min',
+      '2 naps: 40 min',
+      'Awake for: 14 h',
+    ]);
   });
 
   test('invalid sleep data from other tools is counted', () async {

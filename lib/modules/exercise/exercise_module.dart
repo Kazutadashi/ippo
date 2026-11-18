@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import 'exercise.dart';
 import 'exercise_log.dart';
 import 'screens/exercise_home_screen.dart';
 
@@ -25,29 +26,29 @@ class ExerciseModule implements IppoModule {
   @override
   IconData get icon => Icons.fitness_center;
 
-  /// Lists today's sets per exercise, for example
-  /// `Push-up 20, 20 · Plank 45`.
+  /// For example: Sets 6 · Reps 120 · Held 90 s.
   @override
-  String summarizeToday(AppState appState) {
+  List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final log = ExerciseLog.fromEvents(appState.eventLog?.events ?? []);
-    final today = formatDate(DateTime.now());
-    final parts = <String>[];
+    final today = formatDate(now);
+    var setCount = 0;
+    var reps = 0;
+    var seconds = 0;
     for (final exercise in log.activeExercises) {
-      final values = [
-        for (final set in log.setsOn(today, exercise.id)) '${set.value}',
-      ];
-      if (values.isNotEmpty) {
-        parts.add('${exercise.name} ${values.join(', ')}');
+      for (final set in log.setsOn(today, exercise.id)) {
+        setCount++;
+        if (exercise.measuredIn == MeasuredIn.reps) {
+          reps += set.value;
+        } else {
+          seconds += set.value;
+        }
       }
     }
-    return parts.isEmpty ? 'Nothing logged today' : parts.join(' · ');
-  }
-
-  @override
-  bool hasLoggedToday(AppState appState) {
-    final log = ExerciseLog.fromEvents(appState.eventLog?.events ?? []);
-    final today = formatDate(DateTime.now());
-    return log.sets.any((set) => set.date == today && !set.isDeleted);
+    return [
+      if (setCount > 0) TodayFact('Sets', '$setCount'),
+      if (reps > 0) TodayFact('Reps', '$reps'),
+      if (seconds > 0) TodayFact('Held', '$seconds s'),
+    ];
   }
 
   @override

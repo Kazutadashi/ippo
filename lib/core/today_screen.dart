@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The home tab: today's date and one card per module saying what was
-/// logged today.
+/// The home tab: a greeting, the date, and one card per module with the
+/// most important facts about today.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -43,28 +43,11 @@ class TodayScreen extends StatelessWidget {
                 color: colors.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 12),
-            NoteText(describeWhatIsLogged(appState)),
-            const SizedBox(height: 12),
             for (final module in allModules)
-              Card(
-                // The same spacing as cards on every other screen.
-                margin: const EdgeInsets.only(top: 12),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: CircleAvatar(
-                    backgroundColor: colors.primaryContainer,
-                    foregroundColor: colors.onPrimaryContainer,
-                    child: Icon(module.icon),
-                  ),
-                  title: Text(module.title, style: textTheme.titleMedium),
-                  subtitle: Text(module.summarizeToday(appState)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => onOpenModule(module),
-                ),
+              _ModuleTodayCard(
+                module: module,
+                facts: module.todayFacts(appState, DateTime.now()),
+                onOpen: () => onOpenModule(module),
               ),
           ],
         ),
@@ -113,24 +96,42 @@ String greetingFor(DateTime moment) {
   return 'Good evening';
 }
 
-/// Says which modules have something logged today and which do not, for
-/// example `Logged today: Food. Still to log: Exercise, Sleep.`
-String describeWhatIsLogged(AppState appState) {
-  final logged = <String>[];
-  final notLogged = <String>[];
-  for (final module in allModules) {
-    if (module.hasLoggedToday(appState)) {
-      logged.add(module.title);
-    } else {
-      notLogged.add(module.title);
-    }
+/// One module's card on the home screen: its name, and its facts about
+/// today as plain information. Tapping it opens the module.
+class _ModuleTodayCard extends StatelessWidget {
+  const _ModuleTodayCard({
+    required this.module,
+    required this.facts,
+    required this.onOpen,
+  });
+
+  final IppoModule module;
+  final List<TodayFact> facts;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    return SectionCard(
+      onTap: onOpen,
+      children: [
+        CardHeader(
+          icon: module.icon,
+          title: module.title,
+          action: HeaderOpenButton(onPressed: onOpen),
+        ),
+        const SizedBox(height: 4),
+        if (facts.isEmpty)
+          const NoteText('Nothing logged yet today.')
+        else
+          InfoRow(
+            // Three columns on every card, so the facts line up.
+            columns: 3,
+            values: [
+              for (final fact in facts)
+                InfoValue(label: fact.label, value: fact.value),
+            ],
+          ),
+      ],
+    );
   }
-  if (notLogged.isEmpty) {
-    return 'Everything is logged for today.';
-  }
-  if (logged.isEmpty) {
-    return 'Nothing logged yet today.';
-  }
-  return 'Logged today: ${logged.join(', ')}. '
-      'Still to log: ${notLogged.join(', ')}.';
 }

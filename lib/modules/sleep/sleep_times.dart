@@ -72,20 +72,6 @@ SleepPeriod napPeriod(DateTime day, ClockTime start, ClockTime end) {
   return SleepPeriod(_at(day, start), _at(endDay, end));
 }
 
-/// Writes a duration as hours and minutes, for example `7 h 30 min`,
-/// `45 min` or `8 h`.
-String formatDuration(Duration duration) {
-  final hours = duration.inMinutes ~/ 60;
-  final minutes = duration.inMinutes % 60;
-  if (hours == 0) {
-    return '$minutes min';
-  }
-  if (minutes == 0) {
-    return '$hours h';
-  }
-  return '$hours h $minutes min';
-}
-
 /// The local moment at [time] on [day].
 DateTime _at(DateTime day, ClockTime time) =>
     DateTime(day.year, day.month, day.day, time.hour, time.minute);

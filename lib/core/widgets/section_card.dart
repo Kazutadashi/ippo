@@ -19,21 +19,29 @@ import 'package:material_ui/material_ui.dart';
 /// padding everywhere. Its children fill the card's width.
 class SectionCard extends StatelessWidget {
   /// Creates a card with [children], usually starting with a
-  /// [CardHeader].
-  const SectionCard({super.key, required this.children});
+  /// [CardHeader]. If [onTap] is given, the whole card can be tapped.
+  const SectionCard({super.key, required this.children, this.onTap});
 
   /// What the card holds, top to bottom.
   final List<Widget> children;
+
+  /// What tapping the card does, if anything.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(top: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+      // Keeps the tap ripple inside the card's rounded corners.
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
         ),
       ),
     );
@@ -102,6 +110,26 @@ class HeaderAddButton extends StatelessWidget {
   }
 }
 
+/// The standard "Open" button for a card header, leading to another
+/// screen.
+class HeaderOpenButton extends StatelessWidget {
+  /// Creates the button, calling [onPressed] when tapped.
+  const HeaderOpenButton({super.key, required this.onPressed});
+
+  /// What to do when tapped.
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.chevron_right),
+      iconAlignment: IconAlignment.end,
+      label: const Text('Open'),
+    );
+  }
+}
+
 /// The standard "Edit" button for a card header.
 class HeaderEditButton extends StatelessWidget {
   /// Creates the button, calling [onPressed] when tapped.
@@ -160,15 +188,21 @@ class InfoValue extends StatelessWidget {
 ///
 /// They share the width equally, unless [flexes] gives each one a share:
 /// `[2, 1, 1]` makes the first twice as wide as the others.
+///
+/// With [columns], the row always has that many equal columns, leaving
+/// the extra ones empty, so rows on different cards line up.
 class InfoRow extends StatelessWidget {
   /// Creates the row.
-  const InfoRow({super.key, required this.values, this.flexes});
+  const InfoRow({super.key, required this.values, this.flexes, this.columns});
 
   /// The values, left to right.
   final List<InfoValue> values;
 
   /// Each value's share of the width, or null for equal shares.
   final List<int>? flexes;
+
+  /// The number of columns to always use, or null for one per value.
+  final int? columns;
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +221,8 @@ class InfoRow extends StatelessWidget {
               child: values[index],
             ),
           ),
+        for (var empty = values.length; empty < (columns ?? 0); empty++)
+          const Expanded(child: SizedBox()),
       ],
     );
   }

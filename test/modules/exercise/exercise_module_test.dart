@@ -251,18 +251,24 @@ void main() {
     expect(log.exercises, isEmpty);
   });
 
-  test('the home screen summary lists today\'s sets', () async {
+  test('today\'s facts count sets, reps and seconds held', () async {
     const module = ExerciseModule();
-    expect(module.summarizeToday(appState), 'Nothing logged today');
+    final now = DateTime.now();
+    expect(module.todayFacts(appState, now), isEmpty);
 
-    final today = formatDate(DateTime.now());
+    final today = formatDate(now);
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
     final plank = await createExercise('Plank', MeasuredIn.seconds);
     await createExercise('Squat', MeasuredIn.reps);
     await addSets(pushUp, today, 20, 2);
     await addSets(plank, today, 45, 1);
-    await addSets(pushUp, day1, 5, 1); // Another day: not listed.
+    await addSets(pushUp, day1, 5, 1); // Another day: not counted.
 
-    expect(module.summarizeToday(appState), 'Push-up 20, 20 · Plank 45');
+    final facts = module.todayFacts(appState, now);
+    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
+      'Sets: 3',
+      'Reps: 40',
+      'Held: 45 s',
+    ]);
   });
 }

@@ -26,12 +26,23 @@ abstract class IppoModule {
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
 
-  /// A short line saying what was logged today, for the home screen,
-  /// for example `3 entries · 1,240 kcal`. It answers "did I log
-  /// today?", so it says so when nothing was logged.
-  String summarizeToday(AppState appState);
+  /// The most important facts about today in this module, for the home
+  /// screen: at most three, such as "Slept: 7 h 30 min". An empty list
+  /// means nothing was logged today.
+  ///
+  /// [now] is the current time; tests pass a fixed one.
+  List<TodayFact> todayFacts(AppState appState, DateTime now);
+}
 
-  /// Whether anything was logged in this module today. The home screen
-  /// uses this to list what is still to log.
-  bool hasLoggedToday(AppState appState);
+/// One fact for the home screen: a short label and its value, such as
+/// "Last ate" and "3 h ago".
+class TodayFact {
+  /// Creates a fact.
+  const TodayFact(this.label, this.value);
+
+  /// What the value is, for example `Slept`.
+  final String label;
+
+  /// The value, for example `7 h 30 min`.
+  final String value;
 }

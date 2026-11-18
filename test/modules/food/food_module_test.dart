@@ -12,6 +12,7 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
+import 'package:ippo/modules/food/food_module.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 
 const String day = '2026-11-17';
@@ -287,5 +288,32 @@ void main() {
     expect(diary.invalidCount, 2);
     expect(diary.foods, isEmpty);
     expect(diary.entries, isEmpty);
+  });
+
+  test('today\'s facts: eaten, protein, last ate', () async {
+    const module = FoodModule();
+    final now = DateTime(2026, 11, 17, 15, 30);
+    expect(module.todayFacts(appState, now), isEmpty);
+
+    final oatsId = await createOats();
+    await actions.recordFoodEntry(
+      date: day,
+      time: '07:30',
+      food: currentDiary().foods[oatsId]!,
+      amount: 100,
+    );
+    await actions.recordQuickEntry(
+      date: day,
+      time: '12:15',
+      name: 'Soup',
+      nutrients: const Nutrients({'energy_kcal': 300}),
+    );
+
+    final facts = module.todayFacts(appState, now);
+    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
+      'Eaten: 689 kcal',
+      'Protein: 13.2 g',
+      'Last ate: 3 h 15 min ago',
+    ]);
   });
 }

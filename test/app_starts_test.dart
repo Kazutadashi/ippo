@@ -11,6 +11,7 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/today_screen.dart';
+import 'package:ippo/core/widgets/section_card.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -71,9 +72,9 @@ void main() {
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(DateTime.now())), findsOneWidget);
-    expect(find.text('Nothing logged yet today.'), findsOneWidget);
-    // Nothing logged yet: each module says so.
-    expect(find.text('Nothing logged today'), findsNWidgets(3));
+    // Nothing logged yet: each module's card says so.
+    expect(find.text('Nothing logged yet today.'), findsNWidgets(3));
+    expect(find.text('Open'), findsNWidgets(3));
   });
 
   testWidgets('Home shows what was logged today', (tester) async {
@@ -93,17 +94,21 @@ void main() {
       },
     );
 
-    expect(find.text('1 entry · 80 kcal'), findsOneWidget);
-    expect(
-      find.text('Logged today: Food. Still to log: Exercise, Sleep.'),
-      findsOneWidget,
-    );
+    // The Food card shows today's facts as information.
+    expect(find.text('Eaten'), findsOneWidget);
+    expect(find.text('80 kcal'), findsOneWidget);
+    expect(find.text('Nothing logged yet today.'), findsNWidgets(2));
   });
 
   testWidgets('tapping a card on Home opens that module', (tester) async {
     await startApp(tester);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Exercise'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SectionCard),
+        matching: find.text('Exercise'),
+      ),
+    );
     await tester.pump();
 
     expect(find.text('New exercise'), findsOneWidget);

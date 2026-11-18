@@ -70,10 +70,18 @@ problems directly under it.
 
 ### Home
 
-Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
-18 November"), one line saying what is and is not logged today, then
-one card per module with a one-line summary of today. Tapping a card
-opens the module. Nothing else.
+A quick glance at what matters about the day so far. Top to bottom: a
+greeting ("Good afternoon"), the date ("Wednesday, 18 November"), then
+one card per module.
+
+Each module card has the module's header with an **Open** button, and
+up to three facts about today as information, in three columns that
+line up across cards. For example: *Slept 7 h 30 min · Woke up 07:00 ·
+Awake for 6 h*, or *Eaten 1240 kcal · Protein 56 g · Last ate 3 h ago*.
+Facts are what a person needs to know right now, not a repeat of the
+module's screen; facts worked out live ("Awake for", "Last ate") are
+the most useful kind. With nothing logged, the card says "Nothing
+logged yet today." Tapping a card opens the module. Nothing else.
 
 ### Forms (adding or changing one thing)
 
@@ -113,7 +121,7 @@ Rules:
 | Action | Where | Looks like | Examples |
 | --- | --- | --- | --- |
 | Create something for the whole screen | Bottom right, stacked at equal width if more than one | Extended floating button: icon and a short label | **+ New exercise**, **Quick food**, **+ New food** |
-| An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton` | **+ Add** (naps), **Edit** (a logged night), **Refresh** |
+| An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton`, `HeaderOpenButton` | **+ Add** (naps), **Edit** (a logged night), **Open ›** (Home), **Refresh** |
 | Change one row of a list | The whole row, plus a ✎ button at its end | `ListTile` with trailing `IconButton` | a food entry, a nap |
 | Save a form | Bottom of the form, full width | Filled button | **Save**, **Save night** |
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
@@ -167,6 +175,7 @@ Text styles (from the theme's text styles):
 | --- | --- | --- |
 | Times of day | 24-hour `HH:MM` | `07:00`, `23:30` |
 | Durations | Hours and minutes, no zeros | `7 h 30 min`, `8 h`, `45 min` |
+| Time since | Duration and "ago" | `3 h 15 min ago`, `Just now` |
 | Dates in lists | `YYYY-MM-DD` | `2026-11-18` |
 | Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 2026-11-16` |
 | Amounts | No needless decimals, at most one | `150`, `12.5` |
@@ -174,8 +183,8 @@ Text styles (from the theme's text styles):
 | Weights and nutrients | Number, space, unit | `5 g`, `10 kg` |
 | Unknown values | An en dash | `–` |
 
-Use `formatAmount`, `formatDuration`, `formatTimeOfDay` and
-`describeDay` rather than formatting by hand.
+Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
+`formatTimeOfDay` and `describeDay` rather than formatting by hand.
 
 
 ## 8. Icons
@@ -204,6 +213,7 @@ Use `formatAmount`, `formatDuration`, `formatTimeOfDay` and
 | This device | `smartphone` |
 | Other devices | `devices`, `devices_other` |
 | Read again | `refresh` |
+| Open another screen | `chevron_right`, after the word |
 
 Card headers show their icon in the accent colour.
 
@@ -312,8 +322,8 @@ Scaffold(
 
 A new module also needs:
 
-- `summarizeToday` (one line for its Home card) and `hasLoggedToday`
-  (for Home's "still to log" line), from `IppoModule`;
+- `todayFacts` (up to three facts for its Home card), from
+  `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.
 

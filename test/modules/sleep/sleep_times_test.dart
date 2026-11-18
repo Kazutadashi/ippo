@@ -4,6 +4,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ippo/core/dates.dart';
 import 'package:ippo/modules/sleep/sleep_times.dart';
 
 void main() {
@@ -85,6 +86,12 @@ void main() {
       const ClockTime(7, 0),
     );
     expect(checkSleepPeriod(night), isNull);
+  });
+
+  test('formatTimeAgo', () {
+    expect(formatTimeAgo(const Duration(seconds: 30)), 'Just now');
+    expect(formatTimeAgo(const Duration(minutes: 25)), '25 min ago');
+    expect(formatTimeAgo(const Duration(hours: 3)), '3 h ago');
   });
 
   test('formatDuration', () {

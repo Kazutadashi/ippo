@@ -10,7 +10,6 @@ import '../../core/dates.dart';
 import '../../core/module.dart';
 import 'screens/sleep_screen.dart';
 import 'sleep_log.dart';
-import 'sleep_times.dart';
 
 /// The sleep module, as seen by the core app.
 class SleepModule implements IppoModule {
@@ -26,26 +25,36 @@ class SleepModule implements IppoModule {
   @override
   IconData get icon => Icons.bedtime;
 
-  /// For example `Slept 7 h 30 min · 1 nap`.
+  /// For example: Slept 7 h 30 min · Woke up 07:00 · Awake for 6 h.
+  /// If there were naps, they replace "Woke up".
   @override
-  String summarizeToday(AppState appState) {
+  List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final log = SleepLog.fromEvents(appState.eventLog?.events ?? []);
-    final today = formatDate(DateTime.now());
+    final today = formatDate(now);
     final night = log.nightOn(today);
-    final napCount = log.napsOn(today).length;
-    final parts = [
-      if (night != null) 'Slept ${formatDuration(night.duration)}',
-      if (napCount == 1) '1 nap',
-      if (napCount > 1) '$napCount naps',
-    ];
-    return parts.isEmpty ? 'Nothing logged today' : parts.join(' · ');
-  }
-
-  @override
-  bool hasLoggedToday(AppState appState) {
-    final log = SleepLog.fromEvents(appState.eventLog?.events ?? []);
-    final today = formatDate(DateTime.now());
-    return log.nightOn(today) != null || log.napsOn(today).isNotEmpty;
+    final naps = log.napsOn(today);
+    final facts = <TodayFact>[];
+    if (night != null) {
+      facts.add(TodayFact('Slept', formatDuration(night.duration)));
+    }
+    if (naps.isNotEmpty) {
+      var napTime = Duration.zero;
+      for (final nap in naps) {
+        napTime += nap.duration;
+      }
+      final label = naps.length == 1 ? 'Nap' : '${naps.length} naps';
+      facts.add(TodayFact(label, formatDuration(napTime)));
+    } else if (night != null) {
+      facts.add(TodayFact('Woke up', '${night.endClock}'));
+    }
+    if (night != null) {
+      final awake = now.toUtc().difference(night.endedAtUtc);
+      // Only while it makes sense: after waking, and the same day.
+      if (!awake.isNegative && awake < const Duration(hours: 24)) {
+        facts.add(TodayFact('Awake for', formatDuration(awake)));
+      }
+    }
+    return facts;
   }
 
   @override

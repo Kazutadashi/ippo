@@ -60,5 +60,28 @@ DateTime addDays(DateTime day, int days) {
   return DateTime(day.year, day.month, day.day + days);
 }
 
+/// Writes a duration as hours and minutes, for example `7 h 30 min`,
+/// `45 min` or `8 h`.
+String formatDuration(Duration duration) {
+  final hours = duration.inMinutes ~/ 60;
+  final minutes = duration.inMinutes % 60;
+  if (hours == 0) {
+    return '$minutes min';
+  }
+  if (minutes == 0) {
+    return '$hours h';
+  }
+  return '$hours h $minutes min';
+}
+
+/// Writes how long ago something was, for example `3 h ago`, `25 min
+/// ago`, or `Just now` for less than a minute.
+String formatTimeAgo(Duration elapsed) {
+  if (elapsed.inMinutes < 1) {
+    return 'Just now';
+  }
+  return '${formatDuration(elapsed)} ago';
+}
+
 /// Writes [number] with leading zeros up to [width] digits.
 String _digits(int number, int width) => number.toString().padLeft(width, '0');
