@@ -397,6 +397,11 @@ you reach a target, as in many calisthenics programs. Exercises do not
 have to belong to a progression, so the module also works for, say,
 weight training.
 
+> **Note:** the app currently only uses exercises and sets. Progressions
+> and `progression_step_set` are part of the format so that data from
+> other tools, or a later version, can use them; the app reads past such
+> events without errors but does not show them.
+
 ### Things in this module
 
 | Thing | Created by | `_changed` | `_deleted` / `_restored` |

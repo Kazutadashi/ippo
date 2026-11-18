@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The cards on the exercise screen: one per progression, and one per
-/// exercise outside any progression.
+/// The card shown for each exercise: today's sets and a row to add more.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -9,134 +8,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/number_input.dart';
 import '../exercise.dart';
 import '../exercise_set.dart';
-import '../progress.dart';
-import '../progression.dart';
 import 'quick_set_row.dart';
 
-/// A progression's card: the current step, the day's sets, progress
-/// towards the target, and a button to move up when it is reached.
-class ProgressionCard extends StatelessWidget {
-  /// Creates the card.
-  const ProgressionCard({
-    super.key,
-    required this.progression,
-    required this.stepNumber,
-    required this.exercise,
-    required this.daySets,
-    required this.startValue,
-    required this.onAddSets,
-    required this.onMoreOptions,
-    required this.onEditSet,
-    required this.onMoveToStep,
-    required this.onEdit,
-    required this.onHistory,
-  });
-
-  /// The progression shown.
-  final Progression progression;
-
-  /// The current step, counting from 1.
-  final int stepNumber;
-
-  /// The exercise of the current step, or null if it is missing.
-  final Exercise? exercise;
-
-  /// The sets of the current step's exercise on the day shown.
-  final List<ExerciseSet> daySets;
-
-  /// The value to start the quick-add row with, usually the last set's.
-  final int? startValue;
-
-  /// Called with reps (or seconds) and a number of sets to add.
-  final Future<void> Function(int value, int setCount) onAddSets;
-
-  /// Called to log a set with all options (weight, reps in reserve).
-  final VoidCallback onMoreOptions;
-
-  /// Called to change or delete a set.
-  final ValueChanged<ExerciseSet> onEditSet;
-
-  /// Called with a step number to move to.
-  final ValueChanged<int> onMoveToStep;
-
-  /// Called to edit the progression.
-  final VoidCallback onEdit;
-
-  /// Called to show the progression's history.
-  final VoidCallback onHistory;
-
-  @override
-  Widget build(BuildContext context) {
-    final step = progression.stepAt(stepNumber);
-    final values = [for (final set in daySets) set.value];
-    final progress = stepProgress(
-      values,
-      targetSets: step.targetSets,
-      targetPerSet: step.targetPerSet,
-    );
-    final isLastStep = stepNumber == progression.steps.length;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(progression.name, style: textTheme.titleMedium),
-                ),
-                _StepMenu(
-                  progression: progression,
-                  stepNumber: stepNumber,
-                  onMoveToStep: onMoveToStep,
-                  onEdit: onEdit,
-                ),
-              ],
-            ),
-            Text(
-              'Step $stepNumber of ${progression.steps.length}: '
-              '${exercise?.name ?? '(missing exercise)'}',
-            ),
-            Text('Target ${step.describeTarget()}', style: textTheme.bodySmall),
-            const SizedBox(height: 8),
-            _SetChips(sets: daySets, onEditSet: onEditSet),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: progress),
-            if (progress >= 1 && !isLastStep)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: FilledButton.tonalIcon(
-                  onPressed: () => onMoveToStep(stepNumber + 1),
-                  icon: const Icon(Icons.trending_up),
-                  label: Text(
-                    'Target reached: move up to step ${stepNumber + 1}',
-                  ),
-                ),
-              ),
-            if (progress >= 1 && isLastStep)
-              const Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: Text('Final step mastered.'),
-              ),
-            const SizedBox(height: 8),
-            if (exercise != null)
-              QuickSetRow(
-                measuredIn: exercise!.measuredIn,
-                startValue: startValue,
-                onAddSets: onAddSets,
-              ),
-            _CardLinks(onHistory: onHistory, onMoreOptions: onMoreOptions),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A card for an exercise outside any progression.
+/// An exercise's card: its name, the day's sets, and the quick-add row.
 class ExerciseCard extends StatelessWidget {
   /// Creates the card.
   const ExerciseCard({
@@ -145,10 +19,8 @@ class ExerciseCard extends StatelessWidget {
     required this.daySets,
     required this.startValue,
     required this.onAddSets,
-    required this.onMoreOptions,
     required this.onEditSet,
     required this.onEdit,
-    required this.onHistory,
   });
 
   /// The exercise shown.
@@ -163,23 +35,17 @@ class ExerciseCard extends StatelessWidget {
   /// Called with reps (or seconds) and a number of sets to add.
   final Future<void> Function(int value, int setCount) onAddSets;
 
-  /// Called to log a set with all options (weight, reps in reserve).
-  final VoidCallback onMoreOptions;
-
   /// Called to change or delete a set.
   final ValueChanged<ExerciseSet> onEditSet;
 
-  /// Called to edit the exercise.
+  /// Called to rename or delete the exercise.
   final VoidCallback onEdit;
-
-  /// Called to show the exercise's history.
-  final VoidCallback onHistory;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -192,7 +58,7 @@ class ExerciseCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Edit exercise',
+                  tooltip: 'Rename or delete',
                   icon: const Icon(Icons.edit_outlined),
                   onPressed: onEdit,
                 ),
@@ -205,35 +71,9 @@ class ExerciseCard extends StatelessWidget {
               startValue: startValue,
               onAddSets: onAddSets,
             ),
-            _CardLinks(onHistory: onHistory, onMoreOptions: onMoreOptions),
           ],
         ),
       ),
-    );
-  }
-}
-
-/// The links under a card's quick-add row.
-class _CardLinks extends StatelessWidget {
-  const _CardLinks({required this.onHistory, required this.onMoreOptions});
-
-  final VoidCallback onHistory;
-  final VoidCallback onMoreOptions;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        TextButton.icon(
-          onPressed: onHistory,
-          icon: const Icon(Icons.show_chart),
-          label: const Text('History'),
-        ),
-        TextButton(
-          onPressed: onMoreOptions,
-          child: const Text('Add with weight…'),
-        ),
-      ],
     );
   }
 }
@@ -263,36 +103,6 @@ class _SetChips extends StatelessWidget {
             ),
             onPressed: () => onEditSet(set),
           ),
-      ],
-    );
-  }
-}
-
-/// The ⋮ menu of a progression card: edit, or jump to any step.
-class _StepMenu extends StatelessWidget {
-  const _StepMenu({
-    required this.progression,
-    required this.stepNumber,
-    required this.onMoveToStep,
-    required this.onEdit,
-  });
-
-  final Progression progression;
-  final int stepNumber;
-  final ValueChanged<int> onMoveToStep;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<int>(
-      tooltip: 'More',
-      // 0 means "edit"; other values are step numbers to move to.
-      onSelected: (choice) => choice == 0 ? onEdit() : onMoveToStep(choice),
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: 0, child: Text('Edit progression')),
-        for (var number = 1; number <= progression.steps.length; number++)
-          if (number != stepNumber)
-            PopupMenuItem(value: number, child: Text('Go to step $number')),
       ],
     );
   }

@@ -13,7 +13,6 @@ import '../../core/number_input.dart';
 import 'exercise.dart';
 import 'exercise_log.dart';
 import 'exercise_set.dart';
-import 'progression.dart';
 
 /// Writes the exercise module's events through [appState].
 ///
@@ -53,145 +52,44 @@ class ExerciseActions {
   Future<Event> restoreExercise(String exerciseId) =>
       _write('exercise_restored', {'target_id': exerciseId});
 
-  /// Creates a progression. Returns the event, whose id is the
-  /// progression's.
-  Future<Event> createProgression({
-    required String name,
-    required List<ProgressionStep> steps,
-  }) {
-    return _write('progression_created', {
-      'name': name.trim(),
-      'steps': [for (final step in steps) step.toJson()],
-    });
-  }
-
-  /// Changes a progression's name and replaces its whole list of steps.
-  Future<Event> changeProgression(
-    String progressionId, {
-    required String name,
-    required List<ProgressionStep> steps,
-  }) {
-    return _write('progression_changed', {
-      'target_id': progressionId,
-      'changes': {
-        'name': name.trim(),
-        'steps': [for (final step in steps) step.toJson()],
-      },
-    });
-  }
-
-  /// Saves a progression from the steps typed in the progression form.
-  ///
-  /// Each step names its exercise. A step without an exercise id gets
-  /// one: an existing exercise with the same name and unit is reused (so
-  /// its history stays in one place), otherwise a new exercise is
-  /// created. A step whose exercise name was edited renames that
-  /// exercise. Then the progression is created, or changed if
-  /// [progressionId] is given. Returns the progression's id.
-  Future<String> saveProgressionFromDrafts({
-    required String? progressionId,
-    required String name,
-    required List<StepDraft> drafts,
-    required ExerciseLog log,
-  }) async {
-    final steps = <ProgressionStep>[];
-    for (final draft in drafts) {
-      final exerciseId = await _exerciseIdFor(draft, log);
-      steps.add(
-        ProgressionStep(
-          exerciseId: exerciseId,
-          targetSets: draft.targetSets,
-          targetPerSet: draft.targetPerSet,
-          measuredIn: draft.measuredIn,
-        ),
-      );
-    }
-    if (progressionId == null) {
-      final event = await createProgression(name: name, steps: steps);
-      return event.id;
-    }
-    await changeProgression(progressionId, name: name, steps: steps);
-    return progressionId;
-  }
-
-  /// Finds or creates the exercise for one step of the progression form.
-  Future<String> _exerciseIdFor(StepDraft draft, ExerciseLog log) async {
-    final draftName = draft.exerciseName.trim();
-    final existingId = draft.exerciseId;
-    if (existingId != null) {
-      final existing = log.exercises[existingId];
-      if (existing != null && existing.name != draftName) {
-        await renameExercise(existingId, draftName);
-      }
-      return existingId;
-    }
-    for (final exercise in log.exercises.values) {
-      final isSameExercise =
-          !exercise.isDeleted &&
-          exercise.measuredIn == draft.measuredIn &&
-          exercise.name.toLowerCase() == draftName.toLowerCase();
-      if (isSameExercise) {
-        return exercise.id;
-      }
-    }
-    final event = await createExercise(
-      name: draftName,
-      measuredIn: draft.measuredIn,
-    );
-    return event.id;
-  }
-
-  /// Deletes a progression. Its past sets stay.
-  Future<Event> deleteProgression(String progressionId) =>
-      _write('progression_deleted', {'target_id': progressionId});
-
-  /// Undoes [deleteProgression].
-  Future<Event> restoreProgression(String progressionId) =>
-      _write('progression_restored', {'target_id': progressionId});
-
-  /// Records that the user is now on [stepNumber] of a progression.
-  Future<Event> setProgressionStep(
-    String progressionId, {
-    required int stepNumber,
-    required String date,
-  }) {
-    return _write('progression_step_set', {
-      'progression_id': progressionId,
-      'step_number': stepNumber,
-      'date': date,
-    });
-  }
-
   /// Records one set of [exercise] on [date].
   ///
-  /// [value] is reps or seconds, depending on the exercise. If the set is
-  /// part of [progression], the current step and its target are copied
-  /// into the set, so history stays correct if the progression changes.
-  /// [setNumber] counts the sets of this exercise on this day, from 1.
+  /// [value] is reps or seconds, depending on the exercise. [setNumber]
+  /// counts the sets of this exercise on this day, from 1.
   Future<Event> recordSet({
     required String date,
     required Exercise exercise,
     required int setNumber,
     required int value,
-    required double? weightKg,
-    required int? repsInReserve,
-    required Progression? progression,
-    required int? stepNumber,
   }) {
-    final step = progression != null && stepNumber != null
-        ? progression.stepAt(stepNumber)
-        : null;
     return _write('set_recorded', {
       'exercise_id': exercise.id,
       'date': date,
       'set_number': setNumber,
       _valueField(exercise.measuredIn): value,
-      if (weightKg != null) 'weight_kg': jsonNumber(weightKg),
-      if (repsInReserve != null) 'reps_in_reserve': repsInReserve,
-      if (progression != null) 'progression_id': progression.id,
-      if (step != null) 'step_number': stepNumber,
-      if (step != null) _targetField(step.measuredIn): step.targetPerSet,
     });
+  }
+
+  /// Records [setCount] sets of [value] reps (or seconds) of [exercise]
+  /// on [date], numbered after the sets already logged that day.
+  ///
+  /// [log] must be the current exercise log, used to count those sets.
+  Future<void> recordSets({
+    required String date,
+    required Exercise exercise,
+    required int value,
+    required int setCount,
+    required ExerciseLog log,
+  }) async {
+    final setsSoFar = log.setsOn(date, exercise.id).length;
+    for (var count = 1; count <= setCount; count++) {
+      await recordSet(
+        date: date,
+        exercise: exercise,
+        setNumber: setsSoFar + count,
+        value: value,
+      );
+    }
   }
 
   /// Changes the value, weight and effort of a set. A null [weightKg] or
@@ -233,38 +131,3 @@ class ExerciseActions {
 /// The field a set's value is stored in: `reps` or `seconds`.
 String _valueField(MeasuredIn measuredIn) =>
     measuredIn == MeasuredIn.reps ? 'reps' : 'seconds';
-
-/// The field a step's target is stored in.
-String _targetField(MeasuredIn measuredIn) =>
-    measuredIn == MeasuredIn.reps ? 'target_reps' : 'target_seconds';
-
-/// One step as typed in the progression form, before it is saved.
-class StepDraft {
-  /// Creates a step draft.
-  const StepDraft({
-    required this.exerciseId,
-    required this.exerciseName,
-    required this.measuredIn,
-    required this.targetSets,
-    required this.targetPerSet,
-  });
-
-  /// The exercise's id, or null for an exercise not saved yet.
-  final String? exerciseId;
-
-  /// The exercise's name.
-  final String exerciseName;
-
-  /// Whether the exercise counts reps or seconds.
-  final MeasuredIn measuredIn;
-
-  /// How many sets must reach the target.
-  final int targetSets;
-
-  /// The reps or seconds each set must reach.
-  final int targetPerSet;
-
-  /// Describes the step, for example `Box squat — 3 × 12 reps`.
-  String describe() =>
-      '$exerciseName — $targetSets × $targetPerSet ${measuredIn.unit}';
-}

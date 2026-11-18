@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Checks that the exercise screen shows a progression's step, today's
-/// sets, and offers to move up once the target is reached.
+/// Checks that the exercise screen shows each exercise with today's sets,
+/// and that the quick-add row logs sets.
 library;
 
 import 'dart:io';
@@ -19,6 +19,8 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   late Directory settingsFolder;
   late Directory dataFolder;
+  late AppState appState;
+  late String pushUpId;
 
   setUp(() {
     settingsFolder = Directory.systemTemp.createTempSync('ippo_settings_');
@@ -30,99 +32,61 @@ void main() {
     dataFolder.deleteSync(recursive: true);
   });
 
-  /// Creates a one-step-done ladder and logs [values] for today.
-  Future<AppState> setUpLadder(WidgetTester tester, List<int> values) async {
-    final appState = AppState(
+  /// Sets up a push-up exercise with [todaysReps] already logged today.
+  Future<void> setUpPushUps(WidgetTester tester, List<int> todaysReps) async {
+    appState = AppState(
       settingsFile: SettingsFile(settingsFolder.path),
       isAndroid: false,
       defaultDeviceName: 'my-desktop',
     );
+    // Real file access needs runAsync inside widget tests.
     await tester.runAsync(() async {
       await appState.load();
       await appState.chooseLinuxDataFolder(dataFolder.path);
       final actions = ExerciseActions(appState);
-      final progressionId = await actions.saveProgressionFromDrafts(
-        progressionId: null,
-        name: 'Squat progression',
-        drafts: const [
-          StepDraft(
-            exerciseId: null,
-            exerciseName: 'Box squat',
-            measuredIn: MeasuredIn.reps,
-            targetSets: 2,
-            targetPerSet: 10,
-          ),
-          StepDraft(
-            exerciseId: null,
-            exerciseName: 'Squat',
-            measuredIn: MeasuredIn.reps,
-            targetSets: 2,
-            targetPerSet: 8,
-          ),
-        ],
-        log: ExerciseLog.fromEvents(appState.eventLog!.events),
+      final event = await actions.createExercise(
+        name: 'Push-up',
+        measuredIn: MeasuredIn.reps,
       );
-      final log = ExerciseLog.fromEvents(appState.eventLog!.events);
-      final ladder = log.progressions[progressionId]!;
-      final boxSquat = log.exercises[ladder.steps[0].exerciseId]!;
-      for (var index = 0; index < values.length; index++) {
-        await actions.recordSet(
+      pushUpId = event.id;
+      for (final reps in todaysReps) {
+        await actions.recordSets(
           date: formatDate(DateTime.now()),
-          exercise: boxSquat,
-          setNumber: index + 1,
-          value: values[index],
-          weightKg: null,
-          repsInReserve: null,
-          progression: ladder,
-          stepNumber: 1,
+          exercise: ExerciseLog.fromEvents(appState.eventLog!.events)
+              .exercises[pushUpId]!,
+          value: reps,
+          setCount: 1,
+          log: ExerciseLog.fromEvents(appState.eventLog!.events),
         );
       }
     });
-    return appState;
+    await tester.pumpWidget(
+      MaterialApp(home: ExerciseHomeScreen(appState: appState)),
+    );
   }
 
-  testWidgets('shows the step and today\'s sets', (tester) async {
-    final appState = await setUpLadder(tester, [10, 7]);
+  testWidgets('shows each exercise with today\'s sets', (tester) async {
+    await setUpPushUps(tester, [10, 7]);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ExerciseHomeScreen(appState: appState)),
-    );
-
-    expect(find.text('Squat progression'), findsOneWidget);
-    expect(find.text('Step 1 of 2: Box squat'), findsOneWidget);
-    expect(find.text('Target 2 × 10 reps'), findsOneWidget);
+    expect(find.text('Push-up'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, '10'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, '7'), findsOneWidget);
-    expect(find.textContaining('move up'), findsNothing);
+    // There is nothing about progressions or statistics.
+    expect(find.textContaining('rogression'), findsNothing);
+    expect(find.text('History'), findsNothing);
   });
 
-  testWidgets('offers to move up once the target is reached', (tester) async {
-    final appState = await setUpLadder(tester, [10, 10]);
+  testWidgets('the reps field starts at the last set', (tester) async {
+    await setUpPushUps(tester, [10, 7]);
 
-    await tester.pumpWidget(
-      MaterialApp(home: ExerciseHomeScreen(appState: appState)),
+    final repsField = tester.widget<TextField>(
+      find.widgetWithText(TextField, 'Reps'),
     );
-
-    expect(find.text('Target reached: move up to step 2'), findsOneWidget);
+    expect(repsField.controller!.text, '7');
   });
 
   testWidgets('quick add logs several sets at once', (tester) async {
-    final appState = AppState(
-      settingsFile: SettingsFile(settingsFolder.path),
-      isAndroid: false,
-      defaultDeviceName: 'my-desktop',
-    );
-    late String exerciseId;
-    await tester.runAsync(() async {
-      await appState.load();
-      await appState.chooseLinuxDataFolder(dataFolder.path);
-      final event = await ExerciseActions(appState)
-          .createExercise(name: 'Push-up', measuredIn: MeasuredIn.reps);
-      exerciseId = event.id;
-    });
-    await tester.pumpWidget(
-      MaterialApp(home: ExerciseHomeScreen(appState: appState)),
-    );
+    await setUpPushUps(tester, []);
 
     await tester.enterText(find.widgetWithText(TextField, 'Reps'), '20');
     await tester.enterText(find.widgetWithText(TextField, 'Sets'), '2');
@@ -135,8 +99,19 @@ void main() {
 
     expect(find.widgetWithText(ActionChip, '20'), findsNWidgets(2));
     final log = ExerciseLog.fromEvents(appState.eventLog!.events);
-    final sets = log.setsOn(formatDate(DateTime.now()), exerciseId);
+    final sets = log.setsOn(formatDate(DateTime.now()), pushUpId);
     expect(sets.map((set) => set.setNumber), [1, 2]);
-    expect(sets.map((set) => set.value), [20, 20]);
+  });
+
+  testWidgets('too many sets at once are refused', (tester) async {
+    await setUpPushUps(tester, []);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Reps'), '20');
+    await tester.enterText(find.widgetWithText(TextField, 'Sets'), '22');
+    await tester.tap(find.text('Add'));
+    await tester.pump();
+
+    expect(find.text('Enter 1 to 10 sets at a time.'), findsOneWidget);
+    expect(find.byType(ActionChip), findsNothing);
   });
 }
