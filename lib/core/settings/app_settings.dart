@@ -18,6 +18,9 @@ class AppSettings {
     required this.deviceId,
     required this.deviceName,
     required this.linuxDataFolderPath,
+    required this.themeMode,
+    required this.accentColor,
+    required this.lastScreen,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -27,6 +30,9 @@ class AppSettings {
       deviceId: generateUuidV7(),
       deviceName: defaultDeviceName,
       linuxDataFolderPath: null,
+      themeMode: null,
+      accentColor: null,
+      lastScreen: null,
     );
   }
 
@@ -44,15 +50,15 @@ class AppSettings {
       return null;
     }
     final deviceName = json['device_name'];
-    final linuxDataFolderPath = json['linux_data_folder_path'];
     return AppSettings(
       deviceId: deviceId,
       deviceName: deviceName is String && checkDeviceName(deviceName) == null
           ? deviceName
           : defaultDeviceName,
-      linuxDataFolderPath: linuxDataFolderPath is String
-          ? linuxDataFolderPath
-          : null,
+      linuxDataFolderPath: _textOrNull(json['linux_data_folder_path']),
+      themeMode: _textOrNull(json['theme_mode']),
+      accentColor: _textOrNull(json['accent_color']),
+      lastScreen: _textOrNull(json['last_screen']),
     );
   }
 
@@ -69,25 +75,42 @@ class AppSettings {
   /// chosen folder.
   final String? linuxDataFolderPath;
 
-  /// Returns a copy with a different device name.
-  AppSettings withDeviceName(String newDeviceName) => AppSettings(
-    deviceId: deviceId,
-    deviceName: newDeviceName,
-    linuxDataFolderPath: linuxDataFolderPath,
-  );
+  /// `system`, `light` or `dark`, or null for the default (system).
+  final String? themeMode;
 
-  /// Returns a copy with a different Linux data folder.
-  AppSettings withLinuxDataFolderPath(String newPath) => AppSettings(
-    deviceId: deviceId,
-    deviceName: deviceName,
-    linuxDataFolderPath: newPath,
-  );
+  /// The accent colour as `#RRGGBB`, or null for the default.
+  final String? accentColor;
+
+  /// The screen open when the app was last used: a module's name, or
+  /// `settings`. The app opens there again.
+  final String? lastScreen;
+
+  /// Returns a copy with the given values changed.
+  AppSettings copyWith({
+    String? deviceName,
+    String? linuxDataFolderPath,
+    String? themeMode,
+    String? accentColor,
+    String? lastScreen,
+  }) {
+    return AppSettings(
+      deviceId: deviceId,
+      deviceName: deviceName ?? this.deviceName,
+      linuxDataFolderPath: linuxDataFolderPath ?? this.linuxDataFolderPath,
+      themeMode: themeMode ?? this.themeMode,
+      accentColor: accentColor ?? this.accentColor,
+      lastScreen: lastScreen ?? this.lastScreen,
+    );
+  }
 
   /// Turns the settings into JSON for `settings.json`.
   Map<String, Object?> toJson() => {
     'device_id': deviceId,
     'device_name': deviceName,
     'linux_data_folder_path': linuxDataFolderPath,
+    'theme_mode': themeMode,
+    'accent_color': accentColor,
+    'last_screen': lastScreen,
   };
 }
 
@@ -105,3 +128,6 @@ String? checkDeviceName(String name) {
   }
   return null;
 }
+
+/// Returns [value] if it is text, otherwise null.
+String? _textOrNull(Object? value) => value is String ? value : null;

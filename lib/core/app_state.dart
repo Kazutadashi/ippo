@@ -174,12 +174,11 @@ class AppState extends ChangeNotifier {
     if (problem != null) {
       return problem;
     }
-    try {
-      final newSettings = settings.withLinuxDataFolderPath(trimmedPath);
-      await settingsFile.write(newSettings.toJson());
-      _settings = newSettings;
-    } on DataFolderException catch (error) {
-      return error.message;
+    final saveProblem = await _saveSettings(
+      settings.copyWith(linuxDataFolderPath: trimmedPath),
+    );
+    if (saveProblem != null) {
+      return saveProblem;
     }
     _useLinuxFolder(trimmedPath);
     _errorMessage = null;
@@ -202,15 +201,60 @@ class AppState extends ChangeNotifier {
     if (problem != null) {
       return problem;
     }
-    try {
-      final newSettings = settings.withDeviceName(trimmedName);
-      await settingsFile.write(newSettings.toJson());
-      _settings = newSettings;
-    } on DataFolderException catch (error) {
-      return error.message;
+    final saveProblem = await _saveSettings(
+      settings.copyWith(deviceName: trimmedName),
+    );
+    if (saveProblem != null) {
+      return saveProblem;
     }
     _createEventWriter();
     notifyListeners();
+    return null;
+  }
+
+  /// Saves the theme mode: `system`, `light` or `dark`.
+  Future<void> setThemeMode(String themeMode) => _changeDisplaySetting(
+    (settings) => settings.copyWith(themeMode: themeMode),
+  );
+
+  /// Saves the accent colour, written as `#RRGGBB`.
+  Future<void> setAccentColor(String hexColor) => _changeDisplaySetting(
+    (settings) => settings.copyWith(accentColor: hexColor),
+  );
+
+  /// Remembers which screen is open (a module's name, or `settings`), so
+  /// the app opens there next time.
+  Future<void> rememberScreen(String screenName) => _changeDisplaySetting(
+    (settings) => settings.copyWith(lastScreen: screenName),
+  );
+
+  /// Applies [change] to the settings, saves them, and tells listening
+  /// screens. A failure is shown through [errorMessage].
+  Future<void> _changeDisplaySetting(
+    AppSettings Function(AppSettings settings) change,
+  ) async {
+    final settings = _settings;
+    if (settings == null) {
+      return;
+    }
+    final problem = await _saveSettings(change(settings));
+    if (problem != null) {
+      _errorMessage = problem;
+    }
+    notifyListeners();
+  }
+
+  /// Writes [newSettings] to the settings file and uses them.
+  ///
+  /// Returns null on success, or a message explaining the failure; the
+  /// old settings stay in use then.
+  Future<String?> _saveSettings(AppSettings newSettings) async {
+    try {
+      await settingsFile.write(newSettings.toJson());
+    } on DataFolderException catch (error) {
+      return error.message;
+    }
+    _settings = newSettings;
     return null;
   }
 

@@ -14,6 +14,7 @@ import 'core/app_state.dart';
 import 'core/home_screen.dart';
 import 'core/storage/data_folder.dart';
 import 'core/storage/settings_file.dart';
+import 'core/theme.dart';
 
 /// Starts the app.
 Future<void> main() async {
@@ -56,9 +57,21 @@ class IppoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ippo',
-      home: HomeScreen(appState: appState),
+    // Rebuild when the settings change, so a new theme or accent colour
+    // shows at once.
+    return ListenableBuilder(
+      listenable: appState,
+      builder: (context, _) {
+        final settings = appState.settings;
+        final accent = parseAccentColor(settings?.accentColor);
+        return MaterialApp(
+          title: 'Ippo',
+          theme: buildTheme(accent, Brightness.light),
+          darkTheme: buildTheme(accent, Brightness.dark),
+          themeMode: parseThemeMode(settings?.themeMode),
+          home: HomeScreen(appState: appState),
+        );
+      },
     );
   }
 }

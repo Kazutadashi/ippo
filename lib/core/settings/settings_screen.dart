@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The settings screen: data folder, this device's name, and the list
-/// of devices with when each was last seen.
+/// The settings screen: data folder, appearance, this device's name, and
+/// the list of devices with when each was last seen.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
+import 'appearance_section.dart';
 import 'devices_section.dart';
 
 /// The settings screen.
@@ -38,6 +39,8 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _DataFolderSection(appState: appState),
+            const _SectionTitle('Appearance'),
+            AppearanceSection(appState: appState),
             const _SectionTitle('This device'),
             _DeviceNameSection(appState: appState),
             const _SectionTitle('Devices'),
