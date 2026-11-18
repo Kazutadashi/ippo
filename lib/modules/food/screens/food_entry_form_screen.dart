@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
@@ -132,14 +133,10 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
       return;
     }
     Navigator.of(context).pop(true);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Deleted ${entry.name}.'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () => actions.restoreEntry(entry.id),
-        ),
-      ),
+    showUndoMessage(
+      messenger,
+      message: 'Deleted ${entry.name}.',
+      onUndo: () => actions.restoreEntry(entry.id),
     );
   }
 

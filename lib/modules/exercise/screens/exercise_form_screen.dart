@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 
@@ -73,14 +74,10 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
       return;
     }
     Navigator.of(context).pop();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('Deleted ${exercise.name}. Its sets are kept.'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () => actions.restoreExercise(exercise.id),
-        ),
-      ),
+    showUndoMessage(
+      messenger,
+      message: 'Deleted ${exercise.name}. Its sets are kept.',
+      onUndo: () => actions.restoreExercise(exercise.id),
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 import '../exercise_set.dart';
@@ -117,14 +118,10 @@ class _EditSetScreenState extends State<EditSetScreen> {
       return;
     }
     Navigator.of(context).pop();
-    messenger.showSnackBar(
-      SnackBar(
-        content: const Text('Set deleted.'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () => actions.restoreSet(setId),
-        ),
-      ),
+    showUndoMessage(
+      messenger,
+      message: 'Set deleted.',
+      onUndo: () => actions.restoreSet(setId),
     );
   }
 
