@@ -10,6 +10,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 import '../exercise_log.dart';
@@ -86,18 +87,16 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
             children: [
               DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (log.invalidCount > 0)
-                Text(
+                ProblemText(
                   '${log.invalidCount} items in the data could not be read '
                   'and are not shown.',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               if (log.activeExercises.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: Text(
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: NoteText(
                     'Tap "New exercise" to start. Each exercise gets a card '
                     'where you add the day\'s sets and reps.',
-                    textAlign: TextAlign.center,
                   ),
                 ),
               for (final exercise in log.activeExercises)

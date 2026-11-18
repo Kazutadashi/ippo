@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 
@@ -113,16 +114,8 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
-          if (isEditing) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _delete,
-              child: Text(
-                'Delete this exercise',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          ],
+          if (isEditing)
+            DeleteButton(label: 'Delete this exercise', onPressed: _delete),
         ],
       ),
     );

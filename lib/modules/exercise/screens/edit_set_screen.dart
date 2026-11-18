@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 import '../exercise_set.dart';
@@ -141,6 +142,7 @@ class _EditSetScreenState extends State<EditSetScreen> {
             ),
             onSubmitted: (_) => _save(),
           ),
+          const SizedBox(height: 12),
           TextField(
             controller: _weightField,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -150,6 +152,7 @@ class _EditSetScreenState extends State<EditSetScreen> {
               errorText: _weightProblem,
             ),
           ),
+          if (_isReps) const SizedBox(height: 12),
           if (_isReps)
             TextField(
               controller: _reserveField,
@@ -162,14 +165,7 @@ class _EditSetScreenState extends State<EditSetScreen> {
             ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: _delete,
-            child: Text(
-              'Delete this set',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
+          DeleteButton(label: 'Delete this set', onPressed: _delete),
         ],
       ),
     );

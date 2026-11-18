@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// A row for logging sets straight from a card: `[20] reps × [2] sets Add`.
+/// Fields for logging sets straight from a card: `[20] reps × [2] sets`,
+/// then a full-width Add button.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 
 /// The most sets that can be added in one go. A typo such as 22 instead
@@ -85,12 +87,13 @@ class _QuickSetRowState extends State<QuickSetRow> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
+              flex: 3,
               child: TextField(
                 controller: _valueField,
                 keyboardType: TextInputType.number,
@@ -103,11 +106,11 @@ class _QuickSetRowState extends State<QuickSetRow> {
               ),
             ),
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12),
               child: Text('×'),
             ),
-            SizedBox(
-              width: 64,
+            Expanded(
+              flex: 2,
               child: TextField(
                 controller: _setCountField,
                 keyboardType: TextInputType.number,
@@ -115,21 +118,18 @@ class _QuickSetRowState extends State<QuickSetRow> {
                 onSubmitted: (_) => _add(),
               ),
             ),
-            const SizedBox(width: 12),
-            FilledButton(
-              onPressed: _isSaving ? null : _add,
-              child: const Text('Add'),
-            ),
           ],
         ),
         if (_problem != null)
           Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              _problem!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            padding: const EdgeInsets.only(top: 8),
+            child: ProblemText(_problem!),
           ),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: _isSaving ? null : _add,
+          child: const Text('Add'),
+        ),
       ],
     );
   }

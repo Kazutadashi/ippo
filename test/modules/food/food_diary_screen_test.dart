@@ -30,6 +30,10 @@ void main() {
   });
 
   testWidgets('today\'s entries and total are shown by meal', (tester) async {
+    // A tall screen, so every meal card is drawn at once.
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     final appState = AppState(
       settingsFile: SettingsFile(settingsFolder.path),
       isAndroid: false,
@@ -63,7 +67,11 @@ void main() {
 
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('380 kcal'), findsOneWidget);
-    expect(find.text('Protein 10 g'), findsOneWidget);
+    expect(find.text('Protein'), findsOneWidget);
+    expect(find.text('10 g'), findsOneWidget);
+    // Every meal has a card with its own Add button; empty ones say so.
+    expect(find.text('Add'), findsNWidgets(4));
+    expect(find.text('Nothing logged.'), findsNWidgets(2));
     expect(find.text('Breakfast · 300 kcal'), findsOneWidget);
     expect(find.text('Porridge'), findsOneWidget);
     expect(find.text('Snack · 80 kcal'), findsOneWidget);

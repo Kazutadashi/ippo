@@ -11,6 +11,7 @@ import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
@@ -34,6 +35,7 @@ class QuickEntryFormScreen extends StatefulWidget {
     required this.appState,
     required String this.date,
     required this.isToday,
+    required Meal this.meal,
   }) : entry = null;
 
   /// Creates the form for changing [entry].
@@ -42,7 +44,8 @@ class QuickEntryFormScreen extends StatefulWidget {
     required this.appState,
     required FoodEntry this.entry,
   }) : date = null,
-       isToday = false;
+       isToday = false,
+       meal = null;
 
   /// The app-wide state.
   final AppState appState;
@@ -52,6 +55,9 @@ class QuickEntryFormScreen extends StatefulWidget {
 
   /// Whether [date] is today, so the entry gets the current time.
   final bool isToday;
+
+  /// The meal to start with, when adding.
+  final Meal? meal;
 
   /// The entry to change, when editing.
   final FoodEntry? entry;
@@ -72,7 +78,8 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
             : formatAmount(widget.entry!.nutrients.values[key]!),
       ),
   };
-  late Meal _meal = widget.entry?.meal ?? guessMeal(DateTime.now());
+  late Meal _meal =
+      widget.meal ?? widget.entry?.meal ?? guessMeal(DateTime.now());
   String? _nameProblem;
   String? _energyProblem;
 
@@ -175,17 +182,19 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
             ),
           ),
           for (final key in _quickEntryNutrientKeys)
-            TextField(
-              controller: _nutrientFields[key],
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: key == energyKey
-                    ? 'Energy'
-                    : '${kindsByKey[key]!.label} (optional)',
-                suffixText: kindsByKey[key]!.unit,
-                errorText: key == energyKey ? _energyProblem : null,
+            _spaced(
+              TextField(
+                controller: _nutrientFields[key],
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: key == energyKey
+                      ? 'Energy'
+                      : '${kindsByKey[key]!.label} (optional)',
+                  suffixText: kindsByKey[key]!.unit,
+                  errorText: key == energyKey ? _energyProblem : null,
+                ),
               ),
             ),
           const SizedBox(height: 16),
@@ -195,18 +204,15 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
-          if (widget.entry != null) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _delete,
-              child: Text(
-                'Delete this entry',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          ],
+          if (widget.entry != null)
+            DeleteButton(label: 'Delete this entry', onPressed: _delete),
         ],
       ),
     );
   }
 }
+
+/// Puts a little space above a form field, so outlined fields do not
+/// touch.
+Widget _spaced(Widget field) =>
+    Padding(padding: const EdgeInsets.only(top: 12), child: field);

@@ -10,6 +10,7 @@ import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
@@ -28,6 +29,7 @@ class FoodEntryFormScreen extends StatefulWidget {
     required Food this.food,
     required String this.date,
     required this.isToday,
+    required Meal this.meal,
   }) : entry = null;
 
   /// Creates the form for changing [entry].
@@ -37,7 +39,8 @@ class FoodEntryFormScreen extends StatefulWidget {
     required FoodEntry this.entry,
   }) : food = null,
        date = null,
-       isToday = false;
+       isToday = false,
+       meal = null;
 
   /// The app-wide state.
   final AppState appState;
@@ -50,6 +53,9 @@ class FoodEntryFormScreen extends StatefulWidget {
 
   /// Whether [date] is today, so the entry gets the current time.
   final bool isToday;
+
+  /// The meal to start with, when adding.
+  final Meal? meal;
 
   /// The entry to change, when editing.
   final FoodEntry? entry;
@@ -64,7 +70,8 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         ? ''
         : formatAmount(widget.entry!.amount!),
   );
-  late Meal _meal = widget.entry?.meal ?? guessMeal(DateTime.now());
+  late Meal _meal =
+      widget.meal ?? widget.entry?.meal ?? guessMeal(DateTime.now());
   String? _amountProblem;
 
   @override
@@ -167,19 +174,11 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             onChanged: (meal) => setState(() => _meal = meal),
           ),
           const SizedBox(height: 16),
-          NutrientSummary(nutrients: _nutrientsFor(amount)),
+          NutrientInfoRow(nutrients: _nutrientsFor(amount)),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
-          if (widget.entry != null) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _delete,
-              child: Text(
-                'Delete this entry',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          ],
+          if (widget.entry != null)
+            DeleteButton(label: 'Delete this entry', onPressed: _delete),
         ],
       ),
     );

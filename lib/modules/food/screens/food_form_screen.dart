@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../nutrients.dart';
@@ -175,31 +176,30 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           for (final kind in allNutrientKinds)
-            TextField(
-              controller: _nutrientFields[kind.key],
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: kind.label.trim(),
-                suffixText: kind.unit,
-                errorText: _nutrientProblems[kind.key],
+            _spaced(
+              TextField(
+                controller: _nutrientFields[kind.key],
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: kind.label.trim(),
+                  suffixText: kind.unit,
+                  errorText: _nutrientProblems[kind.key],
+                ),
               ),
             ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
-          if (isEditing) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _delete,
-              child: Text(
-                'Delete this food',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          ],
+          if (isEditing)
+            DeleteButton(label: 'Delete this food', onPressed: _delete),
         ],
       ),
     );
   }
 }
+
+/// Puts a little space above a form field, so outlined fields do not
+/// touch.
+Widget _spaced(Widget field) =>
+    Padding(padding: const EdgeInsets.only(top: 12), child: field);

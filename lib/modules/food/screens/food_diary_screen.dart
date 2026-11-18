@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/section_card.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
@@ -17,7 +18,16 @@ import 'food_entry_form_screen.dart';
 import 'nutrient_summary.dart';
 import 'quick_entry_form_screen.dart';
 
-/// Shows one day's food entries, grouped by meal, with the day's total.
+/// The icon shown for each meal.
+const Map<Meal, IconData> _mealIcons = {
+  Meal.breakfast: Icons.free_breakfast,
+  Meal.lunch: Icons.lunch_dining,
+  Meal.dinner: Icons.dinner_dining,
+  Meal.snack: Icons.cookie,
+};
+
+/// Shows one day's total, then one card per meal with its entries and
+/// an Add button.
 class FoodDiaryScreen extends StatefulWidget {
   /// Creates the diary screen.
   const FoodDiaryScreen({super.key, required this.appState});
@@ -33,13 +43,14 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   /// The day being shown, at local midnight. Starts at today.
   DateTime _day = today();
 
-  void _addEntry() {
+  void _addEntry(Meal meal) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ChooseFoodScreen(
           appState: widget.appState,
           date: formatDate(_day),
           isToday: _day == today(),
+          meal: meal,
         ),
       ),
     );
@@ -59,11 +70,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Food')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addEntry,
-        icon: const Icon(Icons.add),
-        label: const Text('Add food'),
-      ),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -71,73 +77,97 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           final diary = FoodDiary.fromEvents(events);
           final date = formatDate(_day);
           final entries = diary.entriesOn(date);
+          final entriesWithoutMeal = entries
+              .where((entry) => entry.meal == null)
+              .toList();
           return ListView(
-            // Leave room at the bottom so the button never hides an entry.
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: NutrientSummary(nutrients: diary.totalOn(date)),
-                ),
-              ),
               if (diary.invalidCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    '${diary.invalidCount} foods or entries in the data '
-                    'could not be read and are not shown.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
+                ProblemText(
+                  '${diary.invalidCount} foods or entries in the data '
+                  'could not be read and are not shown.',
                 ),
-              if (entries.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: Text(
-                    'Nothing logged on this day yet.',
-                    textAlign: TextAlign.center,
-                  ),
+              SectionCard(
+                children: [
+                  const CardHeader(icon: Icons.restaurant, title: 'Total'),
+                  const SizedBox(height: 8),
+                  NutrientInfoRow(nutrients: diary.totalOn(date)),
+                ],
+              ),
+              for (final meal in Meal.values)
+                _MealCard(
+                  icon: _mealIcons[meal]!,
+                  title: meal.label,
+                  entries: entries.where((entry) => entry.meal == meal),
+                  onAdd: () => _addEntry(meal),
+                  onEdit: _editEntry,
                 ),
-              for (final meal in [...Meal.values, null])
-                ..._buildMealSection(meal, entries),
+              // Entries without a meal can only come from other tools.
+              if (entriesWithoutMeal.isNotEmpty)
+                _MealCard(
+                  icon: Icons.restaurant_menu,
+                  title: 'Other',
+                  entries: entriesWithoutMeal,
+                  onAdd: null,
+                  onEdit: _editEntry,
+                ),
             ],
           );
         },
       ),
     );
   }
+}
 
-  /// The entries of one meal, with a heading. [meal] null means entries
-  /// without a meal (possible in data from other tools).
-  List<Widget> _buildMealSection(Meal? meal, List<FoodEntry> dayEntries) {
-    final entries = dayEntries.where((entry) => entry.meal == meal).toList();
-    if (entries.isEmpty) {
-      return [];
-    }
-    var mealTotal = Nutrients.none;
+/// One meal's card: its name and energy, its entries, and an Add button.
+class _MealCard extends StatelessWidget {
+  const _MealCard({
+    required this.icon,
+    required this.title,
+    required this.entries,
+    required this.onAdd,
+    required this.onEdit,
+  });
+
+  final IconData icon;
+  final String title;
+  final Iterable<FoodEntry> entries;
+  final VoidCallback? onAdd;
+  final ValueChanged<FoodEntry> onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    var total = Nutrients.none;
     for (final entry in entries) {
-      mealTotal = mealTotal.plus(entry.nutrients);
+      total = total.plus(entry.nutrients);
     }
-    return [
-      Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: Text(
-          '${meal?.label ?? 'Other'} · '
-          '${formatAmount(mealTotal.energyKcal)} kcal',
-          style: Theme.of(context).textTheme.titleMedium,
+    final onAdd = this.onAdd;
+    return SectionCard(
+      children: [
+        CardHeader(
+          icon: icon,
+          title: entries.isEmpty
+              ? title
+              : '$title · ${formatAmount(total.energyKcal)} kcal',
+          action: onAdd == null ? null : HeaderAddButton(onPressed: onAdd),
         ),
-      ),
-      for (final entry in entries)
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text(entry.name),
-          subtitle: Text(_describeEntry(entry)),
-          onTap: () => _editEntry(entry),
-        ),
-    ];
+        if (entries.isEmpty) const NoteText('Nothing logged.'),
+        for (final entry in entries)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(entry.name),
+            subtitle: Text(_describeEntry(entry)),
+            trailing: IconButton(
+              tooltip: 'Edit entry',
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () => onEdit(entry),
+            ),
+            onTap: () => onEdit(entry),
+          ),
+      ],
+    );
   }
 }
 

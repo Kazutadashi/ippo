@@ -10,6 +10,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../sleep_episode.dart';
 import '../sleep_log.dart';
@@ -79,18 +80,14 @@ class _SleepScreenState extends State<SleepScreen> {
                   '${log.invalidCount} entries in the data could not be '
                   'read and are not shown.',
                 ),
-              _SleepCard(
+              SectionCard(
                 children: [
                   CardHeader(
                     icon: Icons.bedtime,
                     title: _day == today() ? 'Last night' : 'Night',
                     action: night == null
                         ? null
-                        : TextButton.icon(
-                            onPressed: () => _edit(night),
-                            icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Edit'),
-                          ),
+                        : HeaderEditButton(onPressed: () => _edit(night)),
                   ),
                   const SizedBox(height: 12),
                   if (night == null)
@@ -106,16 +103,12 @@ class _SleepScreenState extends State<SleepScreen> {
                     _NightSummary(night: night),
                 ],
               ),
-              _SleepCard(
+              SectionCard(
                 children: [
                   CardHeader(
                     icon: Icons.airline_seat_flat,
                     title: 'Naps',
-                    action: TextButton.icon(
-                      onPressed: _addNap,
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add'),
-                    ),
+                    action: HeaderAddButton(onPressed: _addNap),
                   ),
                   const SizedBox(height: 4),
                   ..._buildNaps(log.napsOn(date)),
@@ -149,27 +142,6 @@ class _SleepScreenState extends State<SleepScreen> {
   }
 }
 
-/// A card with the same padding and layout as every other sleep card.
-class _SleepCard extends StatelessWidget {
-  const _SleepCard({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(top: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
-        ),
-      ),
-    );
-  }
-}
-
 /// A logged night, shown as information. (Its Edit button is in the
 /// card's header.)
 class _NightSummary extends StatelessWidget {
@@ -179,20 +151,11 @@ class _NightSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: InfoValue(label: 'Went to bed', value: '${night.startClock}'),
-        ),
-        Expanded(
-          child: InfoValue(label: 'Woke up', value: '${night.endClock}'),
-        ),
-        Expanded(
-          child: InfoValue(
-            label: 'Slept',
-            value: formatDuration(night.duration),
-          ),
-        ),
+    return InfoRow(
+      values: [
+        InfoValue(label: 'Went to bed', value: '${night.startClock}'),
+        InfoValue(label: 'Woke up', value: '${night.endClock}'),
+        InfoValue(label: 'Slept', value: formatDuration(night.duration)),
       ],
     );
   }

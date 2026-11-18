@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The card shown for each exercise: today's sets and a row to add more.
+/// The card shown for each exercise: the day's sets and fields to add
+/// more.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/number_input.dart';
+import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_set.dart';
 import 'quick_set_row.dart';
 
-/// An exercise's card: its name, the day's sets, and the quick-add row.
+/// An exercise's card: the standard header (name and Edit), the day's
+/// sets, and the quick-add fields.
 class ExerciseCard extends StatelessWidget {
   /// Creates the card.
   const ExerciseCard({
@@ -29,7 +32,8 @@ class ExerciseCard extends StatelessWidget {
   /// Its sets on the day shown.
   final List<ExerciseSet> daySets;
 
-  /// The value to start the quick-add row with, usually the last set's.
+  /// The value to start the quick-add fields with, usually the last
+  /// set's.
   final int? startValue;
 
   /// Called with reps (or seconds) and a number of sets to add.
@@ -43,37 +47,27 @@ class ExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    exercise.name,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Rename or delete',
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: onEdit,
-                ),
-              ],
-            ),
-            _SetChips(sets: daySets, onEditSet: onEditSet),
-            const SizedBox(height: 8),
-            QuickSetRow(
-              measuredIn: exercise.measuredIn,
-              startValue: startValue,
-              onAddSets: onAddSets,
-            ),
-          ],
+    return SectionCard(
+      children: [
+        CardHeader(
+          icon: Icons.fitness_center,
+          title: exercise.name,
+          action: HeaderEditButton(onPressed: onEdit),
         ),
-      ),
+        if (daySets.isEmpty)
+          const NoteText('No sets on this day yet.')
+        else ...[
+          const NoteText('Sets on this day (tap one to change it):'),
+          const SizedBox(height: 8),
+          _SetChips(sets: daySets, onEditSet: onEditSet),
+        ],
+        const SizedBox(height: 16),
+        QuickSetRow(
+          measuredIn: exercise.measuredIn,
+          startValue: startValue,
+          onAddSets: onAddSets,
+        ),
+      ],
     );
   }
 }
@@ -87,9 +81,6 @@ class _SetChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (sets.isEmpty) {
-      return const Text('No sets on this day yet.');
-    }
     return Wrap(
       spacing: 8,
       runSpacing: 4,

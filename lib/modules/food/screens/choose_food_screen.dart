@@ -8,21 +8,24 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
+import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_diary.dart';
+import '../food_entry.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
 import 'quick_entry_form_screen.dart';
 
 /// Lists the user's foods, most recently used first, with a search box.
 class ChooseFoodScreen extends StatefulWidget {
-  /// Creates the screen for logging on [date] (`YYYY-MM-DD`).
+  /// Creates the screen for logging to [meal] on [date] (`YYYY-MM-DD`).
   /// [isToday] decides whether the entry gets the current time.
   const ChooseFoodScreen({
     super.key,
     required this.appState,
     required this.date,
     required this.isToday,
+    required this.meal,
   });
 
   /// The app-wide state.
@@ -33,6 +36,9 @@ class ChooseFoodScreen extends StatefulWidget {
 
   /// Whether [date] is today.
   final bool isToday;
+
+  /// The meal to log to (it can still be changed in the next step).
+  final Meal meal;
 
   @override
   State<ChooseFoodScreen> createState() => _ChooseFoodScreenState();
@@ -58,6 +64,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
         food: food,
         date: widget.date,
         isToday: widget.isToday,
+        meal: widget.meal,
       ),
     );
   }
@@ -68,6 +75,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
         appState: widget.appState,
         date: widget.date,
         isToday: widget.isToday,
+        meal: widget.meal,
       ),
     );
   }
@@ -101,7 +109,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add food')),
+      appBar: AppBar(title: Text('Add to ${widget.meal.label}')),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -114,59 +122,58 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
               )
               .toList();
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             children: [
-              Row(
+              SectionCard(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _quickEntry,
-                      icon: const Icon(Icons.bolt),
-                      label: const Text('Quick entry'),
-                    ),
+                  CardHeader(
+                    icon: Icons.bolt,
+                    title: 'Quick entry',
+                    action: HeaderAddButton(onPressed: _quickEntry),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _newFood,
-                      icon: const Icon(Icons.add),
-                      label: const Text('New food'),
-                    ),
+                  const NoteText(
+                    'Type a name and calories, without a food from your '
+                    'list. Handy for meals out.',
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  labelText: 'Search your foods',
-                ),
-                onChanged: (text) => setState(() => _search = text),
+              SectionCard(
+                children: [
+                  CardHeader(
+                    icon: Icons.list_alt,
+                    title: 'Your foods',
+                    action: HeaderAddButton(onPressed: _newFood),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      labelText: 'Search your foods',
+                    ),
+                    onChanged: (text) => setState(() => _search = text),
+                  ),
+                  const SizedBox(height: 8),
+                  if (foods.isEmpty)
+                    const NoteText(
+                      'No foods found. Tap Add above to create one.',
+                    ),
+                  for (final food in foods)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(food.name),
+                      subtitle: Text(
+                        '${formatAmount(food.nutrientsPer100.energyKcal)} '
+                        'kcal per 100 ${food.measuredIn}',
+                      ),
+                      onTap: () => _logFood(food),
+                      trailing: IconButton(
+                        tooltip: 'Edit food',
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _editFood(food),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 8),
-              if (foods.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text(
-                    'No foods found. Add one with "New food", or use a '
-                    'quick entry.',
-                  ),
-                ),
-              for (final food in foods)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(food.name),
-                  subtitle: Text(
-                    '${formatAmount(food.nutrientsPer100.energyKcal)} kcal '
-                    'per 100 ${food.measuredIn}',
-                  ),
-                  onTap: () => _logFood(food),
-                  trailing: IconButton(
-                    tooltip: 'Edit food',
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: () => _editFood(food),
-                  ),
-                ),
             ],
           );
         },

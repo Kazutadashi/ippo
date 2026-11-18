@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
+import '../widgets/section_card.dart';
 import 'appearance_section.dart';
 import 'devices_section.dart';
 
@@ -27,24 +28,52 @@ class SettingsScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: appState,
         builder: (context, _) => ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           children: [
             if (appState.errorMessage != null)
               _ErrorBanner(message: appState.errorMessage!),
-            const _SectionTitle('Data folder'),
-            const Text(
-              'Ippo keeps all your data as plain text files in this folder. '
-              'To use several devices, sync this folder between them, for '
-              'example with Syncthing.',
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.folder, title: 'Data folder'),
+                const NoteText(
+                  'Ippo keeps all your data as plain text files in this '
+                  'folder. To use several devices, sync this folder between '
+                  'them, for example with Syncthing.',
+                ),
+                const SizedBox(height: 12),
+                _DataFolderSection(appState: appState),
+              ],
             ),
-            const SizedBox(height: 8),
-            _DataFolderSection(appState: appState),
-            const _SectionTitle('Appearance'),
-            AppearanceSection(appState: appState),
-            const _SectionTitle('This device'),
-            _DeviceNameSection(appState: appState),
-            const _SectionTitle('Devices'),
-            DevicesSection(appState: appState),
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.palette, title: 'Appearance'),
+                const SizedBox(height: 8),
+                AppearanceSection(appState: appState),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.smartphone, title: 'This device'),
+                const SizedBox(height: 8),
+                _DeviceNameSection(appState: appState),
+              ],
+            ),
+            SectionCard(
+              children: [
+                CardHeader(
+                  icon: Icons.devices,
+                  title: 'Devices',
+                  action: appState.dataFolder == null
+                      ? null
+                      : TextButton.icon(
+                          onPressed: appState.reloadEvents,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Refresh'),
+                        ),
+                ),
+                DevicesSection(appState: appState),
+              ],
+            ),
           ],
         ),
       ),
@@ -85,13 +114,17 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
   Widget build(BuildContext context) {
     final appState = widget.appState;
     final description = appState.dataFolderDescription ?? 'None chosen yet.';
+    final current = <Widget>[
+      const NoteText('Current folder'),
+      Text(description, style: Theme.of(context).textTheme.bodyLarge),
+      const SizedBox(height: 12),
+    ];
 
     if (appState.isAndroid) {
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Current folder: $description'),
-          const SizedBox(height: 8),
+          ...current,
           FilledButton.icon(
             onPressed: appState.chooseAndroidDataFolder,
             icon: const Icon(Icons.folder_open),
@@ -103,10 +136,9 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
 
     // On Linux, the user types or pastes the folder's path.
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Current folder: $description'),
-        const SizedBox(height: 8),
+        ...current,
         TextField(
           controller: _pathField,
           decoration: InputDecoration(
@@ -115,7 +147,7 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
           ),
           onSubmitted: (_) => _useTypedPath(),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: _useTypedPath,
           icon: const Icon(Icons.folder_open),
@@ -161,7 +193,7 @@ class _DeviceNameSectionState extends State<_DeviceNameSection> {
   Widget build(BuildContext context) {
     final deviceId = widget.appState.settings?.deviceId ?? 'unknown';
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TextField(
           controller: _nameField,
@@ -173,30 +205,16 @@ class _DeviceNameSectionState extends State<_DeviceNameSection> {
           onChanged: (_) => setState(() => _isSaved = false),
           onSubmitted: (_) => _saveName(),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         FilledButton(onPressed: _saveName, child: const Text('Save name')),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         SelectableText(
           'Device id: $deviceId\n'
           'This device writes its events to events/$deviceId.jsonl.',
-          style: Theme.of(context).textTheme.bodySmall,
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
-    );
-  }
-}
-
-/// A heading between the sections of the screen.
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title);
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 24, bottom: 8),
-      child: Text(title, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 }
@@ -211,9 +229,10 @@ class _ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Card(
+      margin: const EdgeInsets.only(top: 12),
       color: colors.errorContainer,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Text(message, style: TextStyle(color: colors.onErrorContainer)),
       ),
     );

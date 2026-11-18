@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../sleep_episode.dart';
 import '../sleep_times.dart';
@@ -149,16 +150,11 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
             onPressed: problem == null ? _save : null,
             child: const Text('Save'),
           ),
-          if (widget.episode != null) ...[
-            const SizedBox(height: 8),
-            TextButton(
+          if (widget.episode != null)
+            DeleteButton(
+              label: _isNight ? 'Delete this night' : 'Delete this nap',
               onPressed: _delete,
-              child: Text(
-                _isNight ? 'Delete this night' : 'Delete this nap',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
             ),
-          ],
         ],
       ),
     );

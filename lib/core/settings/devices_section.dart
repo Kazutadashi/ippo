@@ -8,9 +8,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
 import '../events/event_log.dart';
+import '../widgets/section_card.dart';
 
 /// Shows every device that has written events, with the time of its
-/// latest event, so the user can tell whether sync has caught up.
+/// latest event, so the user can tell whether sync has caught up. (The
+/// Refresh button is in the card's header, on the settings screen.)
 class DevicesSection extends StatelessWidget {
   /// Creates the section.
   const DevicesSection({super.key, required this.appState});
@@ -22,10 +24,10 @@ class DevicesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final eventLog = appState.eventLog;
     if (appState.dataFolder == null) {
-      return const Text('Choose a data folder first.');
+      return const NoteText('Choose a data folder first.');
     }
     if (eventLog == null) {
-      return const Text('Reading the data folder…');
+      return const NoteText('Reading the data folder…');
     }
 
     final thisDeviceId = appState.settings?.deviceId;
@@ -39,7 +41,7 @@ class DevicesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (devices.isEmpty) const Text('No events yet, from any device.'),
+        if (devices.isEmpty) const NoteText('No events yet, from any device.'),
         for (final device in devices)
           ListTile(
             contentPadding: EdgeInsets.zero,
@@ -57,14 +59,8 @@ class DevicesSection extends StatelessWidget {
               'Last event: ${formatLocalDateTime(device.latestRecordedAtUtc)}',
             ),
           ),
-        Text('${eventLog.events.length} events in total.'),
+        NoteText('${eventLog.events.length} events in total.'),
         ..._warnings(eventLog),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: appState.reloadEvents,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Read the data folder again'),
-        ),
       ],
     );
   }

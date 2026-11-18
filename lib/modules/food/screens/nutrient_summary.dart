@@ -1,50 +1,44 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// A short summary of nutrients: energy, then the main macronutrients.
+/// Showing nutrients as a row of information: energy, protein,
+/// carbohydrates and fat.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/number_input.dart';
+import '../../../core/widgets/section_card.dart';
 import '../nutrients.dart';
 
-/// Shows energy large, and protein, carbohydrates and fat below it.
-/// Nutrients that are not known are left out.
-class NutrientSummary extends StatelessWidget {
-  /// Creates a summary of [nutrients].
-  const NutrientSummary({super.key, required this.nutrients});
+/// Shows energy, protein, carbohydrates and fat side by side. A
+/// nutrient that is not known shows as "–".
+class NutrientInfoRow extends StatelessWidget {
+  /// Creates the row for [nutrients].
+  const NutrientInfoRow({super.key, required this.nutrients});
 
   /// The nutrients to show.
   final Nutrients nutrients;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${formatAmount(nutrients.energyKcal)} kcal',
-          style: textTheme.headlineSmall,
+    return InfoRow(
+      // Energy has the longest value ("1234 kcal"), so it gets more room.
+      flexes: const [3, 2, 2, 2],
+      values: [
+        InfoValue(
+          label: 'Energy',
+          value: '${formatAmount(nutrients.energyKcal)} kcal',
         ),
-        Text(describeMacronutrients(nutrients), style: textTheme.bodyMedium),
+        InfoValue(label: 'Protein', value: _grams('proteins_g')),
+        InfoValue(label: 'Carbs', value: _grams('carbohydrates_g')),
+        InfoValue(label: 'Fat', value: _grams('fat_g')),
       ],
     );
   }
-}
 
-/// Writes protein, carbohydrates and fat in one line, for example
-/// `Protein 12 g · Carbs 50 g · Fat 6.5 g`. Unknown ones are left out.
-String describeMacronutrients(Nutrients nutrients) {
-  const shown = {
-    'proteins_g': 'Protein',
-    'carbohydrates_g': 'Carbs',
-    'fat_g': 'Fat',
-  };
-  final parts = [
-    for (final entry in shown.entries)
-      if (nutrients.values.containsKey(entry.key))
-        '${entry.value} ${formatAmount(nutrients.values[entry.key]!)} g',
-  ];
-  return parts.join(' · ');
+  /// The grams of the nutrient [key], or "–" if not known.
+  String _grams(String key) {
+    final value = nutrients.values[key];
+    return value == null ? '–' : '${formatAmount(value)} g';
+  }
 }

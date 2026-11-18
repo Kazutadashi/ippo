@@ -68,13 +68,19 @@ ThemeMode parseThemeMode(String? name) {
 /// Builds the app's theme from the [accent] colour, light or dark.
 ///
 /// "Fidelity" keeps the main colour close to the chosen one, so picking
-/// orange really gives orange rather than a muted shade of it.
+/// orange really gives orange rather than a muted shade of it. See
+/// `lib/core/widgets/section_card.dart` for the rest of the look.
 ThemeData buildTheme(Color accent, Brightness brightness) {
   return ThemeData(
     colorScheme: ColorScheme.fromSeed(
       seedColor: accent,
       brightness: brightness,
       dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    ),
+    // Every text field gets an outline, so anything the user can change
+    // looks the same on every screen.
+    inputDecorationTheme: const InputDecorationTheme(
+      border: OutlineInputBorder(),
     ),
   );
 }

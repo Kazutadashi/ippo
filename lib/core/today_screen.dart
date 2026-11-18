@@ -38,9 +38,11 @@ class TodayScreen extends StatelessWidget {
               describeToday(DateTime.now()),
               style: textTheme.headlineMedium,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             for (final module in allModules)
               Card(
+                // The same spacing as cards on every other screen.
+                margin: const EdgeInsets.only(top: 12),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
