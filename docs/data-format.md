@@ -267,6 +267,9 @@ To build the current state, a reader:
 4. **Sorts** all events by `recorded_at` (as an exact moment, so
    offsets are taken into account). Events with the same moment are
    sorted by `id`, so every device gets exactly the same order.
+   (A writer makes each of its events at least one millisecond later
+   than its previous one, so events from one device keep the order in
+   which they were made.)
 5. **Applies** the events in that order. Later events win over earlier
    ones.
 
