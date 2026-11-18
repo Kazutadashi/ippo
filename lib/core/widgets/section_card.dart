@@ -19,29 +19,21 @@ import 'package:material_ui/material_ui.dart';
 /// padding everywhere. Its children fill the card's width.
 class SectionCard extends StatelessWidget {
   /// Creates a card with [children], usually starting with a
-  /// [CardHeader]. If [onTap] is given, the whole card can be tapped.
-  const SectionCard({super.key, required this.children, this.onTap});
+  /// [CardHeader].
+  const SectionCard({super.key, required this.children});
 
   /// What the card holds, top to bottom.
   final List<Widget> children;
-
-  /// What tapping the card does, if anything.
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(top: 12),
-      // Keeps the tap ripple inside the card's rounded corners.
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
         ),
       ),
     );
@@ -106,26 +98,6 @@ class HeaderAddButton extends StatelessWidget {
       onPressed: onPressed,
       icon: const Icon(Icons.add),
       label: const Text('Add'),
-    );
-  }
-}
-
-/// The standard "Open" button for a card header, leading to another
-/// screen.
-class HeaderOpenButton extends StatelessWidget {
-  /// Creates the button, calling [onPressed] when tapped.
-  const HeaderOpenButton({super.key, required this.onPressed});
-
-  /// What to do when tapped.
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: onPressed,
-      icon: const Icon(Icons.chevron_right),
-      iconAlignment: IconAlignment.end,
-      label: const Text('Open'),
     );
   }
 }
@@ -283,6 +255,77 @@ class DeleteButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ),
+    );
+  }
+}
+
+/// A tile of information for the home screen: a small icon and label, a
+/// large value, and a short grey detail below. Plain information: it
+/// never does anything when tapped.
+class InfoTile extends StatelessWidget {
+  /// Creates the tile.
+  const InfoTile({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.detail,
+  });
+
+  /// The icon next to the label.
+  final IconData icon;
+
+  /// What the value is.
+  final String label;
+
+  /// The value, shown large.
+  final String value;
+
+  /// One short line with more detail.
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
+    final muted = colors.onSurfaceVariant;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 18, color: colors.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: textTheme.labelLarge?.copyWith(color: muted),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Shrink a long value instead of wrapping it.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(value, style: textTheme.headlineMedium),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              detail,
+              style: textTheme.bodySmall?.copyWith(color: muted),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

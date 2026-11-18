@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ippo/core/module.dart';
 import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/events/timestamp.dart';
@@ -146,22 +147,23 @@ void main() {
     expect((await logFromDisk()).nightOn(mondayText), isNotNull);
   });
 
-  test('today\'s facts: slept, woke up, awake for', () async {
+  test('home tiles: sleep, and awake for', () async {
     const module = SleepModule();
     final morning = DateTime(2026, 11, 16, 9, 15);
-    expect(module.todayFacts(appState, morning), isEmpty);
+    expect(describeTiles(module.todayFacts(appState, morning)), [
+      'Sleep: – | Not logged yet',
+      'Awake for: – | Not logged yet',
+    ]);
 
     await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
 
-    final facts = module.todayFacts(appState, morning);
-    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
-      'Slept: 7 h 30 min',
-      'Woke up: 06:30',
-      'Awake for: 2 h 45 min',
+    expect(describeTiles(module.todayFacts(appState, morning)), [
+      'Sleep: 7 h 30 min | 23:00 – 06:30',
+      'Awake for: 2 h 45 min | since 06:30',
     ]);
   });
 
-  test('naps take the place of the wake-up time', () async {
+  test('naps are added to the sleep tile', () async {
     const module = SleepModule();
     await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
     for (final start in [const ClockTime(13, 0), const ClockTime(16, 0)]) {
@@ -177,11 +179,9 @@ void main() {
     }
 
     final evening = DateTime(2026, 11, 16, 20, 30);
-    final facts = module.todayFacts(appState, evening);
-    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
-      'Slept: 7 h 30 min',
-      '2 naps: 40 min',
-      'Awake for: 14 h',
+    expect(describeTiles(module.todayFacts(appState, evening)), [
+      'Sleep: 7 h 30 min | 23:00 – 06:30 · 2 naps 40 min',
+      'Awake for: 14 h | since 06:30',
     ]);
   });
 
@@ -233,3 +233,8 @@ void main() {
     expect(night.duration, const Duration(hours: 7, minutes: 30));
   });
 }
+
+/// Writes home tiles as `Label: value | detail`, for comparing.
+List<String> describeTiles(List<TodayFact> facts) => [
+  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+];

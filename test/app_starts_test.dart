@@ -72,9 +72,19 @@ void main() {
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(DateTime.now())), findsOneWidget);
-    // Nothing logged yet: each module's card says so.
-    expect(find.text('Nothing logged yet today.'), findsNWidgets(3));
-    expect(find.text('Open'), findsNWidgets(3));
+    // Two tiles per module, all waiting for data.
+    expect(find.byType(InfoTile), findsNWidgets(6));
+    expect(find.text('–'), findsNWidgets(6));
+    // Purely information: nothing on Home can be tapped.
+    expect(
+      find.descendant(
+        of: find.byType(TodayScreen),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ButtonStyleButton || widget is InkWell,
+        ),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('Home shows what was logged today', (tester) async {
@@ -94,24 +104,9 @@ void main() {
       },
     );
 
-    // The Food card shows today's facts as information.
-    expect(find.text('Eaten'), findsOneWidget);
+    // The Energy tile shows today's total.
+    expect(find.text('Energy'), findsOneWidget);
     expect(find.text('80 kcal'), findsOneWidget);
-    expect(find.text('Nothing logged yet today.'), findsNWidgets(2));
-  });
-
-  testWidgets('tapping a card on Home opens that module', (tester) async {
-    await startApp(tester);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(SectionCard),
-        matching: find.text('Exercise'),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text('New exercise'), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

@@ -70,18 +70,22 @@ problems directly under it.
 
 ### Home
 
-A quick glance at what matters about the day so far. Top to bottom: a
-greeting ("Good afternoon"), the date ("Wednesday, 18 November"), then
-one card per module.
+Home is **purely information**, like a weather app: a quick glance at
+what matters about the day so far. Nothing on it can be tapped; the bar
+at the bottom leads to the modules.
 
-Each module card has the module's header with an **Open** button, and
-up to three facts about today as information, in three columns that
-line up across cards. For example: *Slept 7 h 30 min · Woke up 07:00 ·
-Awake for 6 h*, or *Eaten 1240 kcal · Protein 56 g · Last ate 3 h ago*.
-Facts are what a person needs to know right now, not a repeat of the
-module's screen; facts worked out live ("Awake for", "Last ate") are
-the most useful kind. With nothing logged, the card says "Nothing
-logged yet today." Tapping a card opens the module. Nothing else.
+Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
+18 November"), then a grid of `InfoTile`s, two per row, each row as
+tall as its tallest tile.
+
+- Each module gives its tiles through `todayFacts`, usually two, so
+  they fill one row.
+- A tile has a small icon and label, **one large value**, and one short
+  grey detail line: *Last meal · 3 h ago · at 12:15 · Soup*.
+- Tiles are what a person needs to know right now. Values worked out
+  live ("Awake for", "Last meal", "Last set") are the most useful.
+- Tiles keep their place before anything is logged, showing "–" and
+  "Not logged yet", so the layout never jumps.
 
 ### Forms (adding or changing one thing)
 
@@ -99,7 +103,7 @@ the same:
 | Kind | Looks like | Use |
 | --- | --- | --- |
 | **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times |
-| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side |
+| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoTile` on Home |
 | **Note** | Plain grey text | `NoteText`, for short notes and empty states |
 | **Problem** | Plain red text that says what is wrong | `ProblemText` |
 | **Action** | A button: filled, text, or floating | See section 4 |
@@ -121,7 +125,7 @@ Rules:
 | Action | Where | Looks like | Examples |
 | --- | --- | --- | --- |
 | Create something for the whole screen | Bottom right, stacked at equal width if more than one | Extended floating button: icon and a short label | **+ New exercise**, **Quick food**, **+ New food** |
-| An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton`, `HeaderOpenButton` | **+ Add** (naps), **Edit** (a logged night), **Open ›** (Home), **Refresh** |
+| An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton` | **+ Add** (naps), **Edit** (a logged night), **Refresh** |
 | Change one row of a list | The whole row, plus a ✎ button at its end | `ListTile` with trailing `IconButton` | a food entry, a nap |
 | Save a form | Bottom of the form, full width | Filled button | **Save**, **Save night** |
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
@@ -161,6 +165,8 @@ Text styles (from the theme's text styles):
 | Use | Style |
 | --- | --- |
 | Home greeting | `headlineMedium` |
+| Home tile values | `headlineMedium` (set by `InfoTile`) |
+| Home tile labels | `labelLarge`, grey (set by `InfoTile`) |
 | Home date | `titleMedium`, grey (`onSurfaceVariant`) |
 | Card titles | `titleMedium` (set by `CardHeader`) |
 | Information values | `titleLarge` (set by `InfoValue`) |
@@ -213,7 +219,8 @@ Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 | This device | `smartphone` |
 | Other devices | `devices`, `devices_other` |
 | Read again | `refresh` |
-| Open another screen | `chevron_right`, after the word |
+| Time since (last meal, last set) | `schedule` |
+| Awake for | `wb_sunny_outlined` |
 
 Card headers show their icon in the accent colour.
 
@@ -322,8 +329,7 @@ Scaffold(
 
 A new module also needs:
 
-- `todayFacts` (up to three facts for its Home card), from
-  `IppoModule`;
+- `todayFacts` (its Home tiles, usually two), from `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.
 

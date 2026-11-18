@@ -26,23 +26,39 @@ abstract class IppoModule {
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
 
-  /// The most important facts about today in this module, for the home
-  /// screen: at most three, such as "Slept: 7 h 30 min". An empty list
-  /// means nothing was logged today.
+  /// Tiles for the home screen with the most important things to know
+  /// about today in this module, such as "Sleep: 7 h 30 min". Usually two,
+  /// so they fill one row.
   ///
-  /// [now] is the current time; tests pass a fixed one.
+  /// A module returns the same tiles whether or not anything was logged,
+  /// with "–" as the value until something is, so the home screen keeps
+  /// its layout. [now] is the current time; tests pass a fixed one.
   List<TodayFact> todayFacts(AppState appState, DateTime now);
 }
 
-/// One fact for the home screen: a short label and its value, such as
-/// "Last ate" and "3 h ago".
+/// One tile on the home screen: an icon and label, a large value, and a
+/// short detail, such as "Last meal", "3 h ago", "at 12:15 · Soup".
 class TodayFact {
-  /// Creates a fact.
-  const TodayFact(this.label, this.value);
+  /// Creates a tile's content.
+  const TodayFact({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.detail,
+  });
 
-  /// What the value is, for example `Slept`.
+  /// The text shown for a value that is not known yet.
+  static const String unknownValue = '–';
+
+  /// The icon next to the label.
+  final IconData icon;
+
+  /// What the value is, for example `Last meal`.
   final String label;
 
-  /// The value, for example `7 h 30 min`.
+  /// The value, shown large, for example `3 h ago`, or [unknownValue].
   final String value;
+
+  /// One short line with more detail, for example `at 12:15 · Soup`.
+  final String detail;
 }

@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 
 import '../modules/all_modules.dart';
 import 'app_state.dart';
-import 'module.dart';
 import 'settings/settings_screen.dart';
 import 'today_screen.dart';
 
@@ -42,10 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openTab(int index) => setState(() => _selectedTab = index);
 
-  void _openModule(IppoModule module) {
-    _openTab(_firstModuleTab + allModules.indexOf(module));
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -65,10 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             index: selectedTab,
             children: [
               hasDataFolder
-                  ? TodayScreen(
-                      appState: widget.appState,
-                      onOpenModule: _openModule,
-                    )
+                  ? TodayScreen(appState: widget.appState)
                   : _ChooseDataFolderFirst(
                       onOpenSettings: () => _openTab(_settingsTab),
                     ),

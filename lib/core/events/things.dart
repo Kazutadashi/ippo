@@ -19,6 +19,7 @@ class ThingRecord {
     required this.id,
     required this.fields,
     required this.isDeleted,
+    required this.createdAtUtc,
   });
 
   /// The thing's id: the id of the event that created it.
@@ -30,6 +31,10 @@ class ThingRecord {
 
   /// Whether the thing is currently deleted.
   final bool isDeleted;
+
+  /// When the thing was created: the moment its creating event was
+  /// written, in UTC.
+  final DateTime createdAtUtc;
 }
 
 /// Collects the things of one kind in [module] from [events].
@@ -50,6 +55,7 @@ Map<String, ThingRecord> collectThings(
   required String thingName,
 }) {
   final fieldsById = <String, Map<String, Object?>>{};
+  final createdAtById = <String, DateTime>{};
   final deletedIds = <String>{};
 
   for (final event in events) {
@@ -58,6 +64,7 @@ Map<String, ThingRecord> collectThings(
     }
     if (event.type == createdType) {
       fieldsById[event.id] = Map<String, Object?>.of(event.data);
+      createdAtById[event.id] = event.recordedAtUtc;
       continue;
     }
 
@@ -89,6 +96,7 @@ Map<String, ThingRecord> collectThings(
         id: entry.key,
         fields: entry.value,
         isDeleted: deletedIds.contains(entry.key),
+        createdAtUtc: createdAtById[entry.key]!,
       ),
   };
 }

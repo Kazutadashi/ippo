@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The home tab: a greeting, the date, and one card per module with the
-/// most important facts about today.
+/// The home tab: a quick glance at the day so far.
+///
+/// Like a weather app, it is purely information: a greeting, the date,
+/// and a grid of tiles from every module. Nothing on it can be tapped;
+/// the bar at the bottom leads to each module.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -11,47 +14,86 @@ import 'app_state.dart';
 import 'module.dart';
 import 'widgets/section_card.dart';
 
-/// The home tab. Tapping a module's card opens that module's tab.
+/// The home tab.
 class TodayScreen extends StatelessWidget {
   /// Creates the home tab.
-  const TodayScreen({
-    super.key,
-    required this.appState,
-    required this.onOpenModule,
-  });
+  const TodayScreen({super.key, required this.appState});
 
   /// The app-wide state.
   final AppState appState;
-
-  /// Called with the module whose card was tapped.
-  final ValueChanged<IppoModule> onOpenModule;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+    final facts = [
+      for (final module in allModules) ...module.todayFacts(appState, now),
+    ];
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           children: [
-            Text(greetingFor(DateTime.now()), style: textTheme.headlineMedium),
+            Text(greetingFor(now), style: textTheme.headlineMedium),
             const SizedBox(height: 4),
             Text(
-              describeToday(DateTime.now()),
+              describeToday(now),
               style: textTheme.titleMedium?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
             ),
-            for (final module in allModules)
-              _ModuleTodayCard(
-                module: module,
-                facts: module.todayFacts(appState, DateTime.now()),
-                onOpen: () => onOpenModule(module),
-              ),
+            const SizedBox(height: 16),
+            _TileGrid(facts: facts),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Lays out the tiles two per row, with every tile in a row as tall as
+/// the tallest.
+class _TileGrid extends StatelessWidget {
+  const _TileGrid({required this.facts});
+
+  final List<TodayFact> facts;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var index = 0; index < facts.length; index += 2) {
+      final hasSecond = index + 1 < facts.length;
+      rows.add(
+        Padding(
+          padding: EdgeInsets.only(top: index == 0 ? 0 : 12),
+          // IntrinsicHeight gives both tiles the same height.
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _tileFor(facts[index])),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: hasSecond
+                      ? _tileFor(facts[index + 1])
+                      : const SizedBox(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Column(children: rows);
+  }
+
+  Widget _tileFor(TodayFact fact) {
+    return InfoTile(
+      icon: fact.icon,
+      label: fact.label,
+      value: fact.value,
+      detail: fact.detail,
     );
   }
 }
@@ -94,44 +136,4 @@ String greetingFor(DateTime moment) {
     return 'Good afternoon';
   }
   return 'Good evening';
-}
-
-/// One module's card on the home screen: its name, and its facts about
-/// today as plain information. Tapping it opens the module.
-class _ModuleTodayCard extends StatelessWidget {
-  const _ModuleTodayCard({
-    required this.module,
-    required this.facts,
-    required this.onOpen,
-  });
-
-  final IppoModule module;
-  final List<TodayFact> facts;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return SectionCard(
-      onTap: onOpen,
-      children: [
-        CardHeader(
-          icon: module.icon,
-          title: module.title,
-          action: HeaderOpenButton(onPressed: onOpen),
-        ),
-        const SizedBox(height: 4),
-        if (facts.isEmpty)
-          const NoteText('Nothing logged yet today.')
-        else
-          InfoRow(
-            // Three columns on every card, so the facts line up.
-            columns: 3,
-            values: [
-              for (final fact in facts)
-                InfoValue(label: fact.label, value: fact.value),
-            ],
-          ),
-      ],
-    );
-  }
 }

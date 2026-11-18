@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ippo/core/module.dart';
 import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/exercise/exercise.dart';
@@ -251,10 +252,13 @@ void main() {
     expect(log.exercises, isEmpty);
   });
 
-  test('today\'s facts count sets, reps and seconds held', () async {
+  test('home tiles: today\'s sets, and the last set', () async {
     const module = ExerciseModule();
     final now = DateTime.now();
-    expect(module.todayFacts(appState, now), isEmpty);
+    expect(describeTiles(module.todayFacts(appState, now)), [
+      'Exercise: – | No sets logged yet',
+      'Last set: – | Not logged yet',
+    ]);
 
     final today = formatDate(now);
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
@@ -264,11 +268,17 @@ void main() {
     await addSets(plank, today, 45, 1);
     await addSets(pushUp, day1, 5, 1); // Another day: not counted.
 
-    final facts = module.todayFacts(appState, now);
-    expect(facts.map((fact) => '${fact.label}: ${fact.value}'), [
-      'Sets: 3',
-      'Reps: 40',
-      'Held: 45 s',
+    // Half a minute of margin: quick writes can be stamped a few
+    // milliseconds ahead, and "5 min ago" rounds down.
+    final later = DateTime.now().add(const Duration(minutes: 5, seconds: 30));
+    expect(describeTiles(module.todayFacts(appState, later)), [
+      'Exercise: 3 sets | 40 reps · 45 s held',
+      'Last set: 5 min ago | Plank · 45 s',
     ]);
   });
 }
+
+/// Writes home tiles as `Label: value | detail`, for comparing.
+List<String> describeTiles(List<TodayFact> facts) => [
+  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+];

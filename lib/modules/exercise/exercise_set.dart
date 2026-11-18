@@ -26,6 +26,7 @@ class ExerciseSet {
     required this.targetPerSet,
     required this.note,
     required this.isDeleted,
+    required this.loggedAtUtc,
   });
 
   /// Reads a set from its collected events. Returns null if the data is
@@ -68,6 +69,7 @@ class ExerciseSet {
           : null,
       note: note is String ? note : null,
       isDeleted: record.isDeleted,
+      loggedAtUtc: record.createdAtUtc,
     );
   }
 
@@ -106,4 +108,7 @@ class ExerciseSet {
 
   /// Whether the set was deleted.
   final bool isDeleted;
+
+  /// When the set was logged, in UTC.
+  final DateTime loggedAtUtc;
 }
