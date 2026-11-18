@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Choosing what to log: a food from the list, a quick entry, or a new
-/// food.
+/// Choosing what to log: a food from the list, or a new food for the
+/// list. (Quick entries have their own button on the diary.)
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -13,7 +13,6 @@ import '../food.dart';
 import '../food_diary.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
-import 'quick_entry_form_screen.dart';
 
 /// Lists the user's foods, most recently used first, with a search box.
 class ChooseFoodScreen extends StatefulWidget {
@@ -63,16 +62,6 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
     );
   }
 
-  void _quickEntry() {
-    _openAndCloseIfSaved(
-      QuickEntryFormScreen.add(
-        appState: widget.appState,
-        date: widget.date,
-        isToday: widget.isToday,
-      ),
-    );
-  }
-
   Future<void> _newFood() async {
     final newFoodId = await Navigator.of(context).push(
       MaterialPageRoute<String>(
@@ -102,7 +91,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add food')),
+      appBar: AppBar(title: const Text('New food')),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -117,19 +106,6 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             children: [
-              SectionCard(
-                children: [
-                  CardHeader(
-                    icon: Icons.bolt,
-                    title: 'Quick entry',
-                    action: HeaderAddButton(onPressed: _quickEntry),
-                  ),
-                  const NoteText(
-                    'Type a name and calories, without a food from your '
-                    'list. Handy for meals out.',
-                  ),
-                ],
-              ),
               SectionCard(
                 children: [
                   CardHeader(

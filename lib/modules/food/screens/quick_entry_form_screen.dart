@@ -158,7 +158,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
   Widget build(BuildContext context) {
     final kindsByKey = {for (final kind in allNutrientKinds) kind.key: kind};
     return Scaffold(
-      appBar: AppBar(title: const Text('Quick entry')),
+      appBar: AppBar(title: const Text('Quick food')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -46,6 +46,18 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
     );
   }
 
+  void _addQuickFood() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => QuickEntryFormScreen.add(
+          appState: widget.appState,
+          date: formatDate(_day),
+          isToday: _day == today(),
+        ),
+      ),
+    );
+  }
+
   void _editEntry(FoodEntry entry) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -60,6 +72,32 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Food')),
+      // Adding to the whole day: buttons at the bottom right, as on the
+      // other screens. Each needs its own hero tag, because Flutter
+      // animates floating buttons between screens by this tag.
+      // IntrinsicWidth with "stretch" gives both buttons the width of the
+      // wider one, so they line up.
+      floatingActionButton: IntrinsicWidth(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: 'quick-food',
+              onPressed: _addQuickFood,
+              icon: const Icon(Icons.bolt),
+              label: const Text('Quick food'),
+            ),
+            const SizedBox(height: 12),
+            FloatingActionButton.extended(
+              heroTag: 'new-food',
+              onPressed: _addEntry,
+              icon: const Icon(Icons.add),
+              label: const Text('New food'),
+            ),
+          ],
+        ),
+      ),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -68,7 +106,8 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           final date = formatDate(_day);
           final entries = diary.entriesOn(date);
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            // Room at the bottom, so the buttons never hide an entry.
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
             children: [
               DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (diary.invalidCount > 0)
@@ -85,11 +124,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
               ),
               SectionCard(
                 children: [
-                  CardHeader(
-                    icon: Icons.restaurant,
-                    title: 'Eaten',
-                    action: HeaderAddButton(onPressed: _addEntry),
-                  ),
+                  const CardHeader(icon: Icons.restaurant, title: 'Eaten'),
                   if (entries.isEmpty)
                     const NoteText('Nothing logged on this day.'),
                   for (final entry in entries)

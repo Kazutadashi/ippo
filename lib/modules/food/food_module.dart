@@ -40,5 +40,11 @@ class FoodModule implements IppoModule {
   }
 
   @override
+  bool hasLoggedToday(AppState appState) {
+    final diary = FoodDiary.fromEvents(appState.eventLog?.events ?? []);
+    return diary.entriesOn(formatDate(DateTime.now())).isNotEmpty;
+  }
+
+  @override
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);
 }
