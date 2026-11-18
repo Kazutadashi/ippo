@@ -88,6 +88,46 @@ void main() {
     expect(checkSleepPeriod(night), isNull);
   });
 
+  group('bedtimeMoment', () {
+    test('earlier on the clock than waking up means after midnight', () {
+      expect(
+        bedtimeMoment(monday, const ClockTime(1, 0), const ClockTime(7, 0)),
+        DateTime(2026, 11, 17, 1, 0),
+      );
+    });
+
+    test('later on the clock than waking up is the same day', () {
+      expect(
+        bedtimeMoment(monday, const ClockTime(23, 0), const ClockTime(7, 0)),
+        DateTime(2026, 11, 16, 23, 0),
+      );
+    });
+
+    test('without a wake-up, before noon means after midnight', () {
+      expect(
+        bedtimeMoment(monday, const ClockTime(2, 0), null),
+        DateTime(2026, 11, 17, 2, 0),
+      );
+      expect(
+        bedtimeMoment(monday, const ClockTime(22, 0), null),
+        DateTime(2026, 11, 16, 22, 0),
+      );
+    });
+  });
+
+  test('before 05:00 the sleep day is still the day before', () {
+    expect(currentSleepDay(DateTime(2026, 11, 17, 1, 30)), monday);
+    expect(currentSleepDay(DateTime(2026, 11, 17, 4, 59)), monday);
+    expect(
+      currentSleepDay(DateTime(2026, 11, 17, 5, 0)),
+      DateTime(2026, 11, 17),
+    );
+  });
+
+  test('formatShortDate', () {
+    expect(formatShortDate(DateTime(2026, 11, 19)), 'Thu 19 Nov');
+  });
+
   test('formatTimeAgo', () {
     expect(formatTimeAgo(const Duration(seconds: 30)), 'Just now');
     expect(formatTimeAgo(const Duration(minutes: 25)), '25 min ago');

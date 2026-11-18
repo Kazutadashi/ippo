@@ -613,44 +613,67 @@ switches come from different devices.
 
 `module` is `"sleep"`.
 
-This module records when you slept: the main sleep of each night, and
+This module records when you woke up and went to bed each day, and
 naps.
+
+A **day** runs from waking up to going to bed. Going to bed at 01:00
+still ends the day before, because you have not slept yet. So every
+wake-up and bedtime has a `date`: the day it belongs to, which for a
+bedtime after midnight is the calendar day before the timestamp. The
+sleep *before* a day is the time from the previous day's bedtime to
+that day's wake-up; it is worked out, never stored.
 
 ### Things in this module
 
 | Thing | Created by | `_changed` | `_deleted` / `_restored` |
 | --- | --- | --- | --- |
-| sleep | `sleep_recorded` | yes | yes |
+| woke up | `woke_up_recorded` | yes | yes |
+| went to bed | `went_to_bed_recorded` | yes | yes |
+| sleep (naps) | `sleep_recorded` | yes | yes |
 
-### `sleep_recorded`
-
-One night or nap.
+### `woke_up_recorded` and `went_to_bed_recorded`
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `date` | date | The day it counts for. For a night, the day you **woke up**: the night from Sunday to Monday counts for Monday. For a nap, the day of the nap. |
-| `kind` | string | `"night"` or `"nap"`. Cannot be changed later. |
-| `started_at` | timestamp | When you went to bed (or lay down for the nap). |
-| `ended_at` | timestamp | When you woke up. Always after `started_at`. |
+| `date` | date | The day this belongs to (see above). |
+| `at` | timestamp | When you woke up, or went to bed. |
 
-Example: a night from 23:30 to 07:00.
+Example: a day from 07:00 to 01:00 the next calendar day.
 
 ```json
-"data":{"date":"2026-11-18","kind":"night",
-        "started_at":"2026-11-17T23:30:00.000+09:00",
-        "ended_at":"2026-11-18T07:00:00.000+09:00"}
+"type":"woke_up_recorded",     "data":{"date":"2026-11-18","at":"2026-11-18T07:00:00.000+09:00"}
+"type":"went_to_bed_recorded", "data":{"date":"2026-11-18","at":"2026-11-19T01:00:00.000+09:00"}
 ```
 
-The duration is not stored; it is `ended_at` minus `started_at`. Exact
-timestamps keep it right across midnight and daylight saving changes,
-and the offsets keep the local clock times (bedtime 23:30) for
-analysis.
+To change the time, `woke_up_changed` or `went_to_bed_changed` gives a
+new `at`. If more than one is recorded for the same `date`, the latest
+one counts.
+
+How long you slept before 2026-11-19 is that day's `woke_up` `at` minus
+2026-11-18's `went_to_bed` `at`. Exact timestamps keep this right across
+midnight and daylight saving changes, and the offsets keep the local
+clock times for analysis.
+
+### `sleep_recorded`
+
+One nap.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The day of the nap. |
+| `kind` | string | `"nap"`. (See below for `"night"`.) Cannot be changed later. |
+| `started_at` | timestamp | When the nap started. |
+| `ended_at` | timestamp | When it ended. Always after `started_at`. |
 
 To change the times, `sleep_changed` gives new `started_at` and
 `ended_at`.
 
-If more than one night is recorded for the same `date`, the app shows
-the latest one.
+**Older data:** versions before the day-based design saved each night
+as one `sleep_recorded` with `kind` `"night"`: `started_at` was the
+bedtime, `ended_at` the wake-up, and `date` the wake-up day. Readers
+still accept these. Such a night gives the wake-up of its `date` and the
+bedtime of the day before, unless a `woke_up_recorded` or
+`went_to_bed_recorded` exists for that day, which then takes its place.
 
 
 ## 13. Loading the data in Python

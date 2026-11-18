@@ -8,19 +8,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ippo/core/module.dart';
 import 'package:ippo/core/app_state.dart';
-import 'package:ippo/core/dates.dart';
-import 'package:ippo/core/events/timestamp.dart';
+import 'package:ippo/core/module.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_episode.dart';
 import 'package:ippo/modules/sleep/sleep_log.dart';
 import 'package:ippo/modules/sleep/sleep_module.dart';
+import 'package:ippo/modules/sleep/sleep_moment.dart';
 import 'package:ippo/modules/sleep/sleep_times.dart';
 
 final DateTime monday = DateTime(2026, 11, 16);
+final DateTime tuesday = DateTime(2026, 11, 17);
 const String mondayText = '2026-11-16';
+const String tuesdayText = '2026-11-17';
 
 void main() {
   late Directory settingsFolder;
@@ -35,11 +36,19 @@ void main() {
     return currentLog();
   }
 
-  Future<void> recordNight(DateTime wakeDay, ClockTime bed, ClockTime woke) {
-    return actions.recordSleep(
-      day: wakeDay,
-      kind: SleepKind.night,
-      period: nightPeriod(wakeDay, bed, woke),
+  Future<void> wokeUp(DateTime day, ClockTime time) {
+    return actions.recordMoment(
+      kind: MomentKind.wokeUp,
+      day: day,
+      at: wakeUpMoment(day, time),
+    );
+  }
+
+  Future<void> wentToBed(DateTime day, ClockTime time, ClockTime? woke) {
+    return actions.recordMoment(
+      kind: MomentKind.wentToBed,
+      day: day,
+      at: bedtimeMoment(day, time, woke),
     );
   }
 
@@ -61,8 +70,9 @@ void main() {
     dataFolder.deleteSync(recursive: true);
   });
 
-  test('a night is saved as the data format says', () async {
-    await recordNight(monday, const ClockTime(23, 30), const ClockTime(7, 0));
+  test('a bedtime after midnight is saved for the day before', () async {
+    await wokeUp(monday, const ClockTime(7, 0));
+    await wentToBed(monday, const ClockTime(1, 0), const ClockTime(7, 0));
 
     final file = File(
       '${dataFolder.path}/events/${appState.settings!.deviceId}.jsonl',
@@ -70,32 +80,117 @@ void main() {
     final event =
         jsonDecode(file.readAsLinesSync().last) as Map<String, Object?>;
     expect(event['module'], 'sleep');
-    expect(event['type'], 'sleep_recorded');
+    expect(event['type'], 'went_to_bed_recorded');
     final data = event['data'] as Map<String, Object?>;
     expect(data['date'], mondayText);
-    expect(data['kind'], 'night');
-    // Exact moments with the local offset; the clock times are kept.
-    expect(
-      parseTimestamp(data['started_at'] as String),
-      DateTime(2026, 11, 15, 23, 30).toUtc(),
-    );
-    expect(data['started_at'] as String, startsWith('2026-11-15T23:30:00'));
-    expect(data['ended_at'] as String, startsWith('2026-11-16T07:00:00'));
+    // The moment itself is on the next calendar day.
+    expect(data['at'] as String, startsWith('2026-11-17T01:00:00'));
+
+    final bedtime = (await logFromDisk()).bedtimeOf(mondayText)!;
+    expect(bedtime.clock, const ClockTime(1, 0));
+    expect(bedtime.isAfterMidnight, isTrue);
+    expect(bedtime.calendarDate, tuesdayText);
   });
 
-  test('a night counts for the day you woke up', () async {
-    await recordNight(monday, const ClockTime(23, 30), const ClockTime(7, 0));
+  test('a bedtime before midnight stays on the same day', () async {
+    await wokeUp(monday, const ClockTime(7, 0));
+    await wentToBed(monday, const ClockTime(23, 15), const ClockTime(7, 0));
+
+    final bedtime = (await logFromDisk()).bedtimeOf(mondayText)!;
+    expect(bedtime.isAfterMidnight, isFalse);
+  });
+
+  test('sleep before a day: last bedtime to this wake-up', () async {
+    await wentToBed(monday, const ClockTime(23, 30), const ClockTime(7, 0));
+    await wokeUp(tuesday, const ClockTime(6, 45));
 
     final log = await logFromDisk();
-    final night = log.nightOn(mondayText)!;
-    expect(night.startClock, const ClockTime(23, 30));
-    expect(night.endClock, const ClockTime(7, 0));
-    expect(night.duration, const Duration(hours: 7, minutes: 30));
-    expect(log.nightOn('2026-11-15'), isNull);
+    expect(log.sleepBefore(tuesdayText), const Duration(hours: 7, minutes: 15));
+    expect(log.sleepBefore(mondayText), isNull);
   });
 
-  test('naps are listed earliest first, apart from the night', () async {
-    await recordNight(monday, const ClockTime(23, 0), const ClockTime(7, 0));
+  test('changing, deleting and restoring a wake-up', () async {
+    await wokeUp(monday, const ClockTime(7, 0));
+    final wakeUp = currentLog().wakeUpOn(mondayText)!;
+
+    await actions.changeMoment(
+      wakeUp,
+      wakeUpMoment(monday, const ClockTime(6, 30)),
+    );
+    expect(
+      (await logFromDisk()).wakeUpOn(mondayText)!.clock,
+      const ClockTime(6, 30),
+    );
+
+    await actions.deleteMoment(wakeUp);
+    expect((await logFromDisk()).wakeUpOn(mondayText), isNull);
+    await actions.restoreMoment(wakeUp);
+    expect((await logFromDisk()).wakeUpOn(mondayText), isNotNull);
+  });
+
+  test('the latest wake-up and bedtime give the starting guesses', () async {
+    expect(currentLog().latest(MomentKind.wokeUp), isNull);
+    await wokeUp(monday, const ClockTime(7, 0));
+    await wokeUp(tuesday, const ClockTime(6, 15));
+
+    final log = await logFromDisk();
+    expect(log.latest(MomentKind.wokeUp)!.clock, const ClockTime(6, 15));
+    expect(log.latest(MomentKind.wentToBed), isNull);
+  });
+
+  group('nights saved by older versions', () {
+    /// Writes a whole night as older versions did: bed 23:00 on Monday,
+    /// woke 07:00 on Tuesday, counted for Tuesday.
+    Future<void> writeOldNight() async {
+      await actions.recordSleep(
+        day: tuesday,
+        kind: SleepKind.night,
+        period: nightPeriod(
+          tuesday,
+          const ClockTime(23, 0),
+          const ClockTime(7, 0),
+        ),
+      );
+    }
+
+    test('give a wake-up and the bedtime of the day before', () async {
+      await writeOldNight();
+
+      final log = await logFromDisk();
+      expect(log.invalidCount, 0);
+      expect(log.wakeUpOn(tuesdayText)!.clock, const ClockTime(7, 0));
+      expect(log.bedtimeOf(mondayText)!.clock, const ClockTime(23, 0));
+      expect(log.sleepBefore(tuesdayText), const Duration(hours: 8));
+    });
+
+    test('changing one adds a new record that takes its place', () async {
+      await writeOldNight();
+      final oldWakeUp = currentLog().wakeUpOn(tuesdayText)!;
+
+      await actions.changeMoment(
+        oldWakeUp,
+        wakeUpMoment(tuesday, const ClockTime(6, 0)),
+      );
+
+      final log = await logFromDisk();
+      expect(log.wakeUpOn(tuesdayText)!.clock, const ClockTime(6, 0));
+      expect(log.wakeUpOn(tuesdayText)!.oldNightId, isNull);
+      // The old night's bedtime is still used.
+      expect(log.bedtimeOf(mondayText)!.clock, const ClockTime(23, 0));
+    });
+
+    test('deleting one deletes that old night', () async {
+      await writeOldNight();
+
+      await actions.deleteMoment(currentLog().wakeUpOn(tuesdayText)!);
+
+      final log = await logFromDisk();
+      expect(log.wakeUpOn(tuesdayText), isNull);
+      expect(log.bedtimeOf(mondayText), isNull);
+    });
+  });
+
+  test('naps are listed earliest first', () async {
     for (final start in [const ClockTime(16, 0), const ClockTime(13, 0)]) {
       await actions.recordSleep(
         day: monday,
@@ -115,89 +210,55 @@ void main() {
     ]);
   });
 
-  test('the last night gives the starting guess', () async {
-    expect(currentLog().lastNight(), isNull);
-    await recordNight(monday, const ClockTime(23, 0), const ClockTime(7, 0));
-    await recordNight(
-      addDays(monday, 1),
-      const ClockTime(0, 15),
-      const ClockTime(6, 45),
-    );
-
-    final last = (await logFromDisk()).lastNight()!;
-    expect(last.startClock, const ClockTime(0, 15));
-    expect(last.endClock, const ClockTime(6, 45));
-  });
-
-  test('changing, deleting and restoring a night', () async {
-    await recordNight(monday, const ClockTime(23, 0), const ClockTime(7, 0));
-    final night = currentLog().nightOn(mondayText)!;
-
-    await actions.changeSleep(
-      night.id,
-      nightPeriod(monday, const ClockTime(22, 30), const ClockTime(6, 30)),
-    );
-    final changed = (await logFromDisk()).nightOn(mondayText)!;
-    expect(changed.startClock, const ClockTime(22, 30));
-    expect(changed.kind, SleepKind.night);
-
-    await actions.deleteSleep(night.id);
-    expect((await logFromDisk()).nightOn(mondayText), isNull);
-    await actions.restoreSleep(night.id);
-    expect((await logFromDisk()).nightOn(mondayText), isNotNull);
-  });
-
-  test('home tiles: sleep, and awake for', () async {
+  group('home tiles', () {
     const module = SleepModule();
-    final morning = DateTime(2026, 11, 16, 9, 15);
-    expect(describeTiles(module.todayFacts(appState, morning)), [
-      'Sleep: – | Not logged yet',
-      'Awake for: – | Not logged yet',
-    ]);
 
-    await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
+    test('show "–" until something is logged', () {
+      expect(describeTiles(module.todayFacts(appState, monday)), [
+        'Sleep: – | Not logged yet',
+        'Awake for: – | Not logged yet',
+      ]);
+    });
 
-    expect(describeTiles(module.todayFacts(appState, morning)), [
-      'Sleep: 7 h 30 min | 23:00 – 06:30',
-      'Awake for: 2 h 45 min | since 06:30',
-    ]);
-  });
+    test('sleep before today, and awake since waking up', () async {
+      await wentToBed(monday, const ClockTime(23, 0), const ClockTime(7, 0));
+      await wokeUp(tuesday, const ClockTime(6, 30));
 
-  test('naps are added to the sleep tile', () async {
-    const module = SleepModule();
-    await recordNight(monday, const ClockTime(23, 0), const ClockTime(6, 30));
-    for (final start in [const ClockTime(13, 0), const ClockTime(16, 0)]) {
-      await actions.recordSleep(
-        day: monday,
-        kind: SleepKind.nap,
-        period: napPeriod(
-          monday,
-          start,
-          ClockTime(start.hour, start.minute + 20),
-        ),
+      final morning = DateTime(2026, 11, 17, 9, 15);
+      expect(describeTiles(module.todayFacts(appState, morning)), [
+        'Sleep: 7 h 30 min | 23:00 – 06:30',
+        'Awake for: 2 h 45 min | since 06:30',
+      ]);
+    });
+
+    test('at 01:00, the day before is still today', () async {
+      await wokeUp(monday, const ClockTime(7, 0));
+      final lateNight = DateTime(2026, 11, 17, 1, 0);
+
+      expect(
+        describeTiles(module.todayFacts(appState, lateNight))[1],
+        'Awake for: 18 h | since 07:00',
       );
-    }
+    });
 
-    final evening = DateTime(2026, 11, 16, 20, 30);
-    expect(describeTiles(module.todayFacts(appState, evening)), [
-      'Sleep: 7 h 30 min | 23:00 – 06:30 · 2 naps 40 min',
-      'Awake for: 14 h | since 06:30',
-    ]);
+    test('after going to bed, awake for is the whole day', () async {
+      await wokeUp(monday, const ClockTime(7, 0));
+      await wentToBed(monday, const ClockTime(1, 0), const ClockTime(7, 0));
+      final lateNight = DateTime(2026, 11, 17, 2, 0);
+
+      expect(
+        describeTiles(module.todayFacts(appState, lateNight))[1],
+        'Awake for: 18 h | 07:00 – 01:00',
+      );
+    });
   });
 
   test('invalid sleep data from other tools is counted', () async {
-    // Ends before it starts.
     await appState.writeEvent(
       module: 'sleep',
-      type: 'sleep_recorded',
-      data: {
-        'date': mondayText,
-        'kind': 'night',
-        'started_at': '2026-11-16T07:00:00.000+00:00',
-        'ended_at': '2026-11-15T23:00:00.000+00:00',
-      },
+      type: 'woke_up_recorded',
+      data: {'date': mondayText, 'at': 'this morning'},
     );
-    // Unknown kind.
     await appState.writeEvent(
       module: 'sleep',
       type: 'sleep_recorded',
@@ -211,26 +272,19 @@ void main() {
 
     final log = await logFromDisk();
     expect(log.invalidCount, 2);
-    expect(log.episodes, isEmpty);
+    expect(log.wakeUpOn(mondayText), isNull);
   });
 
   test('clock times are shown as lived, in any time zone', () async {
-    // A night recorded at UTC+9, read on a device in any time zone.
     await appState.writeEvent(
       module: 'sleep',
-      type: 'sleep_recorded',
-      data: {
-        'date': mondayText,
-        'kind': 'night',
-        'started_at': '2026-11-15T23:30:00.000+09:00',
-        'ended_at': '2026-11-16T07:00:00.000+09:00',
-      },
+      type: 'went_to_bed_recorded',
+      data: {'date': mondayText, 'at': '2026-11-17T00:30:00.000+09:00'},
     );
 
-    final night = (await logFromDisk()).nightOn(mondayText)!;
-    expect(night.startClock, const ClockTime(23, 30));
-    expect(night.endClock, const ClockTime(7, 0));
-    expect(night.duration, const Duration(hours: 7, minutes: 30));
+    final bedtime = (await logFromDisk()).bedtimeOf(mondayText)!;
+    expect(bedtime.clock, const ClockTime(0, 30));
+    expect(bedtime.calendarDate, tuesdayText);
   });
 }
 

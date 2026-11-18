@@ -138,7 +138,10 @@ Rules:
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
 
 - At most **one filled button** is in view on a card or form, so the
-  main action is obvious.
+  main action is obvious. The one exception: two values that are saved
+  at different times of day, side by side (Sleep's "Woke up" in the
+  morning and "Went to bed" at night), each get their own Save button
+  under their field.
 - A card header has **at most one** action.
 - Leave room at the bottom of a scrolling screen so floating buttons
   never cover the last row (96 pixels for one button, 160 for two).
@@ -191,6 +194,7 @@ Text styles (from the theme's text styles):
 | Time since | Duration and "ago" | `3 h 15 min ago`, `Just now` |
 | Dates in lists | `YYYY-MM-DD` | `2026-11-18` |
 | Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 2026-11-16` |
+| A calendar day under a time | Weekday, day, month; "after midnight" when it is the next day | `Wed 18 Nov`, `Thu 19 Nov, after midnight` |
 | Amounts | No needless decimals, at most one | `150`, `12.5` |
 | Energy | Number, space, `kcal` | `200 kcal` |
 | Weights and nutrients | Number, space, unit | `5 g`, `10 kg` |

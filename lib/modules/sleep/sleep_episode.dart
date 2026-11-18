@@ -28,8 +28,8 @@ enum SleepKind {
   }
 }
 
-/// One night or nap. Created by `sleep_recorded`; see "Module: sleep" in
-/// `docs/data-format.md`.
+/// One nap (or, from older versions, a whole night). Created by
+/// `sleep_recorded`; see "Module: sleep" in `docs/data-format.md`.
 class SleepEpisode {
   /// Creates a sleep episode.
   const SleepEpisode({
@@ -104,18 +104,8 @@ class SleepEpisode {
   Duration get duration => endedAtUtc.difference(startedAtUtc);
 
   /// The bedtime on the clock, as it was where the user slept.
-  ClockTime get startClock => _clockOf(startedAt);
+  ClockTime get startClock => clockOfTimestamp(startedAt);
 
   /// The wake-up time on the clock, as it was where the user slept.
-  ClockTime get endClock => _clockOf(endedAt);
-}
-
-/// Reads the clock time from a stored timestamp such as
-/// `2026-11-17T23:30:00.000+09:00`. The text already holds the local
-/// time where it was recorded, which is what the user lived, even if the
-/// phone is in another time zone now.
-ClockTime _clockOf(String timestamp) {
-  final hour = int.parse(timestamp.substring(11, 13));
-  final minute = int.parse(timestamp.substring(14, 16));
-  return ClockTime(hour, minute);
+  ClockTime get endClock => clockOfTimestamp(endedAt);
 }

@@ -17,7 +17,7 @@ import 'package:ippo/modules/exercise/exercise_log.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
-import 'package:ippo/modules/sleep/sleep_episode.dart';
+import 'package:ippo/modules/sleep/sleep_moment.dart';
 import 'package:ippo/modules/sleep/sleep_times.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:material_ui/material_ui.dart';
@@ -69,10 +69,20 @@ void main() {
       setCount: 8,
       log: ExerciseLog.fromEvents(appState.eventLog!.events),
     );
-    await SleepActions(appState).recordSleep(
-      day: day,
-      kind: SleepKind.night,
-      period: nightPeriod(day, const ClockTime(21, 15), const ClockTime(9, 0)),
+    final sleepDay = currentSleepDay(DateTime.now());
+    await SleepActions(appState).recordMoment(
+      kind: MomentKind.wokeUp,
+      day: sleepDay,
+      at: wakeUpMoment(sleepDay, const ClockTime(9, 0)),
+    );
+    await SleepActions(appState).recordMoment(
+      kind: MomentKind.wentToBed,
+      day: sleepDay,
+      at: bedtimeMoment(
+        sleepDay,
+        const ClockTime(1, 45),
+        const ClockTime(9, 0),
+      ),
     );
   }
 

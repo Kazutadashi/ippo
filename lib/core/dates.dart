@@ -60,6 +60,26 @@ DateTime addDays(DateTime day, int days) {
   return DateTime(day.year, day.month, day.day + days);
 }
 
+/// Writes a day briefly, for example `Thu 19 Nov`.
+String formatShortDate(DateTime day) {
+  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${weekdays[day.weekday - 1]} ${day.day} ${months[day.month - 1]}';
+}
+
 /// Writes a duration as hours and minutes, for example `7 h 30 min`,
 /// `45 min` or `8 h`.
 String formatDuration(Duration duration) {

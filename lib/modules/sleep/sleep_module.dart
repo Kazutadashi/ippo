@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The sleep module: when you went to bed, woke up, and napped.
+/// The sleep module: when you woke up and went to bed each day, and
+/// naps.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +11,8 @@ import '../../core/dates.dart';
 import '../../core/module.dart';
 import 'screens/sleep_screen.dart';
 import 'sleep_episode.dart';
+import 'sleep_moment.dart';
+import 'sleep_times.dart';
 import 'sleep_log.dart';
 
 /// The sleep module, as seen by the core app.
@@ -26,28 +29,34 @@ class SleepModule implements IppoModule {
   @override
   IconData get icon => Icons.bedtime;
 
-  /// Two tiles: last night's sleep (with any naps), and how long since
-  /// waking up.
+  /// Two tiles: the sleep before today (with any naps), and how long
+  /// you have been awake.
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final log = SleepLog.fromEvents(appState.eventLog?.events ?? []);
-    final today = formatDate(now);
-    final night = log.nightOn(today);
-    final naps = log.napsOn(today);
+    // Before 05:00, "today" is still the day before.
+    final day = currentSleepDay(now);
+    final date = formatDate(day);
+    final previousDate = formatDate(addDays(day, -1));
+    final sleptBefore = log.sleepBefore(date);
+    final bedtimeBefore = log.bedtimeOf(previousDate);
+    final wakeUp = log.wakeUpOn(date);
+    final naps = log.napsOn(date);
     final details = [
-      if (night != null) '${night.startClock} – ${night.endClock}',
+      if (sleptBefore != null && bedtimeBefore != null && wakeUp != null)
+        '${bedtimeBefore.clock} – ${wakeUp.clock}',
       if (naps.isNotEmpty) _describeNaps(naps),
     ];
     return [
       TodayFact(
         icon: Icons.bedtime,
         label: 'Sleep',
-        value: night == null
+        value: sleptBefore == null
             ? TodayFact.unknownValue
-            : formatDuration(night.duration),
+            : formatDuration(sleptBefore),
         detail: details.isEmpty ? 'Not logged yet' : details.join(' · '),
       ),
-      _awakeFact(night, now),
+      _awakeFact(wakeUp, log.bedtimeOf(date), now),
     ];
   }
 
@@ -55,14 +64,10 @@ class SleepModule implements IppoModule {
   Widget buildScreen(AppState appState) => SleepScreen(appState: appState);
 }
 
-/// The "Awake for" tile: time since waking up from last night's sleep.
-TodayFact _awakeFact(SleepEpisode? night, DateTime now) {
-  final awake = night == null ? null : now.toUtc().difference(night.endedAtUtc);
-  // Only while it makes sense: after waking, and within a day.
-  if (night == null ||
-      awake == null ||
-      awake.isNegative ||
-      awake >= const Duration(hours: 24)) {
+/// The "Awake for" tile: time since waking up today, or, once you went
+/// to bed, how long the day lasted.
+TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
+  if (wakeUp == null) {
     return const TodayFact(
       icon: Icons.wb_sunny_outlined,
       label: 'Awake for',
@@ -70,11 +75,21 @@ TodayFact _awakeFact(SleepEpisode? night, DateTime now) {
       detail: 'Not logged yet',
     );
   }
+  final nowUtc = now.toUtc();
+  if (bedtime != null && !nowUtc.isBefore(bedtime.atUtc)) {
+    return TodayFact(
+      icon: Icons.wb_sunny_outlined,
+      label: 'Awake for',
+      value: formatDuration(bedtime.atUtc.difference(wakeUp.atUtc)),
+      detail: '${wakeUp.clock} – ${bedtime.clock}',
+    );
+  }
+  final awake = nowUtc.difference(wakeUp.atUtc);
   return TodayFact(
     icon: Icons.wb_sunny_outlined,
     label: 'Awake for',
-    value: formatDuration(awake),
-    detail: 'since ${night.endClock}',
+    value: awake.isNegative ? TodayFact.unknownValue : formatDuration(awake),
+    detail: 'since ${wakeUp.clock}',
   );
 }
 

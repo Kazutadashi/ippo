@@ -8,7 +8,9 @@ import 'package:material_ui/material_ui.dart';
 import '../dates.dart';
 
 /// Returns today's date at local midnight.
-DateTime today() {
+DateTime today() => _calendarToday();
+
+DateTime _calendarToday() {
   final now = DateTime.now();
   return DateTime(now.year, now.month, now.day);
 }
@@ -17,10 +19,22 @@ DateTime today() {
 /// Tapping the day opens a calendar.
 class DayBar extends StatelessWidget {
   /// Creates the bar showing [day], reporting a new day to [onChanged].
-  const DayBar({super.key, required this.day, required this.onChanged});
+  ///
+  /// [today] is the day called "Today"; it is the calendar day unless a
+  /// screen counts days differently (for sleep, the day lasts until
+  /// early morning).
+  const DayBar({
+    super.key,
+    required this.day,
+    required this.onChanged,
+    this.today,
+  });
 
   /// The day shown, at local midnight.
   final DateTime day;
+
+  /// The day called "Today", or null for the calendar day.
+  final DateTime? today;
 
   /// Called with the newly chosen day.
   final ValueChanged<DateTime> onChanged;
@@ -30,7 +44,7 @@ class DayBar extends StatelessWidget {
       context: context,
       initialDate: day,
       firstDate: DateTime(2000),
-      lastDate: addDays(today(), 365),
+      lastDate: addDays(_calendarToday(), 365),
     );
     if (picked != null) {
       onChanged(picked);
@@ -49,7 +63,7 @@ class DayBar extends StatelessWidget {
         Expanded(
           child: TextButton(
             onPressed: () => _pickDay(context),
-            child: Text(describeDay(day)),
+            child: Text(describeDay(day, today: today)),
           ),
         ),
         IconButton(
@@ -63,9 +77,10 @@ class DayBar extends StatelessWidget {
 }
 
 /// Names a day: `Today`, `Yesterday`, `Tomorrow`, or for example
-/// `Mon 2026-11-16`.
-String describeDay(DateTime day) {
-  final todayDate = today();
+/// `Mon 2026-11-16`. [today] is the day called "Today", the calendar
+/// day if not given.
+String describeDay(DateTime day, {DateTime? today}) {
+  final todayDate = today ?? _calendarToday();
   if (day == todayDate) {
     return 'Today';
   }

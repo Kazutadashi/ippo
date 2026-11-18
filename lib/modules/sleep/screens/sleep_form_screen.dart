@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Adding a nap, or changing or deleting a night or nap.
+/// Adding, changing or deleting a nap.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -15,7 +15,7 @@ import '../sleep_episode.dart';
 import '../sleep_times.dart';
 import 'sleep_widgets.dart';
 
-/// The form for one night or nap: its start and end times.
+/// The form for one nap: its start and end times.
 class SleepFormScreen extends StatefulWidget {
   /// Creates the form for a new nap on [day].
   const SleepFormScreen.addNap({
@@ -24,8 +24,8 @@ class SleepFormScreen extends StatefulWidget {
     required DateTime this.day,
   }) : episode = null;
 
-  /// Creates the form for changing [episode].
-  const SleepFormScreen.edit({
+  /// Creates the form for changing the nap [episode].
+  const SleepFormScreen.editNap({
     super.key,
     required this.appState,
     required SleepEpisode this.episode,
@@ -37,7 +37,7 @@ class SleepFormScreen extends StatefulWidget {
   /// The day of the new nap, when adding.
   final DateTime? day;
 
-  /// The night or nap being changed, when editing.
+  /// The nap being changed, when editing.
   final SleepEpisode? episode;
 
   @override
@@ -47,8 +47,6 @@ class SleepFormScreen extends StatefulWidget {
 class _SleepFormScreenState extends State<SleepFormScreen> {
   late ClockTime _start = widget.episode?.startClock ?? _napStartGuess();
   late ClockTime _end = widget.episode?.endClock ?? _napEndGuess();
-
-  bool get _isNight => widget.episode?.kind == SleepKind.night;
 
   /// A new nap starts an hour ago and ends now: often about right.
   static ClockTime _napStartGuess() {
@@ -61,14 +59,11 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
     return ClockTime(now.hour, now.minute);
   }
 
-  /// The day the episode counts for: the nap's day, or a night's
-  /// wake-up day.
+  /// The nap's day.
   DateTime get _day => widget.day ?? parseDate(widget.episode!.date)!;
 
   SleepPeriod _period() {
-    return _isNight
-        ? nightPeriod(_day, _start, _end)
-        : napPeriod(_day, _start, _end);
+    return napPeriod(_day, _start, _end);
   }
 
   Future<void> _save() async {
@@ -107,7 +102,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
     Navigator.of(context).pop();
     showUndoMessage(
       messenger,
-      message: _isNight ? 'Night deleted.' : 'Nap deleted.',
+      message: 'Nap deleted.',
       onUndo: () => actions.restoreSleep(episode.id),
     );
   }
@@ -117,7 +112,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
     final period = _period();
     final problem = checkSleepPeriod(period);
     return Scaffold(
-      appBar: AppBar(title: Text(_isNight ? 'Night' : 'Nap')),
+      appBar: AppBar(title: const Text('Nap')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -125,7 +120,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
             children: [
               Expanded(
                 child: TimeField(
-                  label: _isNight ? 'Went to bed' : 'Start',
+                  label: 'Start',
                   time: _start,
                   onChanged: (time) => setState(() => _start = time),
                 ),
@@ -133,7 +128,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: TimeField(
-                  label: _isNight ? 'Woke up' : 'End',
+                  label: 'End',
                   time: _end,
                   onChanged: (time) => setState(() => _end = time),
                 ),
@@ -151,10 +146,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
             child: const Text('Save'),
           ),
           if (widget.episode != null)
-            DeleteButton(
-              label: _isNight ? 'Delete this night' : 'Delete this nap',
-              onPressed: _delete,
-            ),
+            DeleteButton(label: 'Delete this nap', onPressed: _delete),
         ],
       ),
     );

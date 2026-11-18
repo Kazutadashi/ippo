@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Checks the sleep screen: entering a night in one tap, and showing it.
+/// Checks the sleep screen: woke up on the left, went to bed on the
+/// right, each saved on its own, with the calendar day written below.
 library;
 
 import 'dart:io';
@@ -17,6 +18,7 @@ import 'package:material_ui/material_ui.dart';
 void main() {
   late Directory settingsFolder;
   late Directory dataFolder;
+  late AppState appState;
 
   setUp(() {
     settingsFolder = Directory.systemTemp.createTempSync('ippo_settings_');
@@ -28,8 +30,8 @@ void main() {
     dataFolder.deleteSync(recursive: true);
   });
 
-  testWidgets('a night is saved with one tap and then shown', (tester) async {
-    final appState = AppState(
+  Future<void> openSleepScreen(WidgetTester tester) async {
+    appState = AppState(
       settingsFile: SettingsFile(settingsFolder.path),
       isAndroid: false,
       defaultDeviceName: 'my-desktop',
@@ -40,48 +42,56 @@ void main() {
       await appState.chooseLinuxDataFolder(dataFolder.path);
     });
     await tester.pumpWidget(MaterialApp(home: SleepScreen(appState: appState)));
+  }
 
-    // The first guess, before any night was logged, in two time fields.
-    expect(find.text('Went to bed'), findsOneWidget);
-    expect(find.text('Woke up'), findsOneWidget);
-    expect(find.text('23:00'), findsOneWidget);
+  testWidgets('woke up is on the left, went to bed on the right', (
+    tester,
+  ) async {
+    await openSleepScreen(tester);
+
+    final wokeUpLeft = tester.getTopLeft(find.text('Woke up')).dx;
+    final wentToBedLeft = tester.getTopLeft(find.text('Went to bed')).dx;
+    expect(wokeUpLeft, lessThan(wentToBedLeft));
+    // The first guesses, before anything was logged.
     expect(find.text('07:00'), findsOneWidget);
-    expect(find.text('8 h of sleep'), findsOneWidget);
-    expect(find.text('Edit'), findsNothing);
+    expect(find.text('23:00'), findsOneWidget);
+    // Each side has its own Save button.
+    expect(find.text('Save'), findsNWidgets(2));
+  });
+
+  testWidgets('the calendar day is written under each time', (tester) async {
+    await openSleepScreen(tester);
+
+    final day = currentSleepDay(DateTime.now());
+    // Woke up at 07:00 and to bed at 23:00: both on the same day.
+    expect(find.text(formatShortDate(day)), findsNWidgets(2));
+  });
+
+  testWidgets('saving the wake-up keeps the bedtime open', (tester) async {
+    await openSleepScreen(tester);
 
     await tester.runAsync(() async {
-      await tester.tap(find.text('Save night'));
+      await tester.tap(find.text('Save').first);
       await Future<void>.delayed(const Duration(milliseconds: 300));
     });
     await tester.pump();
 
-    // Now shown as information, with one Edit button.
-    expect(find.text('Save night'), findsNothing);
-    expect(find.byType(InputDecorator), findsNothing);
-    expect(find.text('23:00'), findsOneWidget);
-    expect(find.text('07:00'), findsOneWidget);
-    expect(find.text('8 h'), findsOneWidget);
+    // The wake-up is now information with an Edit button; the bedtime
+    // still has its field and Save button.
     expect(find.text('Edit'), findsOneWidget);
-    final night = SleepLog.fromEvents(appState.eventLog!.events)
-        .nightOn(formatDate(DateTime.now()))!;
-    expect(night.endClock, const ClockTime(7, 0));
+    expect(find.text('Save'), findsOneWidget);
+    final date = formatDate(currentSleepDay(DateTime.now()));
+    final log = SleepLog.fromEvents(appState.eventLog!.events);
+    expect(log.wakeUpOn(date)!.clock, const ClockTime(7, 0));
+    expect(log.bedtimeOf(date), isNull);
   });
 
   testWidgets('the layout fits a narrow phone screen', (tester) async {
     tester.view.physicalSize = const Size(360, 780);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final appState = AppState(
-      settingsFile: SettingsFile(settingsFolder.path),
-      isAndroid: false,
-      defaultDeviceName: 'my-desktop',
-    );
-    await tester.runAsync(() async {
-      await appState.load();
-      await appState.chooseLinuxDataFolder(dataFolder.path);
-    });
 
-    await tester.pumpWidget(MaterialApp(home: SleepScreen(appState: appState)));
+    await openSleepScreen(tester);
 
     // An overflow would make the test framework report an error.
     expect(tester.takeException(), isNull);
