@@ -83,26 +83,11 @@ Features (habits, calisthenics, meals, ...) are **modules**.
 
 ## Screens
 
-Every screen should look and behave the same, so the app feels like one
-thing and is quick to use. Build screens from the pieces in
-`lib/core/widgets/section_card.dart`:
-
-- **Anything the user can change looks like a form field.** The theme
-  gives every text field an outline and a label.
-- **Information is plain text** (`InfoValue`, `InfoRow`, `NoteText`), so
-  it never looks tappable.
-- **Each section is a `SectionCard`** starting with a `CardHeader`: an
-  icon and title on the left, and the card's action (`HeaderAddButton`,
-  `HeaderEditButton`) on the right.
-- **A form's main action is a full-width filled button.** "Delete" is a
-  red `DeleteButton` below it, and deleting offers Undo.
-- **The everyday entry takes one or two taps** on the module's main
-  screen. Extras go behind a link or into the edit screen.
-- **Nothing on screen that is not needed.** Leave out decoration and
-  statistics nobody asked for.
-
-`test/screens_fit_test.dart` opens every tab on a narrow phone screen,
-in light and dark mode. Keep it passing when you add a module.
+Every screen follows the rules in [`docs/design.md`](docs/design.md):
+what fields, information and buttons look like, where actions go, how
+lists and colours work, and how to check a screen. Build screens from
+the pieces in `lib/core/widgets/section_card.dart`, and keep
+`test/screens_fit_test.dart` passing when you add a module.
 
 
 ## Dependencies
