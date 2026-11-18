@@ -11,24 +11,24 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
-import '../sleep_episode.dart';
+import '../nap.dart';
 import '../sleep_times.dart';
 import 'sleep_widgets.dart';
 
 /// The form for one nap: its start and end times.
-class SleepFormScreen extends StatefulWidget {
+class NapFormScreen extends StatefulWidget {
   /// Creates the form for a new nap on [day].
-  const SleepFormScreen.addNap({
+  const NapFormScreen.addNap({
     super.key,
     required this.appState,
     required DateTime this.day,
-  }) : episode = null;
+  }) : nap = null;
 
-  /// Creates the form for changing the nap [episode].
-  const SleepFormScreen.editNap({
+  /// Creates the form for changing the nap [nap].
+  const NapFormScreen.editNap({
     super.key,
     required this.appState,
-    required SleepEpisode this.episode,
+    required Nap this.nap,
   }) : day = null;
 
   /// The app-wide state.
@@ -38,15 +38,15 @@ class SleepFormScreen extends StatefulWidget {
   final DateTime? day;
 
   /// The nap being changed, when editing.
-  final SleepEpisode? episode;
+  final Nap? nap;
 
   @override
-  State<SleepFormScreen> createState() => _SleepFormScreenState();
+  State<NapFormScreen> createState() => _NapFormScreenState();
 }
 
-class _SleepFormScreenState extends State<SleepFormScreen> {
-  late ClockTime _start = widget.episode?.startClock ?? _napStartGuess();
-  late ClockTime _end = widget.episode?.endClock ?? _napEndGuess();
+class _NapFormScreenState extends State<NapFormScreen> {
+  late ClockTime _start = widget.nap?.startClock ?? _napStartGuess();
+  late ClockTime _end = widget.nap?.endClock ?? _napEndGuess();
 
   /// A new nap starts an hour ago and ends now: often about right.
   static ClockTime _napStartGuess() {
@@ -60,7 +60,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
   }
 
   /// The nap's day.
-  DateTime get _day => widget.day ?? parseDate(widget.episode!.date)!;
+  DateTime get _day => widget.day ?? parseDate(widget.nap!.date)!;
 
   SleepPeriod _period() {
     return napPeriod(_day, _start, _end);
@@ -72,16 +72,12 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
       return;
     }
     final actions = SleepActions(widget.appState);
-    final episode = widget.episode;
+    final nap = widget.nap;
     final saved = await saveOrShowError(context, () {
-      if (episode == null) {
-        return actions.recordSleep(
-          day: _day,
-          kind: SleepKind.nap,
-          period: period,
-        );
+      if (nap == null) {
+        return actions.recordNap(day: _day, period: period);
       }
-      return actions.changeSleep(episode.id, period);
+      return actions.changeNap(nap.id, period);
     });
     if (saved && mounted) {
       Navigator.of(context).pop();
@@ -89,12 +85,12 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
   }
 
   Future<void> _delete() async {
-    final episode = widget.episode!;
+    final nap = widget.nap!;
     final actions = SleepActions(widget.appState);
     final messenger = ScaffoldMessenger.of(context);
     final deleted = await saveOrShowError(
       context,
-      () => actions.deleteSleep(episode.id),
+      () => actions.deleteNap(nap.id),
     );
     if (!deleted || !mounted) {
       return;
@@ -103,7 +99,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
     showUndoMessage(
       messenger,
       message: 'Nap deleted.',
-      onUndo: () => actions.restoreSleep(episode.id),
+      onUndo: () => actions.restoreNap(nap.id),
     );
   }
 
@@ -148,7 +144,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
             NoteText('${formatDuration(period.duration)} of sleep')
           else
             ProblemText(problem),
-          if (widget.episode != null)
+          if (widget.nap != null)
             DeleteButton(label: 'Delete this nap', onPressed: _delete),
         ],
       ),

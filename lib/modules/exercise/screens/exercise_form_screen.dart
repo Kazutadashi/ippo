@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Creating or changing an exercise that is not part of a progression.
+/// Creating or changing an exercise.
 library;
 
 import 'package:material_ui/material_ui.dart';

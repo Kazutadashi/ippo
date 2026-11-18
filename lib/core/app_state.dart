@@ -10,6 +10,7 @@ import 'dates.dart';
 import 'events/event.dart';
 import 'events/event_log.dart';
 import 'events/event_log_reader.dart';
+import 'events/folder_readme.dart';
 import 'events/monthly_backup.dart';
 import 'events/event_writer.dart';
 import 'settings/app_settings.dart';
@@ -175,6 +176,9 @@ class AppState extends ChangeNotifier {
         deviceId: settings.deviceId,
         now: now,
       );
+      // The folder note goes with the backup: both run once a month at
+      // most, so the folder is not looked at on every reload.
+      await writeFolderReadme(dataFolder);
       _backedUpMonth = month;
     } on DataFolderException catch (error) {
       _errorMessage = 'Could not make this month\'s backup: ${error.message}';

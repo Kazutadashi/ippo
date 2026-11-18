@@ -10,7 +10,7 @@ import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
 import 'screens/sleep_screen.dart';
-import 'sleep_episode.dart';
+import 'nap.dart';
 import 'sleep_moment.dart';
 import 'sleep_times.dart';
 import 'sleep_log.dart';
@@ -94,7 +94,7 @@ TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
 }
 
 /// Describes naps, for example `nap 20 min` or `2 naps 45 min`.
-String _describeNaps(List<SleepEpisode> naps) {
+String _describeNaps(List<Nap> naps) {
   var total = Duration.zero;
   for (final nap in naps) {
     total += nap.duration;

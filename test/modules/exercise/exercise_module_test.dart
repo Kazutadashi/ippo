@@ -202,18 +202,13 @@ void main() {
     expect(names, ['Squat', 'Plank', 'Dip']);
   });
 
-  test('older progression data still loads its exercises and sets', () async {
-    // Events written by an earlier version that had progressions.
+  test('unknown event types and fields are ignored', () async {
+    // Events a newer version or another tool might write.
     final exercise = await createExercise('Box squat', MeasuredIn.reps);
     await appState.writeEvent(
       module: 'exercise',
-      type: 'progression_created',
-      data: {
-        'name': 'Squat progression',
-        'steps': [
-          {'exercise_id': exercise.id, 'target_sets': 3, 'target_reps': 10},
-        ],
-      },
+      type: 'routine_created',
+      data: {'name': 'Leg day'},
     );
     await appState.writeEvent(
       module: 'exercise',
@@ -223,9 +218,7 @@ void main() {
         'date': day1,
         'set_number': 1,
         'reps': 8,
-        'progression_id': 'some-id',
-        'step_number': 1,
-        'target_reps': 10,
+        'tempo': '3-1-1',
       },
     );
 

@@ -24,7 +24,7 @@ Format version: **1**
 10. [Module: food](#10-module-food)
 11. [Module: time tracking](#11-module-time-tracking)
 12. [Module: sleep](#12-module-sleep)
-13. [Loading the data in Python](#13-loading-the-data-in-python)
+13. [Using your data elsewhere](#13-using-your-data-elsewhere)
 
 
 ## 1. The big picture
@@ -65,6 +65,7 @@ inside it. The layout is:
 
 ```
 <data folder>/
+├── README.txt                                       what these files are
 ├── events/
 │   ├── 019a8f3c-0000-7000-8000-000000000001.jsonl   one file per device
 │   └── 019a8f3c-0000-7000-8000-000000000002.jsonl
@@ -103,6 +104,12 @@ Backups are only a safety net. **The app never reads them.** If an
 event file is ever damaged, you can restore it from the latest backup by
 hand. Backups contain events that are also in `events/`, so do not load
 both into an analysis, or you will count things twice.
+
+### `README.txt`
+
+A short note saying what the folder holds, for anyone who finds it
+without the app. The app writes it once if it is missing and never reads
+it.
 
 ### Other files
 
@@ -397,23 +404,14 @@ Example: the four value types.
 
 `module` is `"exercise"`.
 
-This module logs exercise sets. Exercises can be grouped into
-**progressions**: ordered ladders where you move to a harder step once
-you reach a target, as in many calisthenics programs. Exercises do not
-have to belong to a progression, so the module also works for, say,
-weight training.
-
-> **Note:** the app currently only uses exercises and sets. Progressions
-> and `progression_step_set` are part of the format so that data from
-> other tools, or a later version, can use them; the app reads past such
-> events without errors but does not show them.
+This module logs exercise sets: how many reps of an exercise you did,
+or how long you held it.
 
 ### Things in this module
 
 | Thing | Created by | `_changed` | `_deleted` / `_restored` |
 | --- | --- | --- | --- |
 | exercise | `exercise_created` | yes | yes |
-| progression | `progression_created` | yes | yes |
 | set | `set_recorded` | yes | yes |
 
 ### `exercise_created`
@@ -423,39 +421,6 @@ weight training.
 | `name` | string | For example `"Box squat"`. |
 | `measured_in` | string | `"reps"` or `"seconds"` (for holds such as a plank). Cannot be changed later. |
 | `description` | string, optional | Notes on form, for example. |
-
-### `progression_created`
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `name` | string | For example `"Squat progression"`. |
-| `steps` | list | The steps in order, easiest first. Each step is an object, see below. |
-
-Each step:
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `exercise_id` | string | The exercise for this step. |
-| `target_sets` | integer | How many sets to reach before moving up. |
-| `target_reps` | integer, optional | Reps per set to reach (for `reps` exercises). |
-| `target_seconds` | integer, optional | Seconds per set to reach (for `seconds` exercises). |
-
-To change the steps, `progression_changed` replaces the whole `steps`
-list.
-
-### `progression_step_set`
-
-Records which step you are on. The app writes this when you move up
-(or down) a step.
-
-| Field | Type | Meaning |
-| --- | --- | --- |
-| `progression_id` | string | The progression. |
-| `step_number` | integer | The new current step, counting from 1. |
-| `date` | date | The day the change counts for. |
-
-These events also make a clean history of your promotions: "reached
-step 4 on 2026-03-02".
 
 ### `set_recorded`
 
@@ -470,17 +435,12 @@ One set of one exercise.
 | `seconds` | integer, optional | Seconds held (for `seconds` exercises). |
 | `weight_kg` | number, optional | Added weight. Missing means body weight only. |
 | `reps_in_reserve` | integer, optional | How many more reps you could have done. A common way to record effort. |
-| `progression_id` | string, optional | The progression this set was part of. |
-| `step_number` | integer, optional | The step you were on at the time. |
-| `target_reps` | integer, optional | The target at the time. |
-| `target_seconds` | integer, optional | The target at the time. |
 | `note` | string, optional | A note. |
 
-`step_number` and the targets are **copied into each set** when it is
-logged. If you later change a progression, old sets still say what
-step and target they were done at. This is what makes progress charts
-honest: moving to a harder step usually means fewer reps, and the step
-number shows that this drop is progress.
+A set has `reps` or `seconds`, never both, matching the exercise's
+`measured_in`: the unit is part of the field name, as everywhere in this
+format. To put all exercises in one column, take whichever is present
+and keep the unit beside it (the Python package does this).
 
 
 ## 10. Module: food
@@ -516,6 +476,11 @@ from there is easy to match.
 
 Only `energy_kcal` is required. The others are optional.
 
+**A missing nutrient means "not known", never zero.** A quick entry
+often gives only energy. When adding up a day, keep track of whether
+every entry gave the nutrient; otherwise the day's protein, for
+example, looks lower than it was.
+
 ### `food_created`
 
 | Field | Type | Meaning |
@@ -550,7 +515,6 @@ One thing eaten.
 | --- | --- | --- |
 | `date` | date | The day it counts for. |
 | `time` | time of day, optional | When it was eaten. |
-| `meal` | string, optional | `"breakfast"`, `"lunch"`, `"dinner"` or `"snack"`. The app does not ask for a meal (it lists entries in the order they were eaten), so new entries leave this out; it is kept for data from older versions and other tools. |
 | `food_id` | string, optional | The food. Missing for a quick entry (see below). |
 | `name` | string | The food's name at the time, copied. |
 | `amount` | number, optional | How much, in the food's `measured_in` units. |
@@ -653,7 +617,7 @@ that day's wake-up; it is worked out, never stored.
 | --- | --- | --- | --- |
 | woke up | `woke_up_recorded` | yes | yes |
 | went to bed | `went_to_bed_recorded` | yes | yes |
-| sleep (naps) | `sleep_recorded` | yes | yes |
+| nap | `nap_recorded` | yes | yes |
 
 ### `woke_up_recorded` and `went_to_bed_recorded`
 
@@ -678,62 +642,61 @@ How long you slept before 2026-11-19 is that day's `woke_up` `at` minus
 midnight and daylight saving changes, and the offsets keep the local
 clock times for analysis.
 
-### `sleep_recorded`
+### `nap_recorded`
 
 One nap.
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `date` | date | The day of the nap. |
-| `kind` | string | `"nap"`. (See below for `"night"`.) Cannot be changed later. |
 | `started_at` | timestamp | When the nap started. |
 | `ended_at` | timestamp | When it ended. Always after `started_at`. |
 
-To change the times, `sleep_changed` gives new `started_at` and
+To change the times, `nap_changed` gives new `started_at` and
 `ended_at`.
 
-**Older data:** versions before the day-based design saved each night
-as one `sleep_recorded` with `kind` `"night"`: `started_at` was the
-bedtime, `ended_at` the wake-up, and `date` the wake-up day. Readers
-still accept these. Such a night gives the wake-up of its `date` and the
-bedtime of the day before, unless a `woke_up_recorded` or
-`went_to_bed_recorded` exists for that day, which then takes its place.
+### Time zones
+
+Each timestamp keeps the offset of the place you were. Across a flight,
+the bedtime and the next wake-up have different offsets, and the sleep
+worked out from exact moments is real elapsed time: perhaps 2 hours
+flying east, or 14 flying west. That is correct, but it is not a normal
+night, so analyses usually flag or leave out such nights. Clock times
+("woke up at 07:00") are best read from the local time written in the
+timestamp, which is the time on the clock where you were.
 
 
-## 13. Loading the data in Python
+## 13. Using your data elsewhere
 
-A helper package for Python is planned. It will turn these events into
-tidy tables (one row per habit entry, set, food entry or time block),
-with changes and deletions already applied.
+Everything above is enough to write a reader in any language. Most
+people will not need to.
 
-Until then, the raw events load with pandas alone:
+**In Python**, the package in the `python/` folder of this repository
+reads a data folder into pandas tables, with changes and deletions
+applied and one row per day ready for charts:
 
 ```python
-import json
-from pathlib import Path
+import ippo
 
-import pandas as pd
-
-rows = []
-for path in Path("/path/to/data/events").iterdir():
-    if path.name.startswith("."):
-        continue  # hidden files belong to sync tools
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.strip():
-            rows.append(json.loads(line))
-
-events = pd.DataFrame(rows).drop_duplicates("id")
-events["recorded_at"] = pd.to_datetime(events["recorded_at"], utc=True)
-events = events.sort_values(["recorded_at", "id"])
-
-# Expand "data" into columns, for example for habit entries:
-entries = events[events["type"] == "habit_entry_recorded"]
-entries = pd.concat(
-    [entries.drop(columns="data").reset_index(drop=True),
-     pd.json_normalize(entries["data"].tolist())],
-    axis=1,
-)
+data = ippo.load("/path/to/data")
+daily = data.daily()
 ```
 
-This simple version does not apply `_changed` or `_deleted` events, and
-will stop at a damaged line. The helper package will handle both.
+See `python/README.md` for every table.
+
+**In a spreadsheet or another program**, the same package writes every
+table as a CSV file:
+
+```
+python -m ippo export /path/to/data /path/to/csv-folder
+```
+
+**Writing your own reader?** The folder `example-data/` holds a small
+data folder with every awkward case: two devices, a sync conflict copy,
+a hidden file, a cut-off line, a newer format version, an unknown
+module, a backup, changes, deletions, a cleared habit day, a bedtime
+after midnight and a time zone change. The app's tests
+(`test/example_data_test.dart`) and the Python package's tests
+(`python/tests/`) both check what a correct reader gets from it, such as
+"6 h 45 min of sleep before 2 March". A reader that gets the same
+answers handles the format correctly.

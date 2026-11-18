@@ -14,11 +14,11 @@ import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
-import '../sleep_episode.dart';
+import '../nap.dart';
 import '../sleep_log.dart';
 import '../sleep_moment.dart';
 import '../sleep_times.dart';
-import 'sleep_form_screen.dart';
+import 'nap_form_screen.dart';
 import 'sleep_widgets.dart';
 
 /// The wake-up time suggested until the first wake-up is logged.
@@ -130,7 +130,7 @@ class _SleepScreenState extends State<SleepScreen> {
                       title: 'Naps',
                       action: HeaderAddButton(
                         onPressed: () => _open(
-                          SleepFormScreen.addNap(
+                          NapFormScreen.addNap(
                             appState: widget.appState,
                             day: _day,
                           ),
@@ -149,7 +149,7 @@ class _SleepScreenState extends State<SleepScreen> {
     );
   }
 
-  List<Widget> _buildNaps(List<SleepEpisode> naps) {
+  List<Widget> _buildNaps(List<Nap> naps) {
     if (naps.isEmpty) {
       return [const NoteText('No naps on this day.')];
     }
@@ -169,8 +169,8 @@ class _SleepScreenState extends State<SleepScreen> {
     ];
   }
 
-  void _editNap(SleepEpisode nap) {
-    _open(SleepFormScreen.editNap(appState: widget.appState, episode: nap));
+  void _editNap(Nap nap) {
+    _open(NapFormScreen.editNap(appState: widget.appState, nap: nap));
   }
 }
 

@@ -26,8 +26,10 @@ You can add more modules without changing the existing ones.
   permission, so the system itself blocks it from going online.
   No accounts, ads, telemetry, or analytics.
 - **Plain files in a folder you choose.** Your data is stored as
-  human-readable JSON Lines files. Open them in any text editor, or
-  analyze them with Python and pandas.
+  human-readable JSON Lines files. Open them in any text editor, load
+  them into pandas with the small package in [`python/`](python/README.md),
+  or export them as CSV for a spreadsheet. The format is described in
+  full in [`docs/data-format.md`](docs/data-format.md).
 - **Sync with your own tools.** To use Ippo on several devices, sync the
   data folder with a tool such as Syncthing. Each device writes only its
   own file, so syncing does not cause conflicts.

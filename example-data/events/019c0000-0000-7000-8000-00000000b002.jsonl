@@ -1,0 +1,6 @@
+{"format_version":1,"id":"019c0022-0000-7000-8000-000000000022","recorded_at":"2026-03-03T09:00:00.000+01:00","device_id":"019c0000-0000-7000-8000-00000000b002","device_name":"my-desktop","module":"habits","type":"habit_changed","data":{"target_id":"019c0002-0000-7000-8000-000000000002","changes":{"name":"Evening walk"}}}
+{"format_version":1,"id":"019c0023-0000-7000-8000-000000000023","recorded_at":"2026-03-03T09:01:00.000+01:00","device_id":"019c0000-0000-7000-8000-00000000b002","device_name":"my-desktop","module":"habits","type":"habit_deleted","data":{"target_id":"019c0003-0000-7000-8000-000000000003"}}
+
+{"format_version":1,"id":"019c0024-0000-7000-8000-000000000024","recorded_at":"2026-03-03T09:02:00.000+01:00","device_id":"019c0000-0000-7000-8000-00000000b002","device_name":"my-desktop","module":"mood","type":"mood_recorded","data":{"date":"2026-03-03","score":4}}
+{"format_version":2,"id":"019c0025-0000-7000-8000-000000000025","recorded_at":"2026-03-03T09:03:00.000+01:00","device_id":"019c0000-0000-7000-8000-00000000b002","device_name":"my-desktop","module":"habits","type":"habit_entry_recorded","data":{"habit_id":"019c0001-0000-7000-8000-000000000001","date":"2026-03-03","value":1}}
+{"format_version":1,"id":"019c

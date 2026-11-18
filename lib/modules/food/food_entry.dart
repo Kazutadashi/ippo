@@ -1,47 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// One thing eaten, and the meals it can belong to.
+/// One thing eaten.
 library;
 
 import '../../core/dates.dart';
 import '../../core/events/things.dart';
 import 'food.dart';
 import 'nutrients.dart';
-
-/// The meals an entry can belong to. The names are stored in the data
-/// and must never change.
-///
-/// The app no longer asks for a meal (entries are simply listed in the
-/// order they were eaten), but entries saved earlier, or by other tools,
-/// may still have one, so it is still read.
-enum Meal {
-  /// Breakfast.
-  breakfast('Breakfast'),
-
-  /// Lunch.
-  lunch('Lunch'),
-
-  /// Dinner.
-  dinner('Dinner'),
-
-  /// A snack between meals.
-  snack('Snack');
-
-  const Meal(this.label);
-
-  /// The meal's name on screen.
-  final String label;
-
-  /// Finds the meal stored as [name], or null if there is none.
-  static Meal? fromName(Object? name) {
-    for (final meal in Meal.values) {
-      if (meal.name == name) {
-        return meal;
-      }
-    }
-    return null;
-  }
-}
 
 /// One thing eaten. Created by `food_entry_recorded`.
 ///
@@ -53,7 +18,6 @@ class FoodEntry {
     required this.id,
     required this.date,
     required this.time,
-    required this.meal,
     required this.foodId,
     required this.name,
     required this.amount,
@@ -92,7 +56,6 @@ class FoodEntry {
       date: date,
       // Optional fields with the wrong type are treated as missing.
       time: time is String && isValidTimeOfDay(time) ? time : null,
-      meal: Meal.fromName(fields['meal']),
       foodId: foodId is String ? foodId : null,
       name: name,
       amount: amount is num && amount >= 0 ? amount.toDouble() : null,
@@ -115,9 +78,6 @@ class FoodEntry {
 
   /// When it was eaten, `HH:MM`, if known.
   final String? time;
-
-  /// The meal, if given.
-  final Meal? meal;
 
   /// The food it was made from, or null for a quick entry.
   final String? foodId;

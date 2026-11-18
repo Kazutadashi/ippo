@@ -77,7 +77,10 @@ License: GPL-3.0-or-later (`LICENSE`). Every source file starts with an
   timestamp. Conflicting changes: the most recent timestamp wins (ties
   broken by event id). No logical clocks; warn about future-dated events.
 - Data must stay easy to analyze in Python (pandas, Jupyter, ML).
-  A small Python helper package for loading events will live in this repo.
+  The Python package in `python/` (pandas only) turns a data folder into
+  tidy tables and CSV files. `example-data/` is a small folder with every
+  awkward case; the Dart and Python tests check the same answers from it,
+  so a format change must update both.
 - Show when data from each other device was last seen, so users can tell
   if sync has caught up.
 

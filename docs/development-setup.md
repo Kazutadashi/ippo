@@ -118,11 +118,17 @@ de-Googled Android systems.
 
 ## 9. Python tools (optional, for data analysis)
 
-Any Python 3.12+ environment works. With conda:
+The Python package in `python/` needs Python 3.11 or newer and pandas.
+Its examples also use matplotlib. With conda:
 
 ```bash
-conda create -n ippo python=3.12 pandas pyarrow matplotlib seaborn jupyterlab scikit-learn ruff
+conda create -n ippo python=3.12 pandas matplotlib jupyterlab ruff
+conda activate ippo
+cd python
+python -m unittest        # run the package's tests
 ```
+
+See `python/README.md` for how to use it.
 
 
 ## Known issue: NVIDIA graphics on the Linux desktop

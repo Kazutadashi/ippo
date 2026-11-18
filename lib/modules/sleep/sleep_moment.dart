@@ -41,7 +41,6 @@ class SleepMoment {
     required this.at,
     required this.atUtc,
     required this.isDeleted,
-    required this.oldNightId,
   });
 
   /// Reads a moment from its collected events. Returns null if the data
@@ -63,7 +62,6 @@ class SleepMoment {
       at: at,
       atUtc: atUtc,
       isDeleted: record.isDeleted,
-      oldNightId: null,
     );
   }
 
@@ -84,11 +82,6 @@ class SleepMoment {
 
   /// Whether it was deleted.
   final bool isDeleted;
-
-  /// If this moment comes from a whole night saved by an older version
-  /// of Ippo (one record from bedtime to wake-up), that night's id.
-  /// Otherwise null.
-  final String? oldNightId;
 
   /// The time on the clock, as it was where the user was.
   ClockTime get clock => clockOfTimestamp(at);

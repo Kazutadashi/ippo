@@ -166,4 +166,7 @@ license on its own:
 - `flutter test` — all tests pass.
 - New logic (especially anything touching data) has tests.
 - New public code has doc comments.
-- Python code passes `ruff check` and `ruff format`.
+- Python code passes `ruff check` and `ruff format`, and
+  `python -m unittest` passes in the `python` folder.
+- A change to the data format updates `docs/data-format.md`, the Python
+  package, and `example-data/` with the tests that read it, together.

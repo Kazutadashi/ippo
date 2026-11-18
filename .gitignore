@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Python package build leftovers
+__pycache__/
+python/build/
+python/*.egg-info/

@@ -8,9 +8,6 @@ import '../../core/events/things.dart';
 
 /// A set. Created by `set_recorded`; see "Module: exercise" in
 /// `docs/data-format.md`.
-///
-/// The progression, step and target are copies made when the set was
-/// logged, so later changes to the progression do not change history.
 class ExerciseSet {
   /// Creates a set.
   const ExerciseSet({
@@ -21,9 +18,6 @@ class ExerciseSet {
     required this.value,
     required this.weightKg,
     required this.repsInReserve,
-    required this.progressionId,
-    required this.stepNumber,
-    required this.targetPerSet,
     required this.note,
     required this.isDeleted,
     required this.loggedAtUtc,
@@ -47,9 +41,6 @@ class ExerciseSet {
 
     final weightKg = fields['weight_kg'];
     final repsInReserve = fields['reps_in_reserve'];
-    final progressionId = fields['progression_id'];
-    final stepNumber = fields['step_number'];
-    final targetPerSet = fields['target_reps'] ?? fields['target_seconds'];
     final note = fields['note'];
     return ExerciseSet(
       id: record.id,
@@ -61,11 +52,6 @@ class ExerciseSet {
       weightKg: weightKg is num && weightKg >= 0 ? weightKg.toDouble() : null,
       repsInReserve: repsInReserve is int && repsInReserve >= 0
           ? repsInReserve
-          : null,
-      progressionId: progressionId is String ? progressionId : null,
-      stepNumber: stepNumber is int && stepNumber >= 1 ? stepNumber : null,
-      targetPerSet: targetPerSet is int && targetPerSet >= 1
-          ? targetPerSet
           : null,
       note: note is String ? note : null,
       isDeleted: record.isDeleted,
@@ -93,15 +79,6 @@ class ExerciseSet {
 
   /// How many more reps could have been done, if recorded.
   final int? repsInReserve;
-
-  /// The progression this set was part of, if any.
-  final String? progressionId;
-
-  /// The step of that progression at the time, if any.
-  final int? stepNumber;
-
-  /// The target reps or seconds per set at the time, if any.
-  final int? targetPerSet;
 
   /// A note, if any.
   final String? note;

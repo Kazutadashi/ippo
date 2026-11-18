@@ -12,7 +12,6 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/module.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
-import 'package:ippo/modules/sleep/sleep_episode.dart';
 import 'package:ippo/modules/sleep/sleep_log.dart';
 import 'package:ippo/modules/sleep/sleep_module.dart';
 import 'package:ippo/modules/sleep/sleep_moment.dart';
@@ -138,63 +137,10 @@ void main() {
     expect(log.latest(MomentKind.wentToBed), isNull);
   });
 
-  group('nights saved by older versions', () {
-    /// Writes a whole night as older versions did: bed 23:00 on Monday,
-    /// woke 07:00 on Tuesday, counted for Tuesday.
-    Future<void> writeOldNight() async {
-      await actions.recordSleep(
-        day: tuesday,
-        kind: SleepKind.night,
-        period: nightPeriod(
-          tuesday,
-          const ClockTime(23, 0),
-          const ClockTime(7, 0),
-        ),
-      );
-    }
-
-    test('give a wake-up and the bedtime of the day before', () async {
-      await writeOldNight();
-
-      final log = await logFromDisk();
-      expect(log.invalidCount, 0);
-      expect(log.wakeUpOn(tuesdayText)!.clock, const ClockTime(7, 0));
-      expect(log.bedtimeOf(mondayText)!.clock, const ClockTime(23, 0));
-      expect(log.sleepBefore(tuesdayText), const Duration(hours: 8));
-    });
-
-    test('changing one adds a new record that takes its place', () async {
-      await writeOldNight();
-      final oldWakeUp = currentLog().wakeUpOn(tuesdayText)!;
-
-      await actions.changeMoment(
-        oldWakeUp,
-        wakeUpMoment(tuesday, const ClockTime(6, 0)),
-      );
-
-      final log = await logFromDisk();
-      expect(log.wakeUpOn(tuesdayText)!.clock, const ClockTime(6, 0));
-      expect(log.wakeUpOn(tuesdayText)!.oldNightId, isNull);
-      // The old night's bedtime is still used.
-      expect(log.bedtimeOf(mondayText)!.clock, const ClockTime(23, 0));
-    });
-
-    test('deleting one deletes that old night', () async {
-      await writeOldNight();
-
-      await actions.deleteMoment(currentLog().wakeUpOn(tuesdayText)!);
-
-      final log = await logFromDisk();
-      expect(log.wakeUpOn(tuesdayText), isNull);
-      expect(log.bedtimeOf(mondayText), isNull);
-    });
-  });
-
   test('naps are listed earliest first', () async {
     for (final start in [const ClockTime(16, 0), const ClockTime(13, 0)]) {
-      await actions.recordSleep(
+      await actions.recordNap(
         day: monday,
-        kind: SleepKind.nap,
         period: napPeriod(
           monday,
           start,
@@ -261,12 +207,12 @@ void main() {
     );
     await appState.writeEvent(
       module: 'sleep',
-      type: 'sleep_recorded',
+      type: 'nap_recorded',
       data: {
         'date': mondayText,
-        'kind': 'hibernation',
-        'started_at': '2026-11-15T23:00:00.000+00:00',
-        'ended_at': '2026-11-16T07:00:00.000+00:00',
+        // Ends before it starts.
+        'started_at': '2026-11-16T15:00:00.000+00:00',
+        'ended_at': '2026-11-16T14:00:00.000+00:00',
       },
     );
 

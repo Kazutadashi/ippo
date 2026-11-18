@@ -27,10 +27,6 @@ class ExerciseLog {
       appState.derived('exercise_log', ExerciseLog.fromEvents);
 
   /// Builds the log from the event log's events (oldest first).
-  ///
-  /// The data format also describes progressions (ladders of
-  /// exercises). The app does not use them, so their events are ignored;
-  /// exercises and sets made with them still load normally.
   factory ExerciseLog.fromEvents(List<Event> events) {
     var invalidCount = 0;
 

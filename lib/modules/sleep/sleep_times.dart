@@ -48,20 +48,6 @@ class SleepPeriod {
   Duration get duration => end.difference(start);
 }
 
-/// The moments of a night's sleep that ended on [wakeDay].
-///
-/// The wake-up is on [wakeDay]. The bedtime is the evening before if it
-/// is later on the clock than the wake-up (bed 23:30, woke 07:00), and
-/// on [wakeDay] itself otherwise (bed 00:30, woke 07:00: both after
-/// midnight).
-SleepPeriod nightPeriod(DateTime wakeDay, ClockTime bed, ClockTime woke) {
-  final end = _at(wakeDay, woke);
-  final bedIsTheEveningBefore =
-      bed.minutesSinceMidnight >= woke.minutesSinceMidnight;
-  final bedDay = bedIsTheEveningBefore ? addDays(wakeDay, -1) : wakeDay;
-  return SleepPeriod(_at(bedDay, bed), end);
-}
-
 /// The moments of a nap that started on [day].
 ///
 /// If the end is earlier on the clock than the start, the nap went past

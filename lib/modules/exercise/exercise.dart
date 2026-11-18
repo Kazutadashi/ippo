@@ -30,7 +30,7 @@ enum MeasuredIn {
   }
 }
 
-/// The longest name allowed for an exercise or progression.
+/// The longest name allowed for an exercise.
 const int maximumExerciseNameLength = 100;
 
 /// An exercise. Created by `exercise_created`; see "Module: exercise" in
@@ -79,7 +79,7 @@ class Exercise {
   final bool isDeleted;
 }
 
-/// Checks a name the user typed for an exercise or progression. Returns
+/// Checks a name the user typed for an exercise. Returns
 /// null if it is fine, or a message explaining what is wrong.
 String? checkExerciseName(String name) {
   if (name.trim().isEmpty) {

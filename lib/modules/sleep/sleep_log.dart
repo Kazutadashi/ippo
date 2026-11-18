@@ -7,7 +7,7 @@ import '../../core/dates.dart';
 import '../../core/app_state.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
-import 'sleep_episode.dart';
+import 'nap.dart';
 import 'sleep_moment.dart';
 
 /// The module's name in event files. Never change it.
@@ -21,7 +21,7 @@ class SleepLog {
   /// Creates a log. Normal code uses [SleepLog.fromEvents].
   SleepLog({
     required this.moments,
-    required this.episodes,
+    required this.naps,
     required this.invalidCount,
   });
 
@@ -52,48 +52,41 @@ class SleepLog {
       }
     }
 
-    final episodes = <SleepEpisode>[];
-    final episodeRecords = collectThings(
+    final naps = <Nap>[];
+    final napRecords = collectThings(
       events,
       module: sleepModuleName,
-      createdType: 'sleep_recorded',
-      thingName: 'sleep',
+      createdType: 'nap_recorded',
+      thingName: 'nap',
     );
-    for (final record in episodeRecords.values) {
-      final episode = SleepEpisode.fromRecord(record);
-      if (episode == null) {
+    for (final record in napRecords.values) {
+      final nap = Nap.fromRecord(record);
+      if (nap == null) {
         invalidCount++;
       } else {
-        episodes.add(episode);
+        naps.add(nap);
       }
     }
 
-    return SleepLog(
-      moments: moments,
-      episodes: episodes,
-      invalidCount: invalidCount,
-    );
+    return SleepLog(moments: moments, naps: naps, invalidCount: invalidCount);
   }
 
   /// Every wake-up and bedtime recorded directly, including deleted ones,
   /// in the order they were made.
   final List<SleepMoment> moments;
 
-  /// Every nap, and every whole night saved by older versions, including
-  /// deleted ones, in the order they were made.
-  final List<SleepEpisode> episodes;
+  /// Every nap, including deleted ones, in the order they were made.
+  final List<Nap> naps;
 
   /// How many records were skipped because their data was not valid.
   final int invalidCount;
 
   /// When you woke up on [date] (`YYYY-MM-DD`), or null if not known.
-  SleepMoment? wakeUpOn(String date) =>
-      _momentOn(date, MomentKind.wokeUp) ?? _fromOldNightEndingOn(date);
+  SleepMoment? wakeUpOn(String date) => _momentOn(date, MomentKind.wokeUp);
 
   /// When you went to bed at the end of [date], or null if not known.
   /// It may be after midnight, on the next calendar day.
-  SleepMoment? bedtimeOf(String date) =>
-      _momentOn(date, MomentKind.wentToBed) ?? _fromOldNightStartingAfter(date);
+  SleepMoment? bedtimeOf(String date) => _momentOn(date, MomentKind.wentToBed);
 
   /// How long you slept before [date]: from the previous day's bedtime to
   /// this day's wake-up. Null if either is not known.
@@ -109,15 +102,8 @@ class SleepLog {
   }
 
   /// The naps on [date], earliest first.
-  List<SleepEpisode> napsOn(String date) {
-    return episodes
-        .where(
-          (episode) =>
-              episode.date == date &&
-              episode.kind == SleepKind.nap &&
-              !episode.isDeleted,
-        )
-        .toList()
+  List<Nap> napsOn(String date) {
+    return naps.where((nap) => nap.date == date && !nap.isDeleted).toList()
       ..sort(
         (first, second) => first.startedAtUtc.compareTo(second.startedAtUtc),
       );
@@ -142,56 +128,6 @@ class SleepLog {
     for (final moment in moments) {
       if (moment.kind == kind && moment.date == date && !moment.isDeleted) {
         found = moment;
-      }
-    }
-    return found;
-  }
-
-  /// The wake-up from an older, whole-night record ending on [date].
-  SleepMoment? _fromOldNightEndingOn(String date) {
-    final night = _oldNightFor(date);
-    if (night == null) {
-      return null;
-    }
-    return SleepMoment(
-      id: night.id,
-      kind: MomentKind.wokeUp,
-      date: date,
-      at: night.endedAt,
-      atUtc: night.endedAtUtc,
-      isDeleted: false,
-      oldNightId: night.id,
-    );
-  }
-
-  /// The bedtime from an older, whole-night record: that night started at
-  /// the end of [date] and ended on the next day.
-  SleepMoment? _fromOldNightStartingAfter(String date) {
-    final nextDay = formatDate(addDays(parseDate(date)!, 1));
-    final night = _oldNightFor(nextDay);
-    if (night == null) {
-      return null;
-    }
-    return SleepMoment(
-      id: night.id,
-      kind: MomentKind.wentToBed,
-      date: date,
-      at: night.startedAt,
-      atUtc: night.startedAtUtc,
-      isDeleted: false,
-      oldNightId: night.id,
-    );
-  }
-
-  /// The latest whole night, saved by an older version, that ended on
-  /// [wakeDate].
-  SleepEpisode? _oldNightFor(String wakeDate) {
-    SleepEpisode? found;
-    for (final episode in episodes) {
-      if (episode.kind == SleepKind.night &&
-          episode.date == wakeDate &&
-          !episode.isDeleted) {
-        found = episode;
       }
     }
     return found;

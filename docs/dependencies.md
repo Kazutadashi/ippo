@@ -23,6 +23,19 @@ install.
 | `flutter_test` | Flutter team | Runs the automated tests. | Every change that touches data needs tests. |
 | `flutter_lints` | Flutter team | The standard set of code checks used by `flutter analyze`. | Catches common mistakes and keeps the code consistent. |
 
+## Python package dependencies
+
+The package in `python/` is separate from the app; the app does not use
+it.
+
+| Package | Maintained by | What it does | Why we need it |
+| --- | --- | --- | --- |
+| `pandas` | pandas team | Tables of data, with dates, grouping and CSV files. | It is what most people analyse data with in Python, so the tables are ready to use. |
+
+The scripts in `python/examples/` also use `matplotlib`, the standard
+Python charting library, to draw charts. The package itself does not
+need it.
+
 ## Artwork from other projects
 
 | What | From | Licence | Where |

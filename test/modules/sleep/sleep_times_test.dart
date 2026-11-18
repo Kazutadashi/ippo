@@ -10,38 +10,6 @@ import 'package:ippo/modules/sleep/sleep_times.dart';
 void main() {
   final monday = DateTime(2026, 11, 16);
 
-  group('nightPeriod', () {
-    test('bed before midnight means the evening before', () {
-      final night = nightPeriod(
-        monday,
-        const ClockTime(23, 30),
-        const ClockTime(7, 0),
-      );
-      expect(night.start, DateTime(2026, 11, 15, 23, 30));
-      expect(night.end, DateTime(2026, 11, 16, 7, 0));
-      expect(night.duration, const Duration(hours: 7, minutes: 30));
-    });
-
-    test('bed after midnight means the same day as waking', () {
-      final night = nightPeriod(
-        monday,
-        const ClockTime(0, 30),
-        const ClockTime(7, 0),
-      );
-      expect(night.start, DateTime(2026, 11, 16, 0, 30));
-      expect(night.duration, const Duration(hours: 6, minutes: 30));
-    });
-
-    test('works across a month boundary', () {
-      final night = nightPeriod(
-        DateTime(2026, 12, 1),
-        const ClockTime(22, 0),
-        const ClockTime(6, 0),
-      );
-      expect(night.start, DateTime(2026, 11, 30, 22, 0));
-    });
-  });
-
   group('napPeriod', () {
     test('a normal afternoon nap', () {
       final nap = napPeriod(
@@ -65,12 +33,6 @@ void main() {
   });
 
   test('equal start and end times are refused', () {
-    final night = nightPeriod(
-      monday,
-      const ClockTime(7, 0),
-      const ClockTime(7, 0),
-    );
-    expect(checkSleepPeriod(night), isNotNull);
     final nap = napPeriod(
       monday,
       const ClockTime(14, 0),
@@ -80,12 +42,12 @@ void main() {
   });
 
   test('a normal period is accepted', () {
-    final night = nightPeriod(
+    final nap = napPeriod(
       monday,
       const ClockTime(23, 0),
       const ClockTime(7, 0),
     );
-    expect(checkSleepPeriod(night), isNull);
+    expect(checkSleepPeriod(nap), isNull);
   });
 
   group('bedtimeMoment', () {

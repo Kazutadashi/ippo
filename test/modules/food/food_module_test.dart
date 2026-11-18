@@ -87,7 +87,6 @@ void main() {
     expect(entry.name, 'Rolled oats');
     expect(entry.amount, 60);
     expect(entry.measuredIn, 'g');
-    expect(entry.meal, isNull);
     expect(entry.time, '07:30');
     expect(entry.foodId, oatsId);
     expect(entry.nutrients.values, {
