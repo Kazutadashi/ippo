@@ -53,50 +53,58 @@ class HabitsScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text('New habit'),
       ),
-      body: ListenableBuilder(
-        listenable: appState,
-        builder: (context, _) {
-          final log = HabitLog.fromEvents(appState.eventLog?.events ?? []);
-          final habits = log.shownHabits;
-          return ListView(
-            // Room at the bottom, so the button never hides a habit.
-            padding: const EdgeInsets.fromLTRB(
-              Spacing.screen,
-              0,
-              Spacing.screen,
-              96,
-            ),
-            children: [
-              if (log.invalidCount > 0)
-                ProblemText(
-                  '${log.invalidCount} items in the data could not be read '
-                  'and are not shown.',
-                ),
-              if (habits.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: Spacing.screen),
-                  child: NoteText(
-                    'Tap "New habit" to add one. Then tap a day to mark it '
-                    'done (✓) or not done (✗).',
+      body: RefreshIndicator(
+        // Pull down to read the data folder again, for example after a
+        // sync.
+        onRefresh: appState.reloadEvents,
+        child: ListenableBuilder(
+          listenable: appState,
+          builder: (context, _) {
+            final log = HabitLog.of(appState);
+            final habits = log.shownHabits;
+            return ListView(
+              // Pull to refresh works even when the content is short.
+              physics: const AlwaysScrollableScrollPhysics(),
+
+              // Room at the bottom, so the button never hides a habit.
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.screen,
+                0,
+                Spacing.screen,
+                96,
+              ),
+              children: [
+                if (log.invalidCount > 0)
+                  ProblemText(
+                    '${log.invalidCount} items in the data could not be read '
+                    'and are not shown.',
                   ),
-                )
-              else
-                Card(
-                  margin: const EdgeInsets.only(top: Spacing.small),
-                  clipBehavior: Clip.antiAlias,
-                  child: _HabitGrid(
-                    appState: appState,
-                    log: log,
-                    habits: habits,
-                    onEditHabit: (habit) => _open(
-                      context,
-                      HabitFormScreen(appState: appState, habit: habit),
+                if (habits.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: Spacing.screen),
+                    child: NoteText(
+                      'Tap "New habit" to add one. Then tap a day to mark it '
+                      'done (✓) or not done (✗).',
+                    ),
+                  )
+                else
+                  Card(
+                    margin: const EdgeInsets.only(top: Spacing.small),
+                    clipBehavior: Clip.antiAlias,
+                    child: _HabitGrid(
+                      appState: appState,
+                      log: log,
+                      habits: habits,
+                      onEditHabit: (habit) => _open(
+                        context,
+                        HabitFormScreen(appState: appState, habit: habit),
+                      ),
                     ),
                   ),
-                ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

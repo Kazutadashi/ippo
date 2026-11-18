@@ -35,8 +35,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
   /// The day being shown, at local midnight. Starts at today.
   DateTime _day = today();
 
-  ExerciseLog _currentLog() =>
-      ExerciseLog.fromEvents(widget.appState.eventLog?.events ?? []);
+  ExerciseLog _currentLog() => ExerciseLog.of(widget.appState);
 
   void _open(Widget screen) {
     Navigator.of(context)
@@ -84,49 +83,57 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
         icon: const Icon(Icons.add),
         label: const Text('New exercise'),
       ),
-      body: ListenableBuilder(
-        listenable: widget.appState,
-        builder: (context, _) {
-          final log = _currentLog();
-          final date = formatDate(_day);
-          return ListView(
-            // Leave room at the bottom so the button never hides a card.
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-            children: [
-              if (log.invalidCount > 0)
-                ProblemText(
-                  '${log.invalidCount} items in the data could not be read '
-                  'and are not shown.',
-                ),
-              if (log.activeExercises.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: NoteText(
-                    'Tap "New exercise" to start. Each exercise gets a card '
-                    'where you add the day\'s sets and reps.',
+      body: RefreshIndicator(
+        // Pull down to read the data folder again, for example after a
+        // sync.
+        onRefresh: widget.appState.reloadEvents,
+        child: ListenableBuilder(
+          listenable: widget.appState,
+          builder: (context, _) {
+            final log = _currentLog();
+            final date = formatDate(_day);
+            return ListView(
+              // Pull to refresh works even when the content is short.
+              physics: const AlwaysScrollableScrollPhysics(),
+
+              // Leave room at the bottom so the button never hides a card.
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              children: [
+                if (log.invalidCount > 0)
+                  ProblemText(
+                    '${log.invalidCount} items in the data could not be read '
+                    'and are not shown.',
                   ),
-                ),
-              for (final exercise in log.activeExercises)
-                ExerciseCard(
-                  // A key per exercise keeps each card's typed numbers
-                  // with the right card when the list changes.
-                  key: ValueKey(exercise.id),
-                  exercise: exercise,
-                  daySets: log.setsOn(date, exercise.id),
-                  startValue: log.lastSetOf(exercise.id)?.value,
-                  onAddSets: (value, setCount) =>
-                      _addSets(exercise, value, setCount),
-                  onEditSet: (set) => _editSet(exercise, set),
-                  onEdit: () => _open(
-                    ExerciseFormScreen(
-                      appState: widget.appState,
-                      exercise: exercise,
+                if (log.activeExercises.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: NoteText(
+                      'Tap "New exercise" to start. Each exercise gets a card '
+                      'where you add the day\'s sets and reps.',
                     ),
                   ),
-                ),
-            ],
-          );
-        },
+                for (final exercise in log.activeExercises)
+                  ExerciseCard(
+                    // A key per exercise keeps each card's typed numbers
+                    // with the right card when the list changes.
+                    key: ValueKey(exercise.id),
+                    exercise: exercise,
+                    daySets: log.setsOn(date, exercise.id),
+                    startValue: log.lastSetOf(exercise.id)?.value,
+                    onAddSets: (value, setCount) =>
+                        _addSets(exercise, value, setCount),
+                    onEditSet: (set) => _editSet(exercise, set),
+                    onEdit: () => _open(
+                      ExerciseFormScreen(
+                        appState: widget.appState,
+                        exercise: exercise,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@
 library;
 
 import '../../core/dates.dart';
+import '../../core/app_state.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'sleep_episode.dart';
@@ -23,6 +24,11 @@ class SleepLog {
     required this.episodes,
     required this.invalidCount,
   });
+
+  /// The current state for [appState], worked out once per change of
+  /// the data and shared by every screen (see `AppState.derived`).
+  static SleepLog of(AppState appState) =>
+      appState.derived('sleep_log', SleepLog.fromEvents);
 
   /// Builds the log from the event log's events (oldest first).
   factory SleepLog.fromEvents(List<Event> events) {

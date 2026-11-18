@@ -50,7 +50,7 @@ String _defaultDeviceName() {
 }
 
 /// The root widget of the app.
-class IppoApp extends StatelessWidget {
+class IppoApp extends StatefulWidget {
   /// Creates the root widget, showing [appState].
   const IppoApp({super.key, required this.appState});
 
@@ -58,26 +58,65 @@ class IppoApp extends StatelessWidget {
   final AppState appState;
 
   @override
+  State<IppoApp> createState() => _IppoAppState();
+}
+
+class _IppoAppState extends State<IppoApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  // The themes built last, and what they were built from. Building a
+  // theme takes a moment, so it is only done again when the colour or
+  // mode changes, not on every save.
+  String? _themeKey;
+  ThemeData? _lightTheme;
+  ThemeData? _darkTheme;
+
+  @override
+  void initState() {
+    super.initState();
+    // Coming back to the app: read the data folder again, so entries
+    // synced from other devices show without doing anything.
+    _lifecycle = AppLifecycleListener(onResume: widget.appState.reloadEvents);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void _updateThemes() {
+    final saved = widget.appState.settings?.accentColor;
+    final system = widget.appState.systemAccentColor;
+    final accent = chooseAccentColor(saved, system);
+    final matchSystem = usesSystemAccent(saved, system);
+    final key = '${accent.toARGB32()} $matchSystem';
+    if (key == _themeKey) {
+      return;
+    }
+    _themeKey = key;
+    _lightTheme = buildTheme(
+      accent,
+      Brightness.light,
+      matchSystem: matchSystem,
+    );
+    _darkTheme = buildTheme(accent, Brightness.dark, matchSystem: matchSystem);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Rebuild when the settings change, so a new theme or accent colour
+    // Redraw when the settings change, so a new theme or accent colour
     // shows at once.
     return ListenableBuilder(
-      listenable: appState,
+      listenable: widget.appState,
       builder: (context, _) {
-        final saved = appState.settings?.accentColor;
-        final system = appState.systemAccentColor;
-        final accent = chooseAccentColor(saved, system);
-        final matchSystem = usesSystemAccent(saved, system);
+        _updateThemes();
         return MaterialApp(
           title: 'Ippo',
-          theme: buildTheme(accent, Brightness.light, matchSystem: matchSystem),
-          darkTheme: buildTheme(
-            accent,
-            Brightness.dark,
-            matchSystem: matchSystem,
-          ),
-          themeMode: parseThemeMode(appState.settings?.themeMode),
-          home: HomeScreen(appState: appState),
+          theme: _lightTheme,
+          darkTheme: _darkTheme,
+          themeMode: parseThemeMode(widget.appState.settings?.themeMode),
+          home: HomeScreen(appState: widget.appState),
         );
       },
     );

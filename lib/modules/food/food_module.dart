@@ -30,7 +30,7 @@ class FoodModule implements IppoModule {
   /// Two tiles: energy eaten today, and the last meal.
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
-    final diary = FoodDiary.fromEvents(appState.eventLog?.events ?? []);
+    final diary = FoodDiary.of(appState);
     final today = formatDate(now);
     final entries = diary.entriesOn(today);
     final total = diary.totalOn(today);

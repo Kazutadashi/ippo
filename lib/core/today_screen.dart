@@ -38,32 +38,43 @@ class TodayScreen extends StatelessWidget {
       for (final module in allModules) ...module.todayFacts(appState, now),
     ];
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(greetingFor(now), style: textTheme.headlineSmall),
-                ),
-                IconButton(
-                  tooltip: 'Settings',
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: onOpenSettings,
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              describeToday(now),
-              style: textTheme.titleMedium?.copyWith(
-                color: colors.onSurfaceVariant,
+      body: RefreshIndicator(
+        // Pull down to read the data folder again, for example after a
+        // sync.
+        onRefresh: appState.reloadEvents,
+        child: SafeArea(
+          child: ListView(
+            // Pull to refresh works even when the content is short.
+            physics: const AlwaysScrollableScrollPhysics(),
+
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      greetingFor(now),
+                      style: textTheme.headlineSmall,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Settings',
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: onOpenSettings,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: Spacing.medium),
-            _TileGrid(facts: facts),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                describeToday(now),
+                style: textTheme.titleMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: Spacing.medium),
+              _TileGrid(facts: facts),
+            ],
+          ),
         ),
       ),
     );

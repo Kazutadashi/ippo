@@ -103,54 +103,61 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           ],
         ),
       ),
-      body: ListenableBuilder(
-        listenable: widget.appState,
-        builder: (context, _) {
-          final events = widget.appState.eventLog?.events ?? [];
-          final diary = FoodDiary.fromEvents(events);
-          final date = formatDate(_day);
-          final entries = diary.entriesOn(date);
-          return ListView(
-            // Room at the bottom, so the buttons never hide an entry.
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
-            children: [
-              if (diary.invalidCount > 0)
-                ProblemText(
-                  '${diary.invalidCount} foods or entries in the data '
-                  'could not be read and are not shown.',
-                ),
-              SectionCard(
-                children: [
-                  const CardHeader(
-                    icon: Icons.local_fire_department,
-                    title: 'Total',
+      body: RefreshIndicator(
+        // Pull down to read the data folder again, for example after a
+        // sync.
+        onRefresh: widget.appState.reloadEvents,
+        child: ListenableBuilder(
+          listenable: widget.appState,
+          builder: (context, _) {
+            final diary = FoodDiary.of(widget.appState);
+            final date = formatDate(_day);
+            final entries = diary.entriesOn(date);
+            return ListView(
+              // Pull to refresh works even when the content is short.
+              physics: const AlwaysScrollableScrollPhysics(),
+
+              // Room at the bottom, so the buttons never hide an entry.
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
+              children: [
+                if (diary.invalidCount > 0)
+                  ProblemText(
+                    '${diary.invalidCount} foods or entries in the data '
+                    'could not be read and are not shown.',
                   ),
-                  const SizedBox(height: 8),
-                  NutrientInfoRow(nutrients: diary.totalOn(date)),
-                ],
-              ),
-              SectionCard(
-                children: [
-                  const CardHeader(icon: Icons.restaurant, title: 'Eaten'),
-                  if (entries.isEmpty)
-                    const NoteText('Nothing logged on this day.'),
-                  for (final entry in entries)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(entry.name),
-                      subtitle: Text(_describeEntry(entry)),
-                      trailing: IconButton(
-                        tooltip: 'Edit entry',
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => _editEntry(entry),
-                      ),
-                      onTap: () => _editEntry(entry),
+                SectionCard(
+                  children: [
+                    const CardHeader(
+                      icon: Icons.local_fire_department,
+                      title: 'Total',
                     ),
-                ],
-              ),
-            ],
-          );
-        },
+                    const SizedBox(height: 8),
+                    NutrientInfoRow(nutrients: diary.totalOn(date)),
+                  ],
+                ),
+                SectionCard(
+                  children: [
+                    const CardHeader(icon: Icons.restaurant, title: 'Eaten'),
+                    if (entries.isEmpty)
+                      const NoteText('Nothing logged on this day.'),
+                    for (final entry in entries)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(entry.name),
+                        subtitle: Text(_describeEntry(entry)),
+                        trailing: IconButton(
+                          tooltip: 'Edit entry',
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () => _editEntry(entry),
+                        ),
+                        onTap: () => _editEntry(entry),
+                      ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

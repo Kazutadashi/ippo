@@ -65,78 +65,85 @@ class _SleepScreenState extends State<SleepScreen> {
           ),
         ],
       ),
-      body: ListenableBuilder(
-        listenable: widget.appState,
-        builder: (context, _) {
-          final log = SleepLog.fromEvents(
-            widget.appState.eventLog?.events ?? [],
-          );
-          final date = formatDate(_day);
-          final wakeUp = log.wakeUpOn(date);
-          final bedtime = log.bedtimeOf(date);
-          final sleptBefore = log.sleepBefore(date);
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            children: [
-              if (log.invalidCount > 0)
-                ProblemText(
-                  '${log.invalidCount} entries in the data could not be '
-                  'read and are not shown.',
-                ),
-              SectionCard(
-                children: [
-                  CardHeader(
-                    icon: Icons.wb_sunny_outlined,
-                    title: _day == sleepToday ? 'Today' : 'This day',
+      body: RefreshIndicator(
+        // Pull down to read the data folder again, for example after a
+        // sync.
+        onRefresh: widget.appState.reloadEvents,
+        child: ListenableBuilder(
+          listenable: widget.appState,
+          builder: (context, _) {
+            final log = SleepLog.of(widget.appState);
+            final date = formatDate(_day);
+            final wakeUp = log.wakeUpOn(date);
+            final bedtime = log.bedtimeOf(date);
+            final sleptBefore = log.sleepBefore(date);
+            return ListView(
+              // Pull to refresh works even when the content is short.
+              physics: const AlwaysScrollableScrollPhysics(),
+
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                if (log.invalidCount > 0)
+                  ProblemText(
+                    '${log.invalidCount} entries in the data could not be '
+                    'read and are not shown.',
                   ),
-                  const SizedBox(height: 8),
-                  _DayEntry(
-                    // A new key whenever the day or its saved times
-                    // change, so the fields start from what is saved.
-                    key: ValueKey(
-                      '$date ${wakeUp?.id} ${wakeUp?.at} '
-                      '${bedtime?.id} ${bedtime?.at}',
+                SectionCard(
+                  children: [
+                    CardHeader(
+                      icon: Icons.wb_sunny_outlined,
+                      title: _day == sleepToday ? 'Today' : 'This day',
                     ),
-                    appState: widget.appState,
-                    day: _day,
-                    wakeUp: wakeUp,
-                    bedtime: bedtime,
-                    wakeGuess:
-                        log.latest(MomentKind.wokeUp)?.clock ?? _firstWakeGuess,
-                    bedGuess:
-                        log.latest(MomentKind.wentToBed)?.clock ??
-                        _firstBedGuess,
-                  ),
-                  if (sleptBefore != null) ...[
-                    const SizedBox(height: 12),
-                    NoteText(
-                      'Slept ${formatDuration(sleptBefore)} the night '
-                      'before.',
+                    const SizedBox(height: 8),
+                    _DayEntry(
+                      // A new key whenever the day or its saved times
+                      // change, so the fields start from what is saved.
+                      key: ValueKey(
+                        '$date ${wakeUp?.id} ${wakeUp?.at} '
+                        '${bedtime?.id} ${bedtime?.at}',
+                      ),
+                      appState: widget.appState,
+                      day: _day,
+                      wakeUp: wakeUp,
+                      bedtime: bedtime,
+                      wakeGuess:
+                          log.latest(MomentKind.wokeUp)?.clock ??
+                          _firstWakeGuess,
+                      bedGuess:
+                          log.latest(MomentKind.wentToBed)?.clock ??
+                          _firstBedGuess,
                     ),
+                    if (sleptBefore != null) ...[
+                      const SizedBox(height: 12),
+                      NoteText(
+                        'Slept ${formatDuration(sleptBefore)} the night '
+                        'before.',
+                      ),
+                    ],
                   ],
-                ],
-              ),
-              SectionCard(
-                children: [
-                  CardHeader(
-                    icon: Icons.airline_seat_flat,
-                    title: 'Naps',
-                    action: HeaderAddButton(
-                      onPressed: () => _open(
-                        SleepFormScreen.addNap(
-                          appState: widget.appState,
-                          day: _day,
+                ),
+                SectionCard(
+                  children: [
+                    CardHeader(
+                      icon: Icons.airline_seat_flat,
+                      title: 'Naps',
+                      action: HeaderAddButton(
+                        onPressed: () => _open(
+                          SleepFormScreen.addNap(
+                            appState: widget.appState,
+                            day: _day,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  ..._buildNaps(log.napsOn(date)),
-                ],
-              ),
-            ],
-          );
-        },
+                    const SizedBox(height: 4),
+                    ..._buildNaps(log.napsOn(date)),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -30,7 +30,7 @@ class ExerciseModule implements IppoModule {
   /// Two tiles: today's sets, and the last set.
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
-    final log = ExerciseLog.fromEvents(appState.eventLog?.events ?? []);
+    final log = ExerciseLog.of(appState);
     final today = formatDate(now);
     var setCount = 0;
     var reps = 0;

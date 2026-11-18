@@ -3,6 +3,7 @@
 /// The habits module's current state, worked out from the event log.
 library;
 
+import '../../core/app_state.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'habit.dart';
@@ -30,6 +31,11 @@ class HabitLog {
     required this.entries,
     required this.invalidCount,
   });
+
+  /// The current state for [appState], worked out once per change of
+  /// the data and shared by every screen (see `AppState.derived`).
+  static HabitLog of(AppState appState) =>
+      appState.derived('habit_log', HabitLog.fromEvents);
 
   /// Builds the log from the event log's events (oldest first).
   factory HabitLog.fromEvents(List<Event> events) {
@@ -92,15 +98,24 @@ class HabitLog {
   /// The entries of [habitId] on [date] that are not deleted, oldest
   /// first. The last one counts.
   List<HabitEntry> entriesOn(String habitId, String date) {
-    return entries
-        .where(
-          (entry) =>
-              entry.habitId == habitId &&
-              entry.date == date &&
-              !entry.isDeleted,
-        )
-        .toList();
+    return _entriesByHabitAndDay['$habitId $date'] ?? const [];
   }
+
+  /// The entries that are not deleted, grouped by habit and day (the key
+  /// is `"<habit id> <date>"`), in the order they were made. Built once,
+  /// the first time it is needed, so the habit grid does not search
+  /// through every entry for each of its cells.
+  late final Map<String, List<HabitEntry>> _entriesByHabitAndDay = () {
+    final grouped = <String, List<HabitEntry>>{};
+    for (final entry in entries) {
+      if (!entry.isDeleted) {
+        grouped
+            .putIfAbsent('${entry.habitId} ${entry.date}', () => [])
+            .add(entry);
+      }
+    }
+    return grouped;
+  }();
 
   /// What [habitId] shows on [date].
   DayMark markOn(String habitId, String date) {

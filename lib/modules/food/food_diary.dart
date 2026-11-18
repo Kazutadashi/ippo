@@ -3,6 +3,7 @@
 /// The food module's current state, worked out from the event log.
 library;
 
+import '../../core/app_state.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'food.dart';
@@ -20,6 +21,11 @@ class FoodDiary {
     required this.entries,
     required this.invalidCount,
   });
+
+  /// The current state for [appState], worked out once per change of
+  /// the data and shared by every screen (see `AppState.derived`).
+  static FoodDiary of(AppState appState) =>
+      appState.derived('food_diary', FoodDiary.fromEvents);
 
   /// Builds the diary from the event log's events (oldest first).
   factory FoodDiary.fromEvents(List<Event> events) {

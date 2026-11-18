@@ -72,8 +72,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
       return;
     }
     // Go straight on to logging the new food.
-    final events = widget.appState.eventLog?.events ?? [];
-    final newFood = FoodDiary.fromEvents(events).foods[newFoodId];
+    final newFood = FoodDiary.of(widget.appState).foods[newFoodId];
     if (newFood != null) {
       _logFood(newFood);
     }
@@ -103,8 +102,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
-          final events = widget.appState.eventLog?.events ?? [];
-          final foods = FoodDiary.fromEvents(events)
+          final foods = FoodDiary.of(widget.appState)
               .foodsByRecentUse()
               .where(
                 (food) =>

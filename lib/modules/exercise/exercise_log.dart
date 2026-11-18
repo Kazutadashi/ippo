@@ -3,6 +3,7 @@
 /// The exercise module's current state, worked out from the event log.
 library;
 
+import '../../core/app_state.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'exercise.dart';
@@ -19,6 +20,11 @@ class ExerciseLog {
     required this.sets,
     required this.invalidCount,
   });
+
+  /// The current state for [appState], worked out once per change of
+  /// the data and shared by every screen (see `AppState.derived`).
+  static ExerciseLog of(AppState appState) =>
+      appState.derived('exercise_log', ExerciseLog.fromEvents);
 
   /// Builds the log from the event log's events (oldest first).
   ///

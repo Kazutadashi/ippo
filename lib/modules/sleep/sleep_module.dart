@@ -33,7 +33,7 @@ class SleepModule implements IppoModule {
   /// you have been awake.
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
-    final log = SleepLog.fromEvents(appState.eventLog?.events ?? []);
+    final log = SleepLog.of(appState);
     // Before 05:00, "today" is still the day before.
     final day = currentSleepDay(now);
     final date = formatDate(day);

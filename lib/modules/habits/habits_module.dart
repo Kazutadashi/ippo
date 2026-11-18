@@ -28,7 +28,7 @@ class HabitsModule implements IppoModule {
   /// Two tiles: how many habits are done today, and which are left.
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
-    final log = HabitLog.fromEvents(appState.eventLog?.events ?? []);
+    final log = HabitLog.of(appState);
     final habits = log.shownHabits;
     final date = formatDate(now);
     if (habits.isEmpty) {

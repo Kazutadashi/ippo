@@ -6,9 +6,11 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 
+import 'dates.dart';
 import 'events/event.dart';
 import 'events/event_log.dart';
 import 'events/event_log_reader.dart';
+import 'events/monthly_backup.dart';
 import 'events/event_writer.dart';
 import 'settings/app_settings.dart';
 import 'storage/android_data_folder.dart';
@@ -46,6 +48,11 @@ class AppState extends ChangeNotifier {
   /// `system_colors.dart`.
   final Color? systemAccentColor;
 
+  // Values worked out from the event log, kept until the log changes.
+  // See [derived].
+  final Map<String, Object> _derivedValues = {};
+  EventLog? _derivedFrom;
+
   AppSettings? _settings;
   DataFolder? _dataFolder;
   String? _dataFolderDescription;
@@ -75,6 +82,33 @@ class AppState extends ChangeNotifier {
 
   /// The latest error to show the user, or null if all is well.
   String? get errorMessage => _errorMessage;
+
+  /// Returns a value worked out from the events by [build], such as a
+  /// module's diary, building it only once per change of the event log.
+  ///
+  /// Every tab, and Home, ask for the same values whenever they redraw.
+  /// Working them out once and sharing them keeps the app fast as the
+  /// data grows over the years. [key] names the value, for example
+  /// `food_diary`; each key must always be built the same way.
+  T derived<T extends Object>(
+    String key,
+    T Function(List<Event> events) build,
+  ) {
+    final eventLog = _eventLog;
+    // The event log is replaced (never changed in place) whenever events
+    // are read or written, so a different object means new data.
+    if (!identical(eventLog, _derivedFrom)) {
+      _derivedValues.clear();
+      _derivedFrom = eventLog;
+    }
+    final known = _derivedValues[key];
+    if (known is T) {
+      return known;
+    }
+    final value = build(eventLog?.events ?? const []);
+    _derivedValues[key] = value;
+    return value;
+  }
 
   /// Loads the settings and the data folder, then reads the events.
   ///
@@ -108,7 +142,8 @@ class AppState extends ChangeNotifier {
     await reloadEvents();
   }
 
-  /// Reads all event files again, for example after a sync.
+  /// Reads all event files again, for example after a sync. Also makes
+  /// this month's backup, the first time each month.
   Future<void> reloadEvents() async {
     final dataFolder = _dataFolder;
     if (dataFolder == null) {
@@ -120,6 +155,31 @@ class AppState extends ChangeNotifier {
       _errorMessage = 'Could not read the data folder: ${error.message}';
     }
     notifyListeners();
+    await _makeMonthlyBackup(dataFolder);
+  }
+
+  // The month (YYYY-MM) whose backup is known to be done, so the backup
+  // folder is not looked at again on every reload.
+  String? _backedUpMonth;
+
+  Future<void> _makeMonthlyBackup(DataFolder dataFolder) async {
+    final settings = _settings;
+    final now = DateTime.now();
+    final month = formatDate(now).substring(0, 7);
+    if (settings == null || month == _backedUpMonth) {
+      return;
+    }
+    try {
+      await makeMonthlyBackup(
+        dataFolder,
+        deviceId: settings.deviceId,
+        now: now,
+      );
+      _backedUpMonth = month;
+    } on DataFolderException catch (error) {
+      _errorMessage = 'Could not make this month\'s backup: ${error.message}';
+      notifyListeners();
+    }
   }
 
   /// Writes a new event to this device's file and adds it to [eventLog].
