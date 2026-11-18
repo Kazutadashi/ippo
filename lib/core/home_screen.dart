@@ -2,13 +2,15 @@
 
 /// The first screen of the app.
 ///
-/// For now it only leads to the settings. The modules (habits, exercise,
-/// food, time tracking) will appear here as they are built.
+/// It lists the modules from `lib/modules/all_modules.dart`, and leads to
+/// the settings.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../modules/all_modules.dart';
 import 'app_state.dart';
+import 'module.dart';
 import 'settings/settings_screen.dart';
 
 /// The home screen.
@@ -23,6 +25,14 @@ class HomeScreen extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => SettingsScreen(appState: appState),
+      ),
+    );
+  }
+
+  void _openModule(BuildContext context, IppoModule module) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => module.buildScreen(appState),
       ),
     );
   }
@@ -73,11 +83,19 @@ class HomeScreen extends StatelessWidget {
         ],
       );
     }
-    final eventCount = appState.eventLog?.events.length ?? 0;
-    return Text(
-      'Your data folder is ready ($eventCount events).\n'
-      'Habits, exercise, food and time tracking will appear here.',
-      textAlign: TextAlign.center,
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        for (final module in allModules)
+          Card(
+            child: ListTile(
+              leading: Icon(module.icon),
+              title: Text(module.title),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openModule(context, module),
+            ),
+          ),
+      ],
     );
   }
 }
