@@ -103,7 +103,7 @@ the same:
 | Kind | Looks like | Use |
 | --- | --- | --- |
 | **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times |
-| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoTile` on Home |
+| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `InfoTile` on Home |
 | **Note** | Plain grey text | `NoteText`, for short notes and empty states |
 | **Problem** | Plain red text that says what is wrong | `ProblemText` |
 | **Action** | A button: filled, text, or floating | See section 4 |
@@ -116,8 +116,15 @@ Rules:
   plain 12-pixel gap. No symbols between them: no "×", "→" or "–".
 - A field's label says what goes in it ("Went to bed", "Reps"). Add a
   unit as a suffix inside the field ("kg", "g").
-- Choices between a few options use a `SegmentedButton`, never a
-  dropdown, so every option is visible.
+- Choices between a few options use a `SegmentedButton` filling the
+  card's width (`expandedInsets: EdgeInsets.zero`), never a dropdown, so
+  every option is visible.
+- A control that is not a text field (a choice, a row of colours) gets
+  a small grey `FieldLabel` above it ("Theme", "Accent colour").
+- Settings that change rarely (a device's name) are shown as
+  information with an **Edit** button in the header, which opens a
+  small window with the field. They do not sit on screen as open text
+  fields.
 
 
 ## 4. Where actions go

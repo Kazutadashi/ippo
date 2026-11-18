@@ -156,6 +156,73 @@ class InfoValue extends StatelessWidget {
   }
 }
 
+/// Information that may be long, such as a folder path: a small grey
+/// label above the text, which wraps instead of shrinking.
+///
+/// With [isSelectable], the text can be selected and copied, which helps
+/// for ids and paths.
+class InfoText extends StatelessWidget {
+  /// Creates the information block.
+  const InfoText({
+    super.key,
+    required this.label,
+    required this.text,
+    this.isSelectable = false,
+  });
+
+  /// What the text is.
+  final String label;
+
+  /// The text itself.
+  final String text;
+
+  /// Whether the text can be selected and copied.
+  final bool isSelectable;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: textTheme.labelMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 2),
+        if (isSelectable)
+          SelectableText(text, style: textTheme.bodyLarge)
+        else
+          Text(text, style: textTheme.bodyLarge),
+      ],
+    );
+  }
+}
+
+/// A small grey label above a control, such as "Theme" above a choice
+/// of light or dark.
+class FieldLabel extends StatelessWidget {
+  /// Creates the label.
+  const FieldLabel(this.text, {super.key});
+
+  /// The label.
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelMedium
+            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      ),
+    );
+  }
+}
+
 /// A row of [InfoValue]s with a small gap between them.
 ///
 /// They share the width equally, unless [flexes] gives each one a share:

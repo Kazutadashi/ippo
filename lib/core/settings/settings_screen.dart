@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The settings screen: data folder, appearance, this device's name, and
-/// the list of devices with when each was last seen.
+/// The settings screen: data folder, appearance, this device, and the
+/// list of devices with when each was last seen.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -35,27 +35,30 @@ class SettingsScreen extends StatelessWidget {
             SectionCard(
               children: [
                 const CardHeader(icon: Icons.folder, title: 'Data folder'),
-                const NoteText(
-                  'Ippo keeps all your data as plain text files in this '
-                  'folder. To use several devices, sync this folder between '
-                  'them, for example with Syncthing.',
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 4),
                 _DataFolderSection(appState: appState),
               ],
             ),
             SectionCard(
               children: [
                 const CardHeader(icon: Icons.palette, title: 'Appearance'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 AppearanceSection(appState: appState),
               ],
             ),
             SectionCard(
               children: [
-                const CardHeader(icon: Icons.smartphone, title: 'This device'),
-                const SizedBox(height: 8),
-                _DeviceNameSection(appState: appState),
+                CardHeader(
+                  icon: Icons.smartphone,
+                  title: 'This device',
+                  action: appState.settings == null
+                      ? null
+                      : HeaderEditButton(
+                          onPressed: () => _renameDevice(context),
+                        ),
+                ),
+                const SizedBox(height: 4),
+                _ThisDeviceSection(appState: appState),
               ],
             ),
             SectionCard(
@@ -71,6 +74,7 @@ class SettingsScreen extends StatelessWidget {
                           label: const Text('Refresh'),
                         ),
                 ),
+                const SizedBox(height: 4),
                 DevicesSection(appState: appState),
               ],
             ),
@@ -79,9 +83,27 @@ class SettingsScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Asks for a new device name, then saves it. A problem (such as an
+  /// empty name) is shown at the bottom of the screen.
+  Future<void> _renameDevice(BuildContext context) async {
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) =>
+          _RenameDialog(currentName: appState.settings?.deviceName ?? ''),
+    );
+    if (newName == null) {
+      return;
+    }
+    final problem = await appState.renameDevice(newName);
+    if (problem != null && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Not saved: $problem')));
+    }
+  }
 }
 
-/// Shows the data folder and lets the user choose one.
+/// Shows the data folder and lets the user choose another one.
 class _DataFolderSection extends StatefulWidget {
   const _DataFolderSection({required this.appState});
 
@@ -113,67 +135,85 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
   @override
   Widget build(BuildContext context) {
     final appState = widget.appState;
-    final description = appState.dataFolderDescription ?? 'None chosen yet.';
-    final current = <Widget>[
-      const NoteText('Current folder'),
-      Text(description, style: Theme.of(context).textTheme.bodyLarge),
-      const SizedBox(height: 12),
-    ];
-
-    if (appState.isAndroid) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ...current,
-          FilledButton.icon(
-            onPressed: appState.chooseAndroidDataFolder,
-            icon: const Icon(Icons.folder_open),
-            label: const Text('Choose folder'),
-          ),
-        ],
-      );
-    }
-
-    // On Linux, the user types or pastes the folder's path.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ...current,
-        TextField(
-          controller: _pathField,
-          decoration: InputDecoration(
-            labelText: 'Folder path, for example /path/to/data',
-            errorText: _problem,
-          ),
-          onSubmitted: (_) => _useTypedPath(),
+        InfoText(
+          label: 'Current folder',
+          text: appState.dataFolderDescription ?? 'None chosen yet',
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
+        const NoteText(
+          'Your data is saved here as plain text files. Sync this folder '
+          'to use Ippo on several devices.',
+        ),
+        const SizedBox(height: 16),
+        // On Linux, the user types or pastes the folder's path.
+        if (!appState.isAndroid) ...[
+          TextField(
+            controller: _pathField,
+            decoration: InputDecoration(
+              labelText: 'Folder path, for example /path/to/data',
+              errorText: _problem,
+            ),
+            onSubmitted: (_) => _useTypedPath(),
+          ),
+          const SizedBox(height: 12),
+        ],
         FilledButton.icon(
-          onPressed: _useTypedPath,
+          onPressed: appState.isAndroid
+              ? appState.chooseAndroidDataFolder
+              : _useTypedPath,
           icon: const Icon(Icons.folder_open),
-          label: const Text('Use this folder'),
+          label: Text(appState.isAndroid ? 'Choose folder' : 'Use this folder'),
         ),
       ],
     );
   }
 }
 
-/// Lets the user rename this device and shows its id.
-class _DeviceNameSection extends StatefulWidget {
-  const _DeviceNameSection({required this.appState});
+/// This device's name, id and event file, as information.
+class _ThisDeviceSection extends StatelessWidget {
+  const _ThisDeviceSection({required this.appState});
 
   final AppState appState;
 
   @override
-  State<_DeviceNameSection> createState() => _DeviceNameSectionState();
+  Widget build(BuildContext context) {
+    final settings = appState.settings;
+    if (settings == null) {
+      return const NoteText('Settings could not be loaded.');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InfoText(label: 'Name', text: settings.deviceName),
+        const SizedBox(height: 12),
+        InfoText(
+          label: 'Event file',
+          text: 'events/${settings.deviceId}.jsonl',
+          isSelectable: true,
+        ),
+      ],
+    );
+  }
 }
 
-class _DeviceNameSectionState extends State<_DeviceNameSection> {
+/// A small window for typing a new device name. Closes with the name, or
+/// with nothing if cancelled.
+class _RenameDialog extends StatefulWidget {
+  const _RenameDialog({required this.currentName});
+
+  final String currentName;
+
+  @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
   late final TextEditingController _nameField = TextEditingController(
-    text: widget.appState.settings?.deviceName ?? '',
+    text: widget.currentName,
   );
-  String? _problem;
-  bool _isSaved = false;
 
   @override
   void dispose() {
@@ -181,38 +221,27 @@ class _DeviceNameSectionState extends State<_DeviceNameSection> {
     super.dispose();
   }
 
-  Future<void> _saveName() async {
-    final problem = await widget.appState.renameDevice(_nameField.text);
-    setState(() {
-      _problem = problem;
-      _isSaved = problem == null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final deviceId = widget.appState.settings?.deviceId ?? 'unknown';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        TextField(
-          controller: _nameField,
-          decoration: InputDecoration(
-            labelText: 'Device name, shown next to its data',
-            errorText: _problem,
-            helperText: _isSaved ? 'Saved.' : null,
-          ),
-          onChanged: (_) => setState(() => _isSaved = false),
-          onSubmitted: (_) => _saveName(),
+    return AlertDialog(
+      title: const Text('Device name'),
+      content: TextField(
+        controller: _nameField,
+        autofocus: true,
+        decoration: const InputDecoration(
+          labelText: 'Name',
+          helperText: 'Shown next to this device\'s data.',
         ),
-        const SizedBox(height: 12),
-        FilledButton(onPressed: _saveName, child: const Text('Save name')),
-        const SizedBox(height: 12),
-        SelectableText(
-          'Device id: $deviceId\n'
-          'This device writes its events to events/$deviceId.jsonl.',
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        onSubmitted: (name) => Navigator.of(context).pop(name),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_nameField.text),
+          child: const Text('Save'),
         ),
       ],
     );

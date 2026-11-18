@@ -13,7 +13,7 @@ import '../widgets/section_card.dart';
 /// Shows every device that has written events, with the time of its
 /// latest event, so the user can tell whether sync has caught up. (The
 /// Refresh button is in the card's header, on the settings screen.)
-class DevicesSection extends StatelessWidget {
+class DevicesSection extends StatefulWidget {
   /// Creates the section.
   const DevicesSection({super.key, required this.appState});
 
@@ -21,7 +21,16 @@ class DevicesSection extends StatelessWidget {
   final AppState appState;
 
   @override
+  State<DevicesSection> createState() => _DevicesSectionState();
+}
+
+class _DevicesSectionState extends State<DevicesSection> {
+  /// Whether the list of unreadable lines is open.
+  bool _isShowingProblems = false;
+
+  @override
   Widget build(BuildContext context) {
+    final appState = widget.appState;
     final eventLog = appState.eventLog;
     if (appState.dataFolder == null) {
       return const NoteText('Choose a data folder first.');
@@ -39,24 +48,26 @@ class DevicesSection extends StatelessWidget {
       );
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (devices.isEmpty) const NoteText('No events yet, from any device.'),
         for (final device in devices)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              device.deviceId == thisDeviceId
-                  ? Icons.smartphone
-                  : Icons.devices_other,
-            ),
-            title: Text(
-              device.deviceId == thisDeviceId
-                  ? '${device.deviceName} (this device)'
-                  : device.deviceName,
-            ),
-            subtitle: Text(
-              'Last event: ${formatLocalDateTime(device.latestRecordedAtUtc)}',
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InfoText(
+                  label: device.deviceId == thisDeviceId
+                      ? 'This device'
+                      : 'Other device',
+                  text: device.deviceName,
+                ),
+                NoteText(
+                  'Last event '
+                  '${formatLocalDateTime(device.latestRecordedAtUtc)}',
+                ),
+              ],
             ),
           ),
         NoteText('${eventLog.events.length} events in total.'),
@@ -66,52 +77,61 @@ class DevicesSection extends StatelessWidget {
   }
 
   /// Warnings the user should know about. Nothing is ever hidden: every
-  /// skipped line is listed.
+  /// skipped line can be listed.
   List<Widget> _warnings(EventLog eventLog) {
+    final problemCount = eventLog.problems.length;
     return [
       if (eventLog.newerVersionEventCount > 0)
-        _WarningText(
-          '${eventLog.newerVersionEventCount} events were written by a '
-          'newer version of Ippo. Update this app to see them.',
+        _spaced(
+          ProblemText(
+            '${eventLog.newerVersionEventCount} events were written by a '
+            'newer version of Ippo. Update this app to see them.',
+          ),
         ),
       if (eventLog.futureEventCount > 0)
-        _WarningText(
-          '${eventLog.futureEventCount} events are dated in the future. '
-          "One of your devices' clocks may be wrong.",
-        ),
-      if (eventLog.problems.isNotEmpty)
-        ExpansionTile(
-          tilePadding: EdgeInsets.zero,
-          title: _WarningText(
-            '${eventLog.problems.length} lines could not be read and were '
-            'skipped. The files were not changed.',
+        _spaced(
+          ProblemText(
+            '${eventLog.futureEventCount} events are dated in the future. '
+            "One of your devices' clocks may be wrong.",
           ),
-          children: [
-            for (final problem in eventLog.problems)
-              ListTile(dense: true, title: Text(problem.toString())),
-          ],
         ),
+      if (problemCount > 0) ...[
+        _spaced(
+          ProblemText(
+            problemCount == 1
+                ? '1 line could not be read and was skipped. The file was '
+                      'not changed.'
+                : '$problemCount lines could not be read and were skipped. '
+                      'The files were not changed.',
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            // No inner padding, so the button lines up with the text.
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 48),
+            ),
+            onPressed: () =>
+                setState(() => _isShowingProblems = !_isShowingProblems),
+            child: Text(_isShowingProblems ? 'Hide details' : 'Show details'),
+          ),
+        ),
+        if (_isShowingProblems)
+          for (final problem in eventLog.problems)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: NoteText(problem.toString()),
+            ),
+      ],
     ];
   }
 }
 
-/// A line of warning text, in the theme's error colour.
-class _WarningText extends StatelessWidget {
-  const _WarningText(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Text(
-        text,
-        style: TextStyle(color: Theme.of(context).colorScheme.error),
-      ),
-    );
-  }
-}
+/// Puts a little space above a warning.
+Widget _spaced(Widget child) =>
+    Padding(padding: const EdgeInsets.only(top: 12), child: child);
 
 /// Writes a moment as this device's local date and time, for example
 /// `2026-11-17 21:04`.
