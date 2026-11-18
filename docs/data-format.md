@@ -23,7 +23,8 @@ Format version: **1**
 9. [Module: exercise](#9-module-exercise)
 10. [Module: food](#10-module-food)
 11. [Module: time tracking](#11-module-time-tracking)
-12. [Loading the data in Python](#12-loading-the-data-in-python)
+12. [Module: sleep](#12-module-sleep)
+13. [Loading the data in Python](#13-loading-the-data-in-python)
 
 
 ## 1. The big picture
@@ -146,7 +147,7 @@ Every event has these fields, in this order:
 | `recorded_at` | string | When the event was written, as a [timestamp](#timestamps). |
 | `device_id` | string | The id of the device that wrote the event. Always the same as the file name. |
 | `device_name` | string | The device's name at the time, chosen by the user, for example `"my-phone"`. Only for display. |
-| `module` | string | The module the event belongs to: `"habits"`, `"exercise"`, `"food"` or `"time_tracking"`. |
+| `module` | string | The module the event belongs to: `"habits"`, `"exercise"`, `"food"`, `"time_tracking"` or `"sleep"`. |
 | `type` | string | What happened, for example `"habit_created"`. Each module lists its types below. |
 | `data` | object | The details. Its fields depend on `module` and `type`. |
 
@@ -608,7 +609,51 @@ Because blocks are made from switches, they can never overlap, even when
 switches come from different devices.
 
 
-## 12. Loading the data in Python
+## 12. Module: sleep
+
+`module` is `"sleep"`.
+
+This module records when you slept: the main sleep of each night, and
+naps.
+
+### Things in this module
+
+| Thing | Created by | `_changed` | `_deleted` / `_restored` |
+| --- | --- | --- | --- |
+| sleep | `sleep_recorded` | yes | yes |
+
+### `sleep_recorded`
+
+One night or nap.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The day it counts for. For a night, the day you **woke up**: the night from Sunday to Monday counts for Monday. For a nap, the day of the nap. |
+| `kind` | string | `"night"` or `"nap"`. Cannot be changed later. |
+| `started_at` | timestamp | When you went to bed (or lay down for the nap). |
+| `ended_at` | timestamp | When you woke up. Always after `started_at`. |
+
+Example: a night from 23:30 to 07:00.
+
+```json
+"data":{"date":"2026-11-18","kind":"night",
+        "started_at":"2026-11-17T23:30:00.000+09:00",
+        "ended_at":"2026-11-18T07:00:00.000+09:00"}
+```
+
+The duration is not stored; it is `ended_at` minus `started_at`. Exact
+timestamps keep it right across midnight and daylight saving changes,
+and the offsets keep the local clock times (bedtime 23:30) for
+analysis.
+
+To change the times, `sleep_changed` gives new `started_at` and
+`ended_at`.
+
+If more than one night is recorded for the same `date`, the app shows
+the latest one.
+
+
+## 13. Loading the data in Python
 
 A helper package for Python is planned. It will turn these events into
 tidy tables (one row per habit entry, set, food entry or time block),

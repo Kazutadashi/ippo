@@ -29,6 +29,7 @@ plus more, built from modules:
 3. Meal diary / calorie tracker.
 4. Time tracker: tap to start an activity; starting the next one ends
    the last. Shows how each day was spent (for example a pie chart).
+5. Sleep: bedtime and wake-up for each night, plus naps.
 
 The main purpose of every module is longitudinal tracking: data must
 be easy to chart and to use for time series and machine learning.

@@ -12,9 +12,11 @@ step."
 Ippo is built from modules:
 
 - **Habits:** daily check-offs, history, and a habit strength score.
-- **Calisthenics progression:** exercise ladders. Log your sets and reps,
-  and the app tells you when it is time to move up a step.
-- **Meal diary:** a simple calorie tracker.
+- **Exercise:** log the sets and reps of each exercise, quickly.
+- **Food diary:** a simple calorie tracker.
+- **Time tracking:** tap what you are doing now; see how each day was
+  spent.
+- **Sleep:** when you went to bed and woke up, plus naps.
 
 You can add more modules without changing the existing ones.
 
