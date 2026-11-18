@@ -12,7 +12,16 @@ calendar for the last year, and how sleep relates to the next day.
 import sys
 from pathlib import Path
 
-import matplotlib
+try:
+    import matplotlib
+    import pandas  # noqa: F401  (only checked here; ippo uses it)
+except ImportError as missing:
+    sys.exit(
+        f"This example needs {missing.name}, which this Python does not have.\n"
+        "Use a separate environment rather than the system Python, for example:\n"
+        "  conda create -n ippo python=3.12 pandas matplotlib\n"
+        "  conda activate ippo"
+    )
 
 matplotlib.use("Agg")  # write files; no window needed
 import matplotlib.pyplot as plt  # noqa: E402  (must come after use())
