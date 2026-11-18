@@ -41,10 +41,13 @@ void main() {
     });
     await tester.pumpWidget(MaterialApp(home: SleepScreen(appState: appState)));
 
-    // The first guess, before any night was logged.
-    expect(find.text('Bed 23:00'), findsOneWidget);
-    expect(find.text('Woke 07:00'), findsOneWidget);
-    expect(find.text('8 h'), findsOneWidget);
+    // The first guess, before any night was logged, in two time fields.
+    expect(find.text('Went to bed'), findsOneWidget);
+    expect(find.text('Woke up'), findsOneWidget);
+    expect(find.text('23:00'), findsOneWidget);
+    expect(find.text('07:00'), findsOneWidget);
+    expect(find.text('8 h of sleep'), findsOneWidget);
+    expect(find.text('Edit'), findsNothing);
 
     await tester.runAsync(() async {
       await tester.tap(find.text('Save night'));
@@ -52,10 +55,35 @@ void main() {
     });
     await tester.pump();
 
+    // Now shown as information, with one Edit button.
     expect(find.text('Save night'), findsNothing);
-    expect(find.text('23:00 → 07:00'), findsOneWidget);
+    expect(find.byType(InputDecorator), findsNothing);
+    expect(find.text('23:00'), findsOneWidget);
+    expect(find.text('07:00'), findsOneWidget);
+    expect(find.text('8 h'), findsOneWidget);
+    expect(find.text('Edit'), findsOneWidget);
     final night = SleepLog.fromEvents(appState.eventLog!.events)
         .nightOn(formatDate(DateTime.now()))!;
     expect(night.endClock, const ClockTime(7, 0));
+  });
+
+  testWidgets('the layout fits a narrow phone screen', (tester) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final appState = AppState(
+      settingsFile: SettingsFile(settingsFolder.path),
+      isAndroid: false,
+      defaultDeviceName: 'my-desktop',
+    );
+    await tester.runAsync(() async {
+      await appState.load();
+      await appState.chooseLinuxDataFolder(dataFolder.path);
+    });
+
+    await tester.pumpWidget(MaterialApp(home: SleepScreen(appState: appState)));
+
+    // An overflow would make the test framework report an error.
+    expect(tester.takeException(), isNull);
   });
 }

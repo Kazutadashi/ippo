@@ -15,7 +15,7 @@ import '../sleep_episode.dart';
 import '../sleep_log.dart';
 import '../sleep_times.dart';
 import 'sleep_form_screen.dart';
-import 'time_button.dart';
+import 'sleep_widgets.dart';
 
 /// The bedtime shown until the first night is logged.
 const ClockTime _firstBedGuess = ClockTime(23, 0);
@@ -39,9 +39,22 @@ class _SleepScreenState extends State<SleepScreen> {
   /// The day being shown, at local midnight. Starts at today.
   DateTime _day = today();
 
-  void _open(Widget screen) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (context) => screen));
+  void _edit(SleepEpisode episode) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            SleepFormScreen.edit(appState: widget.appState, episode: episode),
+      ),
+    );
+  }
+
+  void _addNap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            SleepFormScreen.addNap(appState: widget.appState, day: _day),
+      ),
+    );
   }
 
   @override
@@ -57,85 +70,56 @@ class _SleepScreenState extends State<SleepScreen> {
           final date = formatDate(_day);
           final night = log.nightOn(date);
           final lastNight = log.lastNight();
-          final naps = log.napsOn(date);
-          final textTheme = Theme.of(context).textTheme;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (log.invalidCount > 0)
-                Text(
+                ProblemText(
                   '${log.invalidCount} entries in the data could not be '
                   'read and are not shown.',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Night', style: textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      if (night == null)
-                        _NightEntry(
-                          // A new key per day starts the entry fresh.
-                          key: ValueKey(date),
-                          appState: widget.appState,
-                          wakeDay: _day,
-                          bedGuess: lastNight?.startClock ?? _firstBedGuess,
-                          wakeGuess: lastNight?.endClock ?? _firstWakeGuess,
-                        )
-                      else
-                        _EpisodeTile(
-                          episode: night,
-                          onTap: () => _open(
-                            SleepFormScreen.edit(
-                              appState: widget.appState,
-                              episode: night,
-                            ),
+              _SleepCard(
+                children: [
+                  CardHeader(
+                    icon: Icons.bedtime,
+                    title: _day == today() ? 'Last night' : 'Night',
+                    action: night == null
+                        ? null
+                        : TextButton.icon(
+                            onPressed: () => _edit(night),
+                            icon: const Icon(Icons.edit_outlined),
+                            label: const Text('Edit'),
                           ),
-                        ),
-                    ],
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  if (night == null)
+                    _NightEntry(
+                      // A new key per day starts the entry fresh.
+                      key: ValueKey(date),
+                      appState: widget.appState,
+                      wakeDay: _day,
+                      bedGuess: lastNight?.startClock ?? _firstBedGuess,
+                      wakeGuess: lastNight?.endClock ?? _firstWakeGuess,
+                    )
+                  else
+                    _NightSummary(night: night),
+                ],
               ),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Naps', style: textTheme.titleMedium),
-                      if (naps.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text('No naps on this day.'),
-                        ),
-                      for (final nap in naps)
-                        _EpisodeTile(
-                          episode: nap,
-                          onTap: () => _open(
-                            SleepFormScreen.edit(
-                              appState: widget.appState,
-                              episode: nap,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      OutlinedButton.icon(
-                        onPressed: () => _open(
-                          SleepFormScreen.addNap(
-                            appState: widget.appState,
-                            day: _day,
-                          ),
-                        ),
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add nap'),
-                      ),
-                    ],
+              _SleepCard(
+                children: [
+                  CardHeader(
+                    icon: Icons.airline_seat_flat,
+                    title: 'Naps',
+                    action: TextButton.icon(
+                      onPressed: _addNap,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add'),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  ..._buildNaps(log.napsOn(date)),
+                ],
               ),
             ],
           );
@@ -143,9 +127,78 @@ class _SleepScreenState extends State<SleepScreen> {
       ),
     );
   }
+
+  List<Widget> _buildNaps(List<SleepEpisode> naps) {
+    if (naps.isEmpty) {
+      return [const NoteText('No naps on this day.')];
+    }
+    return [
+      for (final nap in naps)
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('${nap.startClock} – ${nap.endClock}'),
+          subtitle: Text(formatDuration(nap.duration)),
+          trailing: IconButton(
+            tooltip: 'Edit nap',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () => _edit(nap),
+          ),
+          onTap: () => _edit(nap),
+        ),
+    ];
+  }
 }
 
-/// Entering a night right on the main screen: bedtime, wake-up, Save.
+/// A card with the same padding and layout as every other sleep card.
+class _SleepCard extends StatelessWidget {
+  const _SleepCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(top: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+      ),
+    );
+  }
+}
+
+/// A logged night, shown as information. (Its Edit button is in the
+/// card's header.)
+class _NightSummary extends StatelessWidget {
+  const _NightSummary({required this.night});
+
+  final SleepEpisode night;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: InfoValue(label: 'Went to bed', value: '${night.startClock}'),
+        ),
+        Expanded(
+          child: InfoValue(label: 'Woke up', value: '${night.endClock}'),
+        ),
+        Expanded(
+          child: InfoValue(
+            label: 'Slept',
+            value: formatDuration(night.duration),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Entering a night right on the main screen: two time fields and Save.
 ///
 /// Both times start at last night's, so a usual night is one tap.
 class _NightEntry extends StatefulWidget {
@@ -169,13 +222,10 @@ class _NightEntry extends StatefulWidget {
 class _NightEntryState extends State<_NightEntry> {
   late ClockTime _bed = widget.bedGuess;
   late ClockTime _woke = widget.wakeGuess;
-  String? _problem;
 
   Future<void> _save() async {
     final period = nightPeriod(widget.wakeDay, _bed, _woke);
-    final problem = checkSleepPeriod(period);
-    setState(() => _problem = problem);
-    if (problem != null) {
+    if (checkSleepPeriod(period) != null) {
       return;
     }
     await saveOrShowError(
@@ -189,62 +239,40 @@ class _NightEntryState extends State<_NightEntry> {
   @override
   Widget build(BuildContext context) {
     final period = nightPeriod(widget.wakeDay, _bed, _woke);
-    final isValid = checkSleepPeriod(period) == null;
+    final problem = checkSleepPeriod(period);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
+        Row(
           children: [
-            TimeButton(
-              label: 'Bed',
-              icon: Icons.bedtime_outlined,
-              time: _bed,
-              onChanged: (time) => setState(() => _bed = time),
+            Expanded(
+              child: TimeField(
+                label: 'Went to bed',
+                time: _bed,
+                onChanged: (time) => setState(() => _bed = time),
+              ),
             ),
-            TimeButton(
-              label: 'Woke',
-              icon: Icons.wb_sunny_outlined,
-              time: _woke,
-              onChanged: (time) => setState(() => _woke = time),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TimeField(
+                label: 'Woke up',
+                time: _woke,
+                onChanged: (time) => setState(() => _woke = time),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        if (isValid) Text(formatDuration(period.duration)),
-        if (_problem != null)
-          Text(
-            _problem!,
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
-        const SizedBox(height: 8),
-        FilledButton(onPressed: _save, child: const Text('Save night')),
+        const SizedBox(height: 12),
+        if (problem == null)
+          NoteText('${formatDuration(period.duration)} of sleep')
+        else
+          ProblemText(problem),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: problem == null ? _save : null,
+          child: const Text('Save night'),
+        ),
       ],
-    );
-  }
-}
-
-/// A logged night or nap; tapping it opens it for changing.
-class _EpisodeTile extends StatelessWidget {
-  const _EpisodeTile({required this.episode, required this.onTap});
-
-  final SleepEpisode episode;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        episode.kind == SleepKind.night
-            ? Icons.bedtime
-            : Icons.airline_seat_flat,
-      ),
-      title: Text('${episode.startClock} → ${episode.endClock}'),
-      subtitle: Text(formatDuration(episode.duration)),
-      trailing: const Icon(Icons.edit_outlined),
-      onTap: onTap,
     );
   }
 }

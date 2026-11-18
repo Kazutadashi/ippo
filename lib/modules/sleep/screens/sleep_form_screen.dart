@@ -12,7 +12,7 @@ import '../../../core/undo_message.dart';
 import '../sleep_actions.dart';
 import '../sleep_episode.dart';
 import '../sleep_times.dart';
-import 'time_button.dart';
+import 'sleep_widgets.dart';
 
 /// The form for one night or nap: its start and end times.
 class SleepFormScreen extends StatefulWidget {
@@ -46,7 +46,6 @@ class SleepFormScreen extends StatefulWidget {
 class _SleepFormScreenState extends State<SleepFormScreen> {
   late ClockTime _start = widget.episode?.startClock ?? _napStartGuess();
   late ClockTime _end = widget.episode?.endClock ?? _napEndGuess();
-  String? _problem;
 
   bool get _isNight => widget.episode?.kind == SleepKind.night;
 
@@ -73,9 +72,7 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
 
   Future<void> _save() async {
     final period = _period();
-    final problem = checkSleepPeriod(period);
-    setState(() => _problem = problem);
-    if (problem != null) {
+    if (checkSleepPeriod(period) != null) {
       return;
     }
     final actions = SleepActions(widget.appState);
@@ -117,39 +114,41 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
   @override
   Widget build(BuildContext context) {
     final period = _period();
+    final problem = checkSleepPeriod(period);
     return Scaffold(
       appBar: AppBar(title: Text(_isNight ? 'Night' : 'Nap')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
+          Row(
             children: [
-              TimeButton(
-                label: _isNight ? 'Bed' : 'Start',
-                icon: Icons.bedtime_outlined,
-                time: _start,
-                onChanged: (time) => setState(() => _start = time),
+              Expanded(
+                child: TimeField(
+                  label: _isNight ? 'Went to bed' : 'Start',
+                  time: _start,
+                  onChanged: (time) => setState(() => _start = time),
+                ),
               ),
-              TimeButton(
-                label: _isNight ? 'Woke' : 'End',
-                icon: Icons.wb_sunny_outlined,
-                time: _end,
-                onChanged: (time) => setState(() => _end = time),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TimeField(
+                  label: _isNight ? 'Woke up' : 'End',
+                  time: _end,
+                  onChanged: (time) => setState(() => _end = time),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          if (checkSleepPeriod(period) == null)
-            Text(formatDuration(period.duration)),
-          if (_problem != null)
-            Text(
-              _problem!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+          const SizedBox(height: 12),
+          if (problem == null)
+            NoteText('${formatDuration(period.duration)} of sleep')
+          else
+            ProblemText(problem),
           const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
+          FilledButton(
+            onPressed: problem == null ? _save : null,
+            child: const Text('Save'),
+          ),
           if (widget.episode != null) ...[
             const SizedBox(height: 8),
             TextButton(
