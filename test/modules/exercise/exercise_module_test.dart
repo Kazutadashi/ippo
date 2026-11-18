@@ -327,4 +327,36 @@ void main() {
     expect(log.invalidCount, 3);
     expect(log.exercises, isEmpty);
   });
+
+  test('best set and total per day', () async {
+    final event = await actions.createExercise(
+      name: 'Push-up',
+      measuredIn: MeasuredIn.reps,
+    );
+    final pushUp = currentLog().exercises[event.id]!;
+    Future<void> logSet(String date, int reps) async {
+      await actions.recordSet(
+        date: date,
+        exercise: pushUp,
+        setNumber: currentLog().setsOn(date, pushUp.id).length + 1,
+        value: reps,
+        weightKg: null,
+        repsInReserve: null,
+        progression: null,
+        stepNumber: null,
+      );
+    }
+
+    await logSet(day1, 10);
+    await logSet(day1, 5);
+    await logSet(day2, 20);
+    await logSet(day2, 20);
+
+    final log = await logFromDisk();
+    final best = log.dailyBest(pushUp.id);
+    final totals = log.dailyTotals(pushUp.id);
+    expect(best.map((point) => point.date), [day1, day2]);
+    expect(best.map((point) => point.value), [10, 20]);
+    expect(totals.map((point) => point.value), [15, 40]);
+  });
 }

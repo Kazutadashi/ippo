@@ -206,6 +206,18 @@ class ExerciseLog {
     return points;
   }
 
+  /// The best single set of [exerciseId] on each day, oldest first:
+  /// the most reps (or seconds) done in one go.
+  List<DayValue> dailyBest(String exerciseId) {
+    return [
+      for (final day in exerciseDays(exerciseId).reversed)
+        DayValue(
+          day.date,
+          day.sets.map((set) => set.value.toDouble()).reduce(max),
+        ),
+    ];
+  }
+
   /// The total reps or seconds of [exerciseId] on each day, oldest
   /// first.
   List<DayValue> dailyTotals(String exerciseId) {

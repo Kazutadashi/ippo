@@ -91,8 +91,8 @@ void main() {
     expect(find.text('Squat progression'), findsOneWidget);
     expect(find.text('Step 1 of 2: Box squat'), findsOneWidget);
     expect(find.text('Target 2 × 10 reps'), findsOneWidget);
-    expect(find.text('10'), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, '10'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, '7'), findsOneWidget);
     expect(find.textContaining('move up'), findsNothing);
   });
 
@@ -104,5 +104,39 @@ void main() {
     );
 
     expect(find.text('Target reached: move up to step 2'), findsOneWidget);
+  });
+
+  testWidgets('quick add logs several sets at once', (tester) async {
+    final appState = AppState(
+      settingsFile: SettingsFile(settingsFolder.path),
+      isAndroid: false,
+      defaultDeviceName: 'my-desktop',
+    );
+    late String exerciseId;
+    await tester.runAsync(() async {
+      await appState.load();
+      await appState.chooseLinuxDataFolder(dataFolder.path);
+      final event = await ExerciseActions(appState)
+          .createExercise(name: 'Push-up', measuredIn: MeasuredIn.reps);
+      exerciseId = event.id;
+    });
+    await tester.pumpWidget(
+      MaterialApp(home: ExerciseHomeScreen(appState: appState)),
+    );
+
+    await tester.enterText(find.widgetWithText(TextField, 'Reps'), '20');
+    await tester.enterText(find.widgetWithText(TextField, 'Sets'), '2');
+    // Saving writes real files, so let it run outside the test clock.
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Add'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    expect(find.widgetWithText(ActionChip, '20'), findsNWidgets(2));
+    final log = ExerciseLog.fromEvents(appState.eventLog!.events);
+    final sets = log.setsOn(formatDate(DateTime.now()), exerciseId);
+    expect(sets.map((set) => set.setNumber), [1, 2]);
+    expect(sets.map((set) => set.value), [20, 20]);
   });
 }

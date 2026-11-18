@@ -45,20 +45,32 @@ class HistoryScreen extends StatelessWidget {
     final exercise = log.exercises[exerciseId];
 
     final String title;
-    final String chartCaption;
-    final List<DayValue> chartPoints;
+    final List<Widget> charts;
     final List<DaySets> days;
     if (progression != null) {
       title = progression.name;
-      chartCaption =
-          'Level: steps passed plus progress towards the current '
-          'target. 2.6 means step 3, 60% of the way.';
-      chartPoints = log.levelHistory(progression);
+      charts = [
+        _ChartWithCaption(
+          caption:
+              'Level: steps passed plus progress towards the current '
+              'target. 2.6 means step 3, 60% of the way.',
+          points: log.levelHistory(progression),
+        ),
+      ];
       days = log.progressionDays(progression);
     } else if (exercise != null) {
       title = exercise.name;
-      chartCaption = 'Total ${exercise.measuredIn.name} per day.';
-      chartPoints = log.dailyTotals(exercise.id);
+      final unit = exercise.measuredIn.name;
+      charts = [
+        _ChartWithCaption(
+          caption: 'Best set per day: the most $unit in one go.',
+          points: log.dailyBest(exercise.id),
+        ),
+        _ChartWithCaption(
+          caption: 'Total $unit per day, all sets together.',
+          points: log.dailyTotals(exercise.id),
+        ),
+      ];
       days = log.exerciseDays(exercise.id);
     } else {
       return Scaffold(
@@ -72,10 +84,7 @@ class HistoryScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          DayLineChart(points: chartPoints),
-          const SizedBox(height: 8),
-          Text(chartCaption, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 16),
+          ...charts,
           if (days.isEmpty) const Text('No sets logged yet.'),
           for (final day in days)
             ListTile(
@@ -125,4 +134,27 @@ String _valueOf(ExerciseSet set) {
   return weightKg == null
       ? '${set.value}'
       : '${set.value} +${formatAmount(weightKg)} kg';
+}
+
+/// A chart with a short explanation under it.
+class _ChartWithCaption extends StatelessWidget {
+  const _ChartWithCaption({required this.caption, required this.points});
+
+  final String caption;
+  final List<DayValue> points;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(caption, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          DayLineChart(points: points),
+        ],
+      ),
+    );
+  }
 }

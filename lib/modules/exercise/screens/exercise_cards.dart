@@ -11,6 +11,7 @@ import '../exercise.dart';
 import '../exercise_set.dart';
 import '../progress.dart';
 import '../progression.dart';
+import 'quick_set_row.dart';
 
 /// A progression's card: the current step, the day's sets, progress
 /// towards the target, and a button to move up when it is reached.
@@ -22,7 +23,9 @@ class ProgressionCard extends StatelessWidget {
     required this.stepNumber,
     required this.exercise,
     required this.daySets,
-    required this.onLogSet,
+    required this.startValue,
+    required this.onAddSets,
+    required this.onMoreOptions,
     required this.onEditSet,
     required this.onMoveToStep,
     required this.onEdit,
@@ -41,8 +44,14 @@ class ProgressionCard extends StatelessWidget {
   /// The sets of the current step's exercise on the day shown.
   final List<ExerciseSet> daySets;
 
-  /// Called to log a new set.
-  final VoidCallback onLogSet;
+  /// The value to start the quick-add row with, usually the last set's.
+  final int? startValue;
+
+  /// Called with reps (or seconds) and a number of sets to add.
+  final Future<void> Function(int value, int setCount) onAddSets;
+
+  /// Called to log a set with all options (weight, reps in reserve).
+  final VoidCallback onMoreOptions;
 
   /// Called to change or delete a set.
   final ValueChanged<ExerciseSet> onEditSet;
@@ -113,17 +122,13 @@ class ProgressionCard extends StatelessWidget {
                 child: Text('Final step mastered.'),
               ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                FilledButton.icon(
-                  onPressed: exercise == null ? null : onLogSet,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Log set'),
-                ),
-                const SizedBox(width: 8),
-                TextButton(onPressed: onHistory, child: const Text('History')),
-              ],
-            ),
+            if (exercise != null)
+              QuickSetRow(
+                measuredIn: exercise!.measuredIn,
+                startValue: startValue,
+                onAddSets: onAddSets,
+              ),
+            _CardLinks(onHistory: onHistory, onMoreOptions: onMoreOptions),
           ],
         ),
       ),
@@ -138,7 +143,9 @@ class ExerciseCard extends StatelessWidget {
     super.key,
     required this.exercise,
     required this.daySets,
-    required this.onLogSet,
+    required this.startValue,
+    required this.onAddSets,
+    required this.onMoreOptions,
     required this.onEditSet,
     required this.onEdit,
     required this.onHistory,
@@ -150,8 +157,14 @@ class ExerciseCard extends StatelessWidget {
   /// Its sets on the day shown.
   final List<ExerciseSet> daySets;
 
-  /// Called to log a new set.
-  final VoidCallback onLogSet;
+  /// The value to start the quick-add row with, usually the last set's.
+  final int? startValue;
+
+  /// Called with reps (or seconds) and a number of sets to add.
+  final Future<void> Function(int value, int setCount) onAddSets;
+
+  /// Called to log a set with all options (weight, reps in reserve).
+  final VoidCallback onMoreOptions;
 
   /// Called to change or delete a set.
   final ValueChanged<ExerciseSet> onEditSet;
@@ -187,20 +200,40 @@ class ExerciseCard extends StatelessWidget {
             ),
             _SetChips(sets: daySets, onEditSet: onEditSet),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                FilledButton.icon(
-                  onPressed: onLogSet,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Log set'),
-                ),
-                const SizedBox(width: 8),
-                TextButton(onPressed: onHistory, child: const Text('History')),
-              ],
+            QuickSetRow(
+              measuredIn: exercise.measuredIn,
+              startValue: startValue,
+              onAddSets: onAddSets,
             ),
+            _CardLinks(onHistory: onHistory, onMoreOptions: onMoreOptions),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The links under a card's quick-add row.
+class _CardLinks extends StatelessWidget {
+  const _CardLinks({required this.onHistory, required this.onMoreOptions});
+
+  final VoidCallback onHistory;
+  final VoidCallback onMoreOptions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        TextButton.icon(
+          onPressed: onHistory,
+          icon: const Icon(Icons.show_chart),
+          label: const Text('History'),
+        ),
+        TextButton(
+          onPressed: onMoreOptions,
+          child: const Text('Add with weight…'),
+        ),
+      ],
     );
   }
 }

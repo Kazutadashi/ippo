@@ -61,6 +61,37 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
     );
   }
 
+  /// Adds [setCount] sets of [value] reps (or seconds) of [exercise] on
+  /// the day shown. Used by the quick-add row on each card.
+  Future<void> _addSets(
+    Exercise exercise,
+    int value,
+    int setCount, {
+    Progression? progression,
+    int? stepNumber,
+  }) async {
+    final actions = ExerciseActions(widget.appState);
+    final date = formatDate(_day);
+    await saveOrShowError(context, () async {
+      for (var count = 0; count < setCount; count++) {
+        // Count again each time, so each set gets the next number.
+        final log = ExerciseLog.fromEvents(
+          widget.appState.eventLog?.events ?? [],
+        );
+        await actions.recordSet(
+          date: date,
+          exercise: exercise,
+          setNumber: log.setsOn(date, exercise.id).length + 1,
+          value: value,
+          weightKg: null,
+          repsInReserve: null,
+          progression: progression,
+          stepNumber: stepNumber,
+        );
+      }
+    });
+  }
+
   void _editSet(ExerciseLog log, ExerciseSet set) {
     final exercise = log.exercises[set.exerciseId];
     if (exercise == null) {
@@ -94,22 +125,22 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
         title: const Text('Exercise'),
         actions: [
           PopupMenuButton<String>(
-            tooltip: 'Add',
-            icon: const Icon(Icons.add),
-            onSelected: (choice) => _open(
-              choice == 'progression'
-                  ? ProgressionFormScreen(appState: widget.appState)
-                  : ExerciseFormScreen(appState: widget.appState),
-            ),
+            tooltip: 'More',
+            onSelected: (_) =>
+                _open(ProgressionFormScreen(appState: widget.appState)),
             itemBuilder: (context) => const [
               PopupMenuItem(
                 value: 'progression',
-                child: Text('New progression'),
+                child: Text('New progression (a ladder of exercises)'),
               ),
-              PopupMenuItem(value: 'exercise', child: Text('New exercise')),
             ],
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _open(ExerciseFormScreen(appState: widget.appState)),
+        icon: const Icon(Icons.add),
+        label: const Text('New exercise'),
       ),
       body: ListenableBuilder(
         listenable: widget.appState,
@@ -118,7 +149,8 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
             widget.appState.eventLog?.events ?? [],
           );
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            // Leave room at the bottom so the button never hides a card.
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             children: [
               DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
               if (log.invalidCount > 0)
@@ -132,18 +164,22 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
                 const Padding(
                   padding: EdgeInsets.only(top: 24),
                   child: Text(
-                    'Use + to create a progression (a ladder of exercises, '
-                    'easiest first) or a single exercise.',
+                    'Tap "New exercise" to start. Each exercise gets a card '
+                    'where you add sets and reps for the day.',
                     textAlign: TextAlign.center,
                   ),
                 ),
-              for (final progression in log.activeProgressions)
-                _buildProgressionCard(log, progression),
               for (final exercise in log.standaloneExercises)
                 ExerciseCard(
+                  // A key per exercise keeps each card's typed numbers
+                  // with the right card when the list changes.
+                  key: ValueKey(exercise.id),
                   exercise: exercise,
                   daySets: log.setsOn(formatDate(_day), exercise.id),
-                  onLogSet: () => _logSet(log, exercise),
+                  startValue: log.lastSetOf(exercise.id)?.value,
+                  onAddSets: (value, setCount) =>
+                      _addSets(exercise, value, setCount),
+                  onMoreOptions: () => _logSet(log, exercise),
                   onEditSet: (set) => _editSet(log, set),
                   onEdit: () => _open(
                     ExerciseFormScreen(
@@ -158,6 +194,8 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
                     ),
                   ),
                 ),
+              for (final progression in log.activeProgressions)
+                _buildProgressionCard(log, progression),
             ],
           );
         },
@@ -170,11 +208,20 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
     final step = progression.stepAt(stepNumber);
     final exercise = log.exercises[step.exerciseId];
     return ProgressionCard(
+      key: ValueKey(progression.id),
       progression: progression,
       stepNumber: stepNumber,
       exercise: exercise,
       daySets: log.setsOn(formatDate(_day), step.exerciseId),
-      onLogSet: () => _logSet(
+      startValue: log.lastSetOf(step.exerciseId)?.value,
+      onAddSets: (value, setCount) => _addSets(
+        exercise!,
+        value,
+        setCount,
+        progression: progression,
+        stepNumber: stepNumber,
+      ),
+      onMoreOptions: () => _logSet(
         log,
         exercise!,
         progression: progression,
