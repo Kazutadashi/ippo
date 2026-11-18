@@ -46,6 +46,20 @@ void main() {
     expect(parseThemeMode('sepia'), ThemeMode.system);
   });
 
+  test('every accent-coloured part uses the same main colour', () {
+    for (final brightness in Brightness.values) {
+      for (final choice in accentChoices) {
+        final colors = buildTheme(choice.color, brightness).colorScheme;
+        final reason = '${choice.name}, $brightness';
+        expect(colors.primaryContainer, colors.primary, reason: reason);
+        expect(colors.secondary, colors.primary, reason: reason);
+        // Highlights are a tint between the main colour and background.
+        expect(colors.secondaryContainer, isNot(colors.primary));
+        expect(colors.secondaryContainer, isNot(colors.surface));
+      }
+    }
+  });
+
   test('themes are light or dark as asked', () {
     const orange = Color(0xFFFB8C00);
     expect(buildTheme(orange, Brightness.light).brightness, Brightness.light);

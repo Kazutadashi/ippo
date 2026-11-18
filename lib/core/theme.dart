@@ -67,16 +67,40 @@ ThemeMode parseThemeMode(String? name) {
 
 /// Builds the app's theme from the [accent] colour, light or dark.
 ///
-/// "Fidelity" keeps the main colour close to the chosen one, so picking
-/// orange really gives orange rather than a muted shade of it. See
-/// `lib/core/widgets/section_card.dart` for the rest of the look.
+/// Flutter works out a full set of colours from the accent: a main
+/// colour for buttons, plus "container" colours for other things. Left
+/// alone, those come out as several different shades (for example
+/// bright orange, pale peach and brown), which looks unrelated. So every
+/// accent-coloured part uses the one main colour here, and highlights
+/// such as the selected tab use a light tint of it.
+///
+/// The main colour is the accent adjusted for light or dark mode, so
+/// text on it stays readable. "Fidelity" keeps it close to the chosen
+/// colour. See `lib/core/widgets/section_card.dart` for the rest of the
+/// look.
 ThemeData buildTheme(Color accent, Brightness brightness) {
+  final generated = ColorScheme.fromSeed(
+    seedColor: accent,
+    brightness: brightness,
+    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+  );
+  final main = generated.primary;
+  final onMain = generated.onPrimary;
+  // A light tint of the main colour over the background.
+  final tint = Color.alphaBlend(
+    main.withValues(alpha: 0.25),
+    generated.surface,
+  );
+  final colorScheme = generated.copyWith(
+    primaryContainer: main,
+    onPrimaryContainer: onMain,
+    secondary: main,
+    onSecondary: onMain,
+    secondaryContainer: tint,
+    onSecondaryContainer: generated.onSurface,
+  );
   return ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: accent,
-      brightness: brightness,
-      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-    ),
+    colorScheme: colorScheme,
     // Every text field gets an outline, so anything the user can change
     // looks the same on every screen.
     inputDecorationTheme: const InputDecorationTheme(
