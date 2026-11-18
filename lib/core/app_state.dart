@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 
+import 'events/event.dart';
 import 'events/event_log.dart';
 import 'events/event_log_reader.dart';
 import 'events/event_writer.dart';
@@ -114,6 +115,31 @@ class AppState extends ChangeNotifier {
       _errorMessage = 'Could not read the data folder: ${error.message}';
     }
     notifyListeners();
+  }
+
+  /// Writes a new event to this device's file and adds it to [eventLog].
+  ///
+  /// Modules call this to save anything. Listening screens are told
+  /// about the change. Throws [DataFolderException] if no data folder is
+  /// chosen or the event cannot be saved; nothing is saved then.
+  Future<Event> writeEvent({
+    required String module,
+    required String type,
+    required Map<String, Object?> data,
+  }) async {
+    final writer = _eventWriter;
+    if (writer == null) {
+      throw DataFolderException('Please choose a data folder first.');
+    }
+    final event = await writer.write(module: module, type: type, data: data);
+    final eventLog = _eventLog;
+    if (eventLog == null) {
+      await reloadEvents();
+    } else {
+      _eventLog = eventLog.withEvent(event);
+      notifyListeners();
+    }
+    return event;
   }
 
   /// Opens Android's folder picker and switches to the chosen folder.

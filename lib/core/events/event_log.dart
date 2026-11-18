@@ -68,6 +68,24 @@ class EventLog {
 
   /// The latest event seen from each device, by device id.
   final Map<String, DeviceLastSeen> lastSeenByDevice;
+
+  /// Returns a copy of this log with one more [event], placed in time
+  /// order.
+  ///
+  /// Used right after this device writes an event, so the app does not
+  /// have to read every file again.
+  EventLog withEvent(Event event) {
+    final newEvents = [...events, event]..sort(compareEventsByTime);
+    final newLastSeen = Map<String, DeviceLastSeen>.of(lastSeenByDevice);
+    _rememberIfLatest(newLastSeen, event);
+    return EventLog(
+      events: newEvents,
+      problems: problems,
+      newerVersionEventCount: newerVersionEventCount,
+      futureEventCount: futureEventCount,
+      lastSeenByDevice: newLastSeen,
+    );
+  }
 }
 
 /// Merges the parsed event [files] into one [EventLog].
@@ -149,17 +167,23 @@ int compareEventsByTime(Event first, Event second) {
 Map<String, DeviceLastSeen> _findLastSeen(Iterable<Event> events) {
   final lastSeen = <String, DeviceLastSeen>{};
   for (final event in events) {
-    final known = lastSeen[event.deviceId];
-    if (known != null &&
-        !event.recordedAtUtc.isAfter(known.latestRecordedAtUtc)) {
-      continue;
-    }
-    lastSeen[event.deviceId] = DeviceLastSeen(
-      deviceId: event.deviceId,
-      deviceName: event.deviceName,
-      latestRecordedAtUtc: event.recordedAtUtc,
-      latestRecordedAt: event.recordedAt,
-    );
+    _rememberIfLatest(lastSeen, event);
   }
   return lastSeen;
+}
+
+/// Stores [event] as its device's latest, unless that device already has
+/// a later one in [lastSeen].
+void _rememberIfLatest(Map<String, DeviceLastSeen> lastSeen, Event event) {
+  final known = lastSeen[event.deviceId];
+  if (known != null &&
+      !event.recordedAtUtc.isAfter(known.latestRecordedAtUtc)) {
+    return;
+  }
+  lastSeen[event.deviceId] = DeviceLastSeen(
+    deviceId: event.deviceId,
+    deviceName: event.deviceName,
+    latestRecordedAtUtc: event.recordedAtUtc,
+    latestRecordedAt: event.recordedAt,
+  );
 }

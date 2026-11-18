@@ -21,12 +21,16 @@ linter:
   rules:
     # CONTRIBUTING.md: every public class, function, and field gets a
     # doc comment.
-    - public_member_api_docs
+    public_member_api_docs: true
     # Errors should never pass silently.
-    - empty_catches
-    - avoid_catches_without_on_clauses
+    empty_catches: true
+    avoid_catches_without_on_clauses: true
     # Be explicit about what a function returns and accepts.
-    - always_declare_return_types
-    - type_annotate_public_apis
+    always_declare_return_types: true
+    type_annotate_public_apis: true
     # The app never prints to the console in place of real error handling.
-    - avoid_print
+    avoid_print: true
+    # Turned off: this suggests writing `'key': ?value` instead of
+    # `if (value != null) 'key': value`. The longer form is easier for
+    # beginners to read, which matters more here.
+    use_null_aware_elements: false
