@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Checks that the app starts on the right tab, remembers the last tab,
-/// and applies the chosen theme.
+/// Checks that the app starts on the right tab, that the home tab leads
+/// to the modules, and that the chosen theme is applied.
 library;
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
@@ -64,35 +65,47 @@ void main() {
     expect(find.text('Exercise'), findsOneWidget);
   });
 
-  testWidgets('with a data folder, the first module opens', (tester) async {
+  testWidgets('with a data folder, the app opens on Home', (tester) async {
     await startApp(tester);
 
-    expect(find.text('Add food'), findsOneWidget);
+    expect(
+      find.text(
+        '千里の道も一歩から · A journey of a thousand miles '
+        'begins with a single step.',
+      ),
+      findsOneWidget,
+    );
+    // Nothing logged yet: each module says so.
+    expect(find.text('Nothing logged today'), findsNWidgets(2));
   });
 
-  testWidgets('the app opens on the tab used last time', (tester) async {
+  testWidgets('Home shows what was logged today', (tester) async {
     await startApp(
       tester,
-      before: (appState) => appState.rememberScreen('exercise'),
+      before: (appState) async {
+        await appState.writeEvent(
+          module: 'food',
+          type: 'food_entry_recorded',
+          data: {
+            'date': formatDate(DateTime.now()),
+            'meal': 'snack',
+            'name': 'Apple',
+            'nutrients': {'energy_kcal': 80},
+          },
+        );
+      },
     );
 
-    expect(find.text('New exercise'), findsOneWidget);
+    expect(find.text('1 entry · 80 kcal'), findsOneWidget);
   });
 
-  testWidgets('switching tabs is remembered', (tester) async {
-    final appState = await startApp(tester);
+  testWidgets('tapping a card on Home opens that module', (tester) async {
+    await startApp(tester);
 
-    await tester.runAsync(() async {
-      await tester.tap(find.text('Exercise'));
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    });
+    await tester.tap(find.widgetWithText(ListTile, 'Exercise'));
     await tester.pump();
 
-    expect(appState.settings!.lastScreen, 'exercise');
-    final saved = await tester.runAsync(
-      () => SettingsFile(settingsFolder.path).read(),
-    );
-    expect(saved!['last_screen'], 'exercise');
+    expect(find.text('New exercise'), findsOneWidget);
   });
 
   testWidgets('dark mode and the accent colour are applied', (tester) async {

@@ -69,12 +69,11 @@ void main() {
       defaultDeviceName: 'my-desktop',
     );
 
-    test('theme, colour and last screen are kept after a restart', () async {
+    test('theme and colour are kept after a restart', () async {
       final firstRun = makeAppState();
       await firstRun.load();
       await firstRun.setThemeMode('dark');
       await firstRun.setAccentColor('#FB8C00');
-      await firstRun.rememberScreen('exercise');
 
       final secondRun = makeAppState();
       await secondRun.load();
@@ -82,7 +81,6 @@ void main() {
       final settings = secondRun.settings!;
       expect(settings.themeMode, 'dark');
       expect(settings.accentColor, '#FB8C00');
-      expect(settings.lastScreen, 'exercise');
       // Changing one setting does not lose the others.
       expect(settings.deviceId, firstRun.settings!.deviceId);
     });

@@ -13,6 +13,8 @@ import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/exercise/exercise.dart';
 import 'package:ippo/modules/exercise/exercise_actions.dart';
 import 'package:ippo/modules/exercise/exercise_log.dart';
+import 'package:ippo/modules/exercise/exercise_module.dart';
+import 'package:ippo/core/dates.dart';
 
 const String day1 = '2026-11-16';
 const String day2 = '2026-11-17';
@@ -247,5 +249,20 @@ void main() {
     final log = await logFromDisk();
     expect(log.invalidCount, 2);
     expect(log.exercises, isEmpty);
+  });
+
+  test('the home screen summary lists today\'s sets', () async {
+    const module = ExerciseModule();
+    expect(module.summarizeToday(appState), 'Nothing logged today');
+
+    final today = formatDate(DateTime.now());
+    final pushUp = await createExercise('Push-up', MeasuredIn.reps);
+    final plank = await createExercise('Plank', MeasuredIn.seconds);
+    await createExercise('Squat', MeasuredIn.reps);
+    await addSets(pushUp, today, 20, 2);
+    await addSets(plank, today, 45, 1);
+    await addSets(pushUp, day1, 5, 1); // Another day: not listed.
+
+    expect(module.summarizeToday(appState), 'Push-up 20, 20 · Plank 45');
   });
 }

@@ -20,7 +20,6 @@ class AppSettings {
     required this.linuxDataFolderPath,
     required this.themeMode,
     required this.accentColor,
-    required this.lastScreen,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -32,7 +31,6 @@ class AppSettings {
       linuxDataFolderPath: null,
       themeMode: null,
       accentColor: null,
-      lastScreen: null,
     );
   }
 
@@ -58,7 +56,6 @@ class AppSettings {
       linuxDataFolderPath: _textOrNull(json['linux_data_folder_path']),
       themeMode: _textOrNull(json['theme_mode']),
       accentColor: _textOrNull(json['accent_color']),
-      lastScreen: _textOrNull(json['last_screen']),
     );
   }
 
@@ -81,17 +78,12 @@ class AppSettings {
   /// The accent colour as `#RRGGBB`, or null for the default.
   final String? accentColor;
 
-  /// The screen open when the app was last used: a module's name, or
-  /// `settings`. The app opens there again.
-  final String? lastScreen;
-
   /// Returns a copy with the given values changed.
   AppSettings copyWith({
     String? deviceName,
     String? linuxDataFolderPath,
     String? themeMode,
     String? accentColor,
-    String? lastScreen,
   }) {
     return AppSettings(
       deviceId: deviceId,
@@ -99,7 +91,6 @@ class AppSettings {
       linuxDataFolderPath: linuxDataFolderPath ?? this.linuxDataFolderPath,
       themeMode: themeMode ?? this.themeMode,
       accentColor: accentColor ?? this.accentColor,
-      lastScreen: lastScreen ?? this.lastScreen,
     );
   }
 
@@ -110,7 +101,6 @@ class AppSettings {
     'linux_data_folder_path': linuxDataFolderPath,
     'theme_mode': themeMode,
     'accent_color': accentColor,
-    'last_screen': lastScreen,
   };
 }
 

@@ -25,4 +25,9 @@ abstract class IppoModule {
 
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
+
+  /// A short line saying what was logged today, for the home screen,
+  /// for example `3 entries · 1,240 kcal`. It answers "did I log
+  /// today?", so it says so when nothing was logged.
+  String summarizeToday(AppState appState);
 }

@@ -222,12 +222,6 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(accentColor: hexColor),
   );
 
-  /// Remembers which screen is open (a module's name, or `settings`), so
-  /// the app opens there next time.
-  Future<void> rememberScreen(String screenName) => _changeDisplaySetting(
-    (settings) => settings.copyWith(lastScreen: screenName),
-  );
-
   /// Applies [change] to the settings, saves them, and tells listening
   /// screens. A failure is shown through [errorMessage].
   Future<void> _changeDisplaySetting(
