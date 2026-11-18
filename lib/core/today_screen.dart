@@ -38,14 +38,6 @@ class TodayScreen extends StatelessWidget {
               describeToday(DateTime.now()),
               style: textTheme.headlineMedium,
             ),
-            const SizedBox(height: 4),
-            Text(
-              '千里の道も一歩から · A journey of a thousand miles begins '
-              'with a single step.',
-              style: textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
             const SizedBox(height: 24),
             for (final module in allModules)
               Card(

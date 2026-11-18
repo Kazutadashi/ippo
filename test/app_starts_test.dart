@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
+import 'package:ippo/core/today_screen.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -68,15 +69,9 @@ void main() {
   testWidgets('with a data folder, the app opens on Home', (tester) async {
     await startApp(tester);
 
-    expect(
-      find.text(
-        '千里の道も一歩から · A journey of a thousand miles '
-        'begins with a single step.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text(describeToday(DateTime.now())), findsOneWidget);
     // Nothing logged yet: each module says so.
-    expect(find.text('Nothing logged today'), findsNWidgets(2));
+    expect(find.text('Nothing logged today'), findsNWidgets(3));
   });
 
   testWidgets('Home shows what was logged today', (tester) async {
