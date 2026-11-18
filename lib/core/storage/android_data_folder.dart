@@ -87,3 +87,22 @@ Future<String?> pickAndroidFolder() async {
     throw DataFolderException(error.message ?? error.code);
   }
 }
+
+/// Returns the path of the app's private folder on Android.
+///
+/// Only this app can read or write there. Ippo keeps its settings file
+/// in it (see `settings_file.dart`). Throws [DataFolderException] on
+/// failure.
+Future<String> androidPrivateFolderPath() async {
+  try {
+    final path = await _storageChannel.invokeMethod<String>(
+      'privateFolderPath',
+    );
+    if (path == null) {
+      throw DataFolderException('Android gave no private folder.');
+    }
+    return path;
+  } on PlatformException catch (error) {
+    throw DataFolderException(error.message ?? error.code);
+  }
+}

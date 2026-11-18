@@ -36,6 +36,10 @@ import java.util.concurrent.Executors
  * - `savedFolder()`: the folder chosen earlier, or null if there is none.
  *   Android itself remembers which folder access it granted, so the app
  *   does not need to store this anywhere.
+ * - `privateFolderPath()`: the path of the app's own private folder, where
+ *   only this app can read and write. Ippo keeps its settings file there
+ *   (see `lib/core/storage/settings_file.dart`). Dart reads and writes
+ *   that one file directly, because private folders need no picker.
  * - `listFiles(folderUri, path)`: names of the files (not folders) directly
  *   inside `path`. Returns an empty list if `path` does not exist.
  * - `readText(folderUri, path)`: the whole file as UTF-8 text.
@@ -76,6 +80,7 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
         when (call.method) {
             "pickFolder" -> pickFolder(result)
             "savedFolder" -> result.success(savedFolder()?.toString())
+            "privateFolderPath" -> result.success(activity.filesDir.absolutePath)
             "listFiles" -> runInBackground(result) {
                 listFiles(folderUriArgument(call), pathArgument(call))
             }

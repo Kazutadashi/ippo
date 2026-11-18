@@ -74,6 +74,20 @@ class LocalDataFolder implements DataFolder {
     }
   }
 
+  /// Checks a data folder path the user typed.
+  ///
+  /// Returns null if [path] is an absolute path to an existing folder,
+  /// or a message explaining what is wrong.
+  static String? checkFolderPath(String path) {
+    if (!path.startsWith('/')) {
+      return 'Please enter a full path, starting with /.';
+    }
+    if (!Directory(path).existsSync()) {
+      return 'There is no folder at $path.';
+    }
+    return null;
+  }
+
   /// Joins the data folder path and a relative path checked beforehand.
   String _fullPath(String relativePath) => '$rootPath/$relativePath';
 }

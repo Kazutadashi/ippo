@@ -40,4 +40,13 @@ no access to your data and no network access.
 
 Linux desktop apps have no permission system of their own. Ippo only
 reads and writes files inside the data folder you choose in settings,
-and all of that code lives in one small storage part of the core.
+and all of that code lives in one small storage part of the core
+(`lib/core/storage/`).
+
+## The settings file (both platforms)
+
+Besides the data folder, Ippo keeps one small file, `settings.json`,
+with this device's id, its name, and (on Linux) the data folder's
+path. It lives in the app's own private folder on Android, and in
+`$XDG_CONFIG_HOME/ippo/` (usually `~/.config/ippo/`) on Linux. The code
+is in `lib/core/storage/settings_file.dart`.
