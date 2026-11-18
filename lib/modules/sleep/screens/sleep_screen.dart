@@ -4,6 +4,7 @@
 /// bed, and that day's naps.
 library;
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
@@ -230,6 +231,7 @@ class _DayEntryState extends State<_DayEntry> {
       return;
     }
     final actions = SleepActions(widget.appState);
+    HapticFeedback.selectionClick();
     await saveOrShowError(context, () async {
       await _saveOne(actions, MomentKind.wokeUp, widget.wakeUp, _wokeUp);
       await _saveOne(actions, MomentKind.wentToBed, widget.bedtime, _wentToBed);

@@ -311,6 +311,18 @@ Fixed sizes:
 
 ## 11. Feedback: saving, errors, undo
 
+- **Every tap answers at once.** Marking a habit, adding sets and
+  saving a sleep day give a light haptic tick
+  (`HapticFeedback.selectionClick`) straight away, before saving. It
+  follows the phone's own haptics setting.
+- **Changes are visible.** A mark that changes animates briefly
+  (`AnimatedSwitcher`, 150 ms); sections open and close with
+  `AnimatedSize` (200 ms). Keep motion short and never make meaning
+  depend on it.
+- **Data stays fresh.** The data folder is read again whenever the app
+  comes back to the foreground, and every main screen can be pulled
+  down to refresh (`RefreshIndicator`).
+
 - **Saving is immediate.** After Save, the form closes and the new entry
   shows on the screen.
 - **A failed save** shows "Not saved: …" at the bottom of the screen
@@ -375,6 +387,11 @@ Scaffold(
   ),
 );
 ```
+
+Screens get a module's state with `SomeLog.of(appState)` (for example
+`FoodDiary.of(appState)`), never by rebuilding it from the events
+themselves: `AppState.derived` works it out once per change of the data
+and shares it, which keeps every screen fast as years of data build up.
 
 A new module also needs:
 

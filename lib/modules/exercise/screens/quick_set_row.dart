@@ -3,6 +3,7 @@
 /// Logging sets straight from a card, in one row: Reps, Sets, Add.
 library;
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/widgets/section_card.dart';
@@ -71,6 +72,8 @@ class _QuickSetRowState extends State<QuickSetRow> {
       _problem = null;
       _isSaving = true;
     });
+    // A light tick confirms the tap at once, before saving.
+    HapticFeedback.selectionClick();
     await widget.onAddSets(value, setCount);
     if (mounted) {
       setState(() {

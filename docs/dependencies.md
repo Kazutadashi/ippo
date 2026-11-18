@@ -22,3 +22,10 @@ install.
 | --- | --- | --- | --- |
 | `flutter_test` | Flutter team | Runs the automated tests. | Every change that touches data needs tests. |
 | `flutter_lints` | Flutter team | The standard set of code checks used by `flutter analyze`. | Catches common mistakes and keeps the code consistent. |
+
+## Artwork from other projects
+
+| What | From | Licence | Where |
+| --- | --- | --- | --- |
+| The walking figure on the launcher icon | Material Design icon "directions_walk", by Google | Apache License 2.0 (can be combined with GPL-3.0) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml` |
+

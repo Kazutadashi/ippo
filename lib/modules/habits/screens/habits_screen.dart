@@ -4,6 +4,7 @@
 /// days (today on the left, the past to the right).
 library;
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
@@ -169,6 +170,7 @@ class _HabitGrid extends StatelessWidget {
                               log: log,
                               habit: habit,
                               day: day,
+                              isToday: day == todayDate,
                             ),
                         ],
                       ),
@@ -228,9 +230,10 @@ class _DayHeader extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final color = isToday ? colors.primary : colors.onSurfaceVariant;
-    return SizedBox(
+    return Container(
       width: _dayWidth,
       height: _headerHeight,
+      color: isToday ? colors.primary.withValues(alpha: 0.08) : null,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -259,12 +262,16 @@ class _DayCell extends StatelessWidget {
     required this.log,
     required this.habit,
     required this.day,
+    required this.isToday,
   });
 
   final AppState appState;
   final HabitLog log;
   final Habit habit;
   final DateTime day;
+
+  /// Today's column has a soft tint, so it stands out.
+  final bool isToday;
 
   @override
   Widget build(BuildContext context) {
@@ -287,15 +294,30 @@ class _DayCell extends StatelessWidget {
     return Semantics(
       label: '${habit.name}, ${formatShortDate(day)}: $meaning',
       button: true,
-      child: InkWell(
-        onTap: () => saveOrShowError(
-          context,
-          () => HabitActions(appState).cycleDay(habit.id, date, log),
-        ),
-        child: SizedBox(
-          width: _dayWidth,
-          height: _rowHeight,
-          child: Center(child: icon),
+      child: Material(
+        color: isToday
+            ? colors.primary.withValues(alpha: 0.08)
+            : Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // A light tick confirms the tap at once, before saving.
+            HapticFeedback.selectionClick();
+            saveOrShowError(
+              context,
+              () => HabitActions(appState).cycleDay(habit.id, date, log),
+            );
+          },
+          child: SizedBox(
+            width: _dayWidth,
+            height: _rowHeight,
+            // The new mark grows in, so the change is easy to see.
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              transitionBuilder: (child, animation) =>
+                  ScaleTransition(scale: animation, child: child),
+              child: Center(key: ValueKey(mark), child: icon),
+            ),
+          ),
         ),
       ),
     );

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- The background of Ippo's launcher icon: the app's default accent
+     colour (teal). -->
+<resources>
+    <color name="ic_launcher_background">#00897B</color>
+</resources>
