@@ -123,3 +123,31 @@ Any Python 3.12+ environment works. With conda:
 ```bash
 conda create -n ippo python=3.12 pandas pyarrow matplotlib seaborn jupyterlab scikit-learn ruff
 ```
+
+
+## Known issue: NVIDIA graphics on the Linux desktop
+
+On computers that draw the screen with an NVIDIA graphics card, the
+Linux desktop app may appear shifted: only the bottom-left quarter of
+the window shows anything, and it shows the top-right quarter of the
+app. This is a Flutter bug,
+[flutter/flutter#195885](https://github.com/flutter/flutter/issues/195885).
+
+Until it is fixed, run the app with Mesa (the open-source OpenGL
+library) instead of the NVIDIA driver:
+
+```bash
+__EGL_VENDOR_LIBRARY_FILENAMES=/usr/share/glvnd/egl_vendor.d/50_mesa.json \
+MESA_GLES_VERSION_OVERRIDE=3.0 \
+flutter run -d linux
+```
+
+- The first line makes the app use Mesa. On a computer where the screen
+  is connected only to the NVIDIA card, Mesa draws in software on the
+  processor. That is slower, but fast enough for Ippo.
+- The second line turns on the OpenGL feature whose absence causes the
+  bug.
+- Both settings apply only to this one command.
+
+In VS Code, you can put the same two variables in the `env` section of
+a launch configuration in `.vscode/launch.json`.
