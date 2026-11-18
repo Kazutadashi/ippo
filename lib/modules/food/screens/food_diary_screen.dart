@@ -152,15 +152,29 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   }
 }
 
-/// Describes an entry, for example `07:30 · 150 g · 280 kcal` or
-/// `Quick entry · 850 kcal`. The time is left out when it is not known.
+/// Describes an entry, for example `07:30 · 150 g · 280 kcal`,
+/// `07:30 · 9 chips (28 g) · 150 kcal` or `Quick entry · 850 kcal`. The
+/// time is left out when it is not known.
 String _describeEntry(FoodEntry entry) {
-  final amount = entry.amount;
   final parts = [
     if (entry.time != null) entry.time!,
-    if (amount == null) 'Quick entry',
-    if (amount != null) '${formatAmount(amount)} ${entry.measuredIn ?? ''}',
+    _describeAmount(entry),
     '${formatAmount(entry.nutrients.energyKcal)} kcal',
   ];
   return parts.join(' · ');
+}
+
+/// The amount eaten, in pieces and grams if typed in pieces.
+String _describeAmount(FoodEntry entry) {
+  final amount = entry.amount;
+  if (amount == null) {
+    return 'Quick entry';
+  }
+  final grams = '${formatAmount(amount)} ${entry.measuredIn ?? ''}'.trim();
+  final pieces = entry.unitCount;
+  final pieceName = entry.unitName;
+  if (pieces == null || pieceName == null) {
+    return grams;
+  }
+  return '${formatAmount(pieces)} $pieceName ($grams)';
 }

@@ -4,6 +4,7 @@
 library;
 
 import '../../core/events/things.dart';
+import 'food_serving.dart';
 import 'nutrients.dart';
 
 /// The units a food can be measured in.
@@ -23,6 +24,7 @@ class Food {
     required this.name,
     required this.measuredIn,
     required this.nutrientsPer100,
+    required this.serving,
     required this.isDeleted,
   });
 
@@ -47,6 +49,7 @@ class Food {
       name: name,
       measuredIn: measuredIn,
       nutrientsPer100: nutrientsPer100,
+      serving: FoodServing.fromJson(fields['serving']),
       isDeleted: record.isDeleted,
     );
   }
@@ -62,6 +65,9 @@ class Food {
 
   /// The nutrients in 100 g or 100 ml.
   final Nutrients nutrientsPer100;
+
+  /// The serving size from the label, such as "9 chips (28 g)", if known.
+  final FoodServing? serving;
 
   /// Whether the food was deleted. Entries that used it keep their own
   /// copy of its name and nutrients.

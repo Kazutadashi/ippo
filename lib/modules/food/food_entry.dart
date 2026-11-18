@@ -61,6 +61,8 @@ class FoodEntry {
     required this.nutrients,
     required this.note,
     required this.isDeleted,
+    required this.unitCount,
+    required this.unitName,
   });
 
   /// Reads an entry from its collected events. Returns null if the data
@@ -82,6 +84,9 @@ class FoodEntry {
     final amount = fields['amount'];
     final measuredIn = fields['measured_in'];
     final note = fields['note'];
+    final unitCount = fields['unit_count'];
+    final unitName = fields['unit_name'];
+    final hasUnits = unitCount is num && unitCount > 0 && unitName is String;
     return FoodEntry(
       id: record.id,
       date: date,
@@ -97,6 +102,8 @@ class FoodEntry {
       nutrients: nutrients,
       note: note is String ? note : null,
       isDeleted: record.isDeleted,
+      unitCount: hasUnits ? unitCount.toDouble() : null,
+      unitName: hasUnits ? unitName : null,
     );
   }
 
@@ -133,6 +140,23 @@ class FoodEntry {
   /// Whether the entry was deleted.
   final bool isDeleted;
 
+  /// How many pieces were eaten, if entered in the label's unit (9 for
+  /// "9 chips"). [amount] still holds the grams.
+  final double? unitCount;
+
+  /// The name of those pieces, such as `chips`, if entered that way.
+  final String? unitName;
+
   /// Whether this is a quick entry (typed in directly, without a food).
   bool get isQuickEntry => amount == null;
+
+  /// The grams (or ml) in one piece, if the entry was typed in pieces.
+  double? get amountPerUnit {
+    final pieces = unitCount;
+    final grams = amount;
+    if (pieces == null || pieces == 0 || grams == null) {
+      return null;
+    }
+    return grams / pieces;
+  }
 }

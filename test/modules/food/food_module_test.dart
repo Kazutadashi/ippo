@@ -14,6 +14,7 @@ import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
 import 'package:ippo/modules/food/food_module.dart';
+import 'package:ippo/modules/food/food_serving.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 
 const String day = '2026-11-17';
@@ -317,6 +318,80 @@ void main() {
       'Energy: 689 kcal | Protein 13.2 g · Fat 6.5 g',
       'Last meal: 3 h 15 min ago | at 12:15 · Soup',
     ]);
+  });
+
+  group('serving sizes and pieces', () {
+    const chips = FoodServing(unit: 'chips', count: 9, amount: 28);
+
+    Future<String> createChips() async {
+      final event = await actions.createFood(
+        name: 'Potato chips',
+        measuredIn: 'g',
+        nutrientsPer100: const Nutrients({'energy_kcal': 536}),
+        serving: chips,
+      );
+      return event.id;
+    }
+
+    test('a food keeps its serving size', () async {
+      final id = await createChips();
+
+      final food = (await diaryFromDisk()).foods[id]!;
+      expect(food.serving!.describe('g'), '9 chips (28 g)');
+    });
+
+    test('an entry typed in pieces keeps both pieces and grams', () async {
+      final id = await createChips();
+      await actions.recordFoodEntry(
+        date: day,
+        time: null,
+        food: currentDiary().foods[id]!,
+        amount: chips.unitsToAmount(9),
+        unitCount: 9,
+        unitName: 'chips',
+      );
+
+      final file = File(
+        '${dataFolder.path}/events/${appState.settings!.deviceId}.jsonl',
+      );
+      final data =
+          (jsonDecode(file.readAsLinesSync().last)
+                  as Map<String, Object?>)['data']
+              as Map<String, Object?>;
+      expect(data['amount'], 28);
+      expect(data['unit_count'], 9);
+      expect(data['unit_name'], 'chips');
+      final entry = (await diaryFromDisk()).entriesOn(day).single;
+      expect(entry.unitCount, 9);
+      expect(entry.amountPerUnit, closeTo(28 / 9, 1e-9));
+      expect(entry.nutrients.energyKcal, 150.1);
+    });
+
+    test('changing the amount in grams clears the pieces', () async {
+      final id = await createChips();
+      await actions.recordFoodEntry(
+        date: day,
+        time: null,
+        food: currentDiary().foods[id]!,
+        amount: 28,
+        unitCount: 9,
+        unitName: 'chips',
+      );
+      final entry = currentDiary().entriesOn(day).single;
+
+      await actions.changeFoodEntryAmount(entry, newAmount: 40);
+
+      final changed = (await diaryFromDisk()).entriesOn(day).single;
+      expect(changed.amount, 40);
+      expect(changed.unitCount, isNull);
+    });
+
+    test('the serving size can be removed', () async {
+      final id = await createChips();
+      await actions.changeFood(id, removeServing: true);
+
+      expect((await diaryFromDisk()).foods[id]!.serving, isNull);
+    });
   });
 }
 

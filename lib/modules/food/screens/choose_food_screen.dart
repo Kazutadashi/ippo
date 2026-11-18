@@ -130,10 +130,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(food.name),
-                      subtitle: Text(
-                        '${formatAmount(food.nutrientsPer100.energyKcal)} '
-                        'kcal per 100 ${food.measuredIn}',
-                      ),
+                      subtitle: Text(_describeFood(food)),
                       onTap: () => _logFood(food),
                       trailing: IconButton(
                         tooltip: 'Edit food',
@@ -149,4 +146,16 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
       ),
     );
   }
+}
+
+/// Describes a food for the list: energy per 100 g, and the serving size
+/// if known, for example `536 kcal per 100 g · 9 chips (28 g)`.
+String _describeFood(Food food) {
+  final energy =
+      '${formatAmount(food.nutrientsPer100.energyKcal)} kcal per 100 '
+      '${food.measuredIn}';
+  final serving = food.serving;
+  return serving == null
+      ? energy
+      : '$energy · ${serving.describe(food.measuredIn)}';
 }

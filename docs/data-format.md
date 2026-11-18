@@ -518,7 +518,24 @@ Only `energy_kcal` is required. The others are optional.
 | `name` | string | For example `"Rolled oats"`. |
 | `measured_in` | string | `"g"` for grams or `"ml"` for millilitres. |
 | `nutrients_per_100` | object | Nutrients per 100 g or per 100 ml, using the fields above. |
-| `servings` | list, optional | Handy portion sizes, such as `{"name": "bowl", "amount": 60}`. `amount` is in `measured_in` units. |
+| `serving` | object, optional | The serving size from the label. See below. |
+
+`serving` describes the label's serving size, such as "9 chips (28 g)":
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `unit` | string | The name of one piece, as on the label: `"chips"`, `"slices"`, `"cup"`. |
+| `count` | number | How many pieces make one serving: `9`. May be a fraction, such as `0.667` for "2/3 cup". |
+| `amount` | number | How much one serving weighs, in `measured_in` units: `28`. |
+
+```json
+"serving":{"unit":"chips","count":9,"amount":28}
+```
+
+It lets amounts be entered in pieces as well as in grams. Labels often
+give nutrients per serving; the app turns those into
+`nutrients_per_100`, so foods are always stored the same way. See
+`docs/food-labels.md` for filling a food in from a label.
 
 ### `food_entry_recorded`
 
@@ -533,6 +550,8 @@ One thing eaten.
 | `name` | string | The food's name at the time, copied. |
 | `amount` | number, optional | How much, in the food's `measured_in` units. |
 | `measured_in` | string, optional | `"g"` or `"ml"`, copied from the food. |
+| `unit_count` | number, optional | How many pieces, if the amount was entered in the food's serving unit ("9" chips). `amount` still holds the grams. |
+| `unit_name` | string, optional | The name of those pieces, such as `"chips"`, copied from the food's `serving`. |
 | `nutrients` | object | The nutrients **for this amount**, worked out and copied when logged. |
 | `note` | string, optional | A note. |
 

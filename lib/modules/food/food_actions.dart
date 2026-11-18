@@ -13,6 +13,7 @@ import '../../core/number_input.dart';
 import 'food.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
+import 'food_serving.dart';
 import 'nutrients.dart';
 
 /// Writes the food module's events through [appState].
@@ -28,23 +29,31 @@ class FoodActions {
 
   /// Adds a new food to the food list. Returns the event, whose id is
   /// the new food's id.
+  ///
+  /// [serving] is the label's serving size, such as "9 chips (28 g)", if
+  /// known.
   Future<Event> createFood({
     required String name,
     required String measuredIn,
     required Nutrients nutrientsPer100,
+    FoodServing? serving,
   }) {
     return _write('food_created', {
       'name': name.trim(),
       'measured_in': measuredIn,
       'nutrients_per_100': nutrientsPer100.toJson(),
+      if (serving != null) 'serving': serving.toJson(),
     });
   }
 
-  /// Changes a food. Only the fields given are changed.
+  /// Changes a food. Only the fields given are changed. Set
+  /// [removeServing] to remove the serving size.
   Future<Event> changeFood(
     String foodId, {
     String? name,
     Nutrients? nutrientsPer100,
+    FoodServing? serving,
+    bool removeServing = false,
   }) {
     return _write('food_changed', {
       'target_id': foodId,
@@ -52,6 +61,8 @@ class FoodActions {
         if (name != null) 'name': name.trim(),
         if (nutrientsPer100 != null)
           'nutrients_per_100': nutrientsPer100.toJson(),
+        if (serving != null) 'serving': serving.toJson(),
+        if (removeServing) 'serving': null,
       },
     });
   }
@@ -69,19 +80,28 @@ class FoodActions {
   ///
   /// The food's name and the nutrients for this amount are copied into
   /// the entry.
+  ///
+  /// [amount] is always in grams (or millilitres). If the user typed the
+  /// amount in the label's unit ("9 chips"), [unitCount] and [unitName]
+  /// keep that too.
   Future<Event> recordFoodEntry({
     required String date,
     required String? time,
     required Food food,
     required double amount,
+    double? unitCount,
+    String? unitName,
   }) {
     return _write('food_entry_recorded', {
       'date': date,
       if (time != null) 'time': time,
       'food_id': food.id,
       'name': food.name,
-      'amount': jsonNumber(amount),
+      'amount': jsonNumber(roundToTenth(amount)),
       'measured_in': food.measuredIn,
+      if (unitCount != null && unitName != null)
+        'unit_count': jsonNumber(roundToTenth(unitCount)),
+      if (unitCount != null && unitName != null) 'unit_name': unitName,
       'nutrients': food.nutrientsFor(amount).toJson(),
     });
   }
@@ -107,18 +127,25 @@ class FoodActions {
   /// The nutrients are scaled from the entry's own copy, not from the
   /// food's current values, so a later fix to the food does not sneak
   /// into this entry.
+  ///
+  /// As when recording, [newAmount] is in grams; [unitCount] keeps the
+  /// number of pieces if the amount was typed that way (null clears it).
   Future<Event> changeFoodEntryAmount(
     FoodEntry entry, {
     required double newAmount,
+    double? unitCount,
   }) {
     final oldAmount = entry.amount;
     final newNutrients = oldAmount == null || oldAmount == 0
         ? entry.nutrients
         : entry.nutrients.scaledBy(newAmount / oldAmount);
+    final unitName = entry.unitName;
+    final keepsUnits = unitCount != null && unitName != null;
     return _write('food_entry_changed', {
       'target_id': entry.id,
       'changes': {
-        'amount': jsonNumber(newAmount),
+        'amount': jsonNumber(roundToTenth(newAmount)),
+        'unit_count': keepsUnits ? jsonNumber(roundToTenth(unitCount)) : null,
         'nutrients': newNutrients.toJson(),
       },
     });
