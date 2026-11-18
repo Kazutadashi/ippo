@@ -102,7 +102,7 @@ the same:
 
 | Kind | Looks like | Use |
 | --- | --- | --- |
-| **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times |
+| **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times, `DateTimeField` when the date matters too |
 | **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `InfoTile` on Home |
 | **Note** | Plain grey text | `NoteText`, for short notes and empty states |
 | **Problem** | Plain red text that says what is wrong | `ProblemText` |
@@ -114,6 +114,11 @@ Rules:
   looks tappable.
 - Fields that belong together sit **side by side at equal width** with a
   plain 12-pixel gap. No symbols between them: no "×", "→" or "–".
+- When a time can fall on a different calendar day (going to bed after
+  midnight), use a `DateTimeField`, so the date is chosen and shown
+  rather than guessed.
+- A field that has nothing yet shows "Not set". Saving skips it, so the
+  data never holds a value nobody entered.
 - A field's label says what goes in it ("Went to bed", "Reps"). Add a
   unit as a suffix inside the field ("kg", "g").
 - Choices between a few options use a `SegmentedButton` filling the
@@ -138,10 +143,7 @@ Rules:
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
 
 - At most **one filled button** is in view on a card or form, so the
-  main action is obvious. The one exception: two values that are saved
-  at different times of day, side by side (Sleep's "Woke up" in the
-  morning and "Went to bed" at night), each get their own Save button
-  under their field.
+  main action is obvious.
 - A card header has **at most one** action.
 - Leave room at the bottom of a scrolling screen so floating buttons
   never cover the last row (96 pixels for one button, 160 for two).
@@ -194,7 +196,7 @@ Text styles (from the theme's text styles):
 | Time since | Duration and "ago" | `3 h 15 min ago`, `Just now` |
 | Dates in lists | `YYYY-MM-DD` | `2026-11-18` |
 | Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 2026-11-16` |
-| A calendar day under a time | Weekday, day, month; "after midnight" when it is the next day | `Wed 18 Nov`, `Thu 19 Nov, after midnight` |
+| A date and time in a field | Short date above the time | `Thu 19 Nov` / `01:00` |
 | Amounts | No needless decimals, at most one | `150`, `12.5` |
 | Energy | Number, space, `kcal` | `200 kcal` |
 | Weights and nutrients | Number, space, unit | `5 g`, `10 kg` |

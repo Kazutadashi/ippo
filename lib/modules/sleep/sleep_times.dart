@@ -124,3 +124,27 @@ ClockTime clockOfTimestamp(String timestamp) {
   final minute = int.parse(timestamp.substring(14, 16));
   return ClockTime(hour, minute);
 }
+
+/// The local date and time written in a stored timestamp such as
+/// `2026-11-19T01:00:00.000+09:00`: here 19 November, 01:00. This is the
+/// time as lived where it was recorded, whatever this phone's time zone.
+DateTime localDateTimeOf(String timestamp) {
+  final date = parseDate(timestamp.substring(0, 10))!;
+  final clock = clockOfTimestamp(timestamp);
+  return DateTime(date.year, date.month, date.day, clock.hour, clock.minute);
+}
+
+/// Checks a day's wake-up and bedtime. Returns null if they make sense,
+/// or a message explaining what is wrong. Either may be missing.
+String? checkDayTimes(DateTime? wokeUp, DateTime? wentToBed) {
+  if (wokeUp == null || wentToBed == null) {
+    return null;
+  }
+  if (!wentToBed.isAfter(wokeUp)) {
+    return 'Went to bed must be after waking up.';
+  }
+  if (wentToBed.difference(wokeUp) >= const Duration(hours: 24)) {
+    return 'Went to bed must be within a day of waking up.';
+  }
+  return null;
+}

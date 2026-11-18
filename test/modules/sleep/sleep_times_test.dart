@@ -124,6 +124,32 @@ void main() {
     );
   });
 
+  group('checkDayTimes', () {
+    final wokeUp = DateTime(2026, 11, 16, 7);
+
+    test('a bedtime after waking up, within a day, is fine', () {
+      expect(checkDayTimes(wokeUp, DateTime(2026, 11, 17, 1)), isNull);
+      expect(checkDayTimes(wokeUp, null), isNull);
+      expect(checkDayTimes(null, DateTime(2026, 11, 17, 1)), isNull);
+    });
+
+    test('a bedtime before waking up is refused', () {
+      expect(checkDayTimes(wokeUp, DateTime(2026, 11, 16, 6)), isNotNull);
+      expect(checkDayTimes(wokeUp, wokeUp), isNotNull);
+    });
+
+    test('a bedtime more than a day later is refused', () {
+      expect(checkDayTimes(wokeUp, DateTime(2026, 11, 17, 8)), isNotNull);
+    });
+  });
+
+  test('localDateTimeOf reads the time as lived', () {
+    expect(
+      localDateTimeOf('2026-11-17T01:30:00.000+09:00'),
+      DateTime(2026, 11, 17, 1, 30),
+    );
+  });
+
   test('formatShortDate', () {
     expect(formatShortDate(DateTime(2026, 11, 19)), 'Thu 19 Nov');
   });

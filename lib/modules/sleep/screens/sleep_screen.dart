@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
@@ -16,14 +17,13 @@ import '../sleep_episode.dart';
 import '../sleep_log.dart';
 import '../sleep_moment.dart';
 import '../sleep_times.dart';
-import 'moment_form_screen.dart';
 import 'sleep_form_screen.dart';
 import 'sleep_widgets.dart';
 
-/// The wake-up time shown until the first wake-up is logged.
+/// The wake-up time suggested until the first wake-up is logged.
 const ClockTime _firstWakeGuess = ClockTime(7, 0);
 
-/// The bedtime shown until the first bedtime is logged.
+/// The bedtime suggested until the first bedtime is logged.
 const ClockTime _firstBedGuess = ClockTime(23, 0);
 
 /// Shows one day: when you woke up (left) and went to bed (right), how
@@ -65,10 +65,6 @@ class _SleepScreenState extends State<SleepScreen> {
           final wakeUp = log.wakeUpOn(date);
           final bedtime = log.bedtimeOf(date);
           final sleptBefore = log.sleepBefore(date);
-          final wakeClock =
-              wakeUp?.clock ??
-              log.latest(MomentKind.wokeUp)?.clock ??
-              _firstWakeGuess;
           final sleepToday = currentSleepDay(DateTime.now());
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -90,42 +86,25 @@ class _SleepScreenState extends State<SleepScreen> {
                     title: _day == sleepToday ? 'Today' : 'This day',
                   ),
                   const SizedBox(height: 8),
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: _MomentColumn(
-                            key: ValueKey('wake-$date'),
-                            appState: widget.appState,
-                            kind: MomentKind.wokeUp,
-                            day: _day,
-                            moment: wakeUp,
-                            guess: wakeClock,
-                            wokeUp: null,
-                            onEdit: _open,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _MomentColumn(
-                            key: ValueKey('bed-$date'),
-                            appState: widget.appState,
-                            kind: MomentKind.wentToBed,
-                            day: _day,
-                            moment: bedtime,
-                            guess:
-                                log.latest(MomentKind.wentToBed)?.clock ??
-                                _firstBedGuess,
-                            wokeUp: wakeClock,
-                            onEdit: _open,
-                          ),
-                        ),
-                      ],
+                  _DayEntry(
+                    // A new key whenever the day or its saved times
+                    // change, so the fields start from what is saved.
+                    key: ValueKey(
+                      '$date ${wakeUp?.id} ${wakeUp?.at} '
+                      '${bedtime?.id} ${bedtime?.at}',
                     ),
+                    appState: widget.appState,
+                    day: _day,
+                    wakeUp: wakeUp,
+                    bedtime: bedtime,
+                    wakeGuess:
+                        log.latest(MomentKind.wokeUp)?.clock ?? _firstWakeGuess,
+                    bedGuess:
+                        log.latest(MomentKind.wentToBed)?.clock ??
+                        _firstBedGuess,
                   ),
                   if (sleptBefore != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     NoteText(
                       'Slept ${formatDuration(sleptBefore)} the night '
                       'before.',
@@ -183,124 +162,156 @@ class _SleepScreenState extends State<SleepScreen> {
   }
 }
 
-/// One side of the day: the wake-up or the bedtime.
+/// The day's two moments, each a date-and-time field, and one Save.
 ///
-/// Once logged, it shows as information with an Edit button. Before
-/// that, it is a time field (starting at the last logged time) with its
-/// own Save button. Under either, the calendar day is written out, so a
-/// bedtime after midnight is never ambiguous.
-class _MomentColumn extends StatefulWidget {
-  const _MomentColumn({
+/// Woke up starts at what is saved, or the usual wake-up time. Went to
+/// bed starts at what is saved, or "Not set", so saving in the morning
+/// never records a bedtime that has not happened.
+class _DayEntry extends StatefulWidget {
+  const _DayEntry({
     super.key,
     required this.appState,
-    required this.kind,
     required this.day,
-    required this.moment,
-    required this.guess,
-    required this.wokeUp,
-    required this.onEdit,
+    required this.wakeUp,
+    required this.bedtime,
+    required this.wakeGuess,
+    required this.bedGuess,
   });
 
   final AppState appState;
-  final MomentKind kind;
   final DateTime day;
-
-  /// The logged moment, or null if not logged yet.
-  final SleepMoment? moment;
-
-  /// The time to start the field with.
-  final ClockTime guess;
-
-  /// The day's wake-up time, for working out a bedtime's calendar day.
-  final ClockTime? wokeUp;
-
-  /// Opens a screen (here, the form for changing the moment).
-  final ValueChanged<Widget> onEdit;
+  final SleepMoment? wakeUp;
+  final SleepMoment? bedtime;
+  final ClockTime wakeGuess;
+  final ClockTime bedGuess;
 
   @override
-  State<_MomentColumn> createState() => _MomentColumnState();
+  State<_DayEntry> createState() => _DayEntryState();
 }
 
-class _MomentColumnState extends State<_MomentColumn> {
-  late ClockTime _time = widget.guess;
+class _DayEntryState extends State<_DayEntry> {
+  late DateTime? _wokeUp = widget.wakeUp == null
+      ? wakeUpMoment(widget.day, widget.wakeGuess)
+      : localDateTimeOf(widget.wakeUp!.at);
+  late DateTime? _wentToBed = widget.bedtime == null
+      ? null
+      : localDateTimeOf(widget.bedtime!.at);
   String? _problem;
 
-  DateTime _momentAt(ClockTime time) {
-    return widget.kind == MomentKind.wentToBed
-        ? bedtimeMoment(widget.day, time, widget.wokeUp)
-        : wakeUpMoment(widget.day, time);
+  /// Where the bedtime pickers start: the usual bedtime, after midnight
+  /// if it is earlier on the clock than waking up.
+  DateTime get _bedSuggestion {
+    final wokeUp = _wokeUp;
+    return bedtimeMoment(
+      widget.day,
+      widget.bedGuess,
+      wokeUp == null ? null : ClockTime(wokeUp.hour, wokeUp.minute),
+    );
   }
 
+  bool get _hasSomethingSaved =>
+      widget.wakeUp != null || widget.bedtime != null;
+
   Future<void> _save() async {
-    final isSameAsWakeUp =
-        widget.kind == MomentKind.wentToBed && _time == widget.wokeUp;
-    if (isSameAsWakeUp) {
-      setState(() => _problem = 'Same time as waking up.');
+    final problem = checkDayTimes(_wokeUp, _wentToBed);
+    setState(() => _problem = problem);
+    if (problem != null) {
       return;
     }
-    setState(() => _problem = null);
-    await saveOrShowError(
-      context,
-      () => SleepActions(
-        widget.appState,
-      ).recordMoment(kind: widget.kind, day: widget.day, at: _momentAt(_time)),
+    final actions = SleepActions(widget.appState);
+    await saveOrShowError(context, () async {
+      await _saveOne(actions, MomentKind.wokeUp, widget.wakeUp, _wokeUp);
+      await _saveOne(actions, MomentKind.wentToBed, widget.bedtime, _wentToBed);
+    });
+  }
+
+  /// Records [value], or changes [saved] to it. Does nothing if there is
+  /// no value, or it is the same as what is saved.
+  Future<void> _saveOne(
+    SleepActions actions,
+    MomentKind kind,
+    SleepMoment? saved,
+    DateTime? value,
+  ) async {
+    if (value == null) {
+      return;
+    }
+    if (saved == null) {
+      await actions.recordMoment(kind: kind, day: widget.day, at: value);
+      return;
+    }
+    if (localDateTimeOf(saved.at) != value) {
+      await actions.changeMoment(saved, value);
+    }
+  }
+
+  Future<void> _clear() async {
+    final actions = SleepActions(widget.appState);
+    final messenger = ScaffoldMessenger.of(context);
+    final wakeUp = widget.wakeUp;
+    final bedtime = widget.bedtime;
+    final saved = [if (wakeUp != null) wakeUp, if (bedtime != null) bedtime];
+    final cleared = await saveOrShowError(context, () async {
+      for (final moment in saved) {
+        await actions.deleteMoment(moment);
+      }
+    });
+    if (!cleared) {
+      return;
+    }
+    showUndoMessage(
+      messenger,
+      message: 'Cleared this day\'s times.',
+      onUndo: () async {
+        for (final moment in saved) {
+          await actions.restoreMoment(moment);
+        }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final moment = widget.moment;
-    if (moment != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InfoValue(label: widget.kind.label, value: '${moment.clock}'),
-          const SizedBox(height: 4),
-          NoteText(describeMomentDay(_localMoment(moment), widget.day)),
-          const Spacer(),
-          TextButton.icon(
-            // No inner padding, so the button lines up with the text.
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 48),
-            ),
-            onPressed: () => widget.onEdit(
-              MomentFormScreen(
-                appState: widget.appState,
-                moment: moment,
-                wokeUp: widget.wokeUp,
-              ),
-            ),
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('Edit'),
-          ),
-        ],
-      );
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TimeField(
-          label: widget.kind.label,
-          time: _time,
-          onChanged: (time) => setState(() {
-            _time = time;
-            _problem = null;
-          }),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: DateTimeField(
+                label: MomentKind.wokeUp.label,
+                value: _wokeUp,
+                suggestion: wakeUpMoment(widget.day, widget.wakeGuess),
+                onChanged: (moment) => setState(() {
+                  _wokeUp = moment;
+                  _problem = null;
+                }),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DateTimeField(
+                label: MomentKind.wentToBed.label,
+                value: _wentToBed,
+                suggestion: _bedSuggestion,
+                onChanged: (moment) => setState(() {
+                  _wentToBed = moment;
+                  _problem = null;
+                }),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        if (_problem == null)
-          NoteText(describeMomentDay(_momentAt(_time), widget.day))
-        else
+        if (_problem != null) ...[
+          const SizedBox(height: 8),
           ProblemText(_problem!),
-        const Spacer(),
-        const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 16),
         FilledButton(onPressed: _save, child: const Text('Save')),
+        if (_hasSomethingSaved)
+          DeleteButton(label: 'Clear this day', onPressed: _clear),
       ],
     );
   }
-
-  /// The moment's calendar day, read from the stored text, which keeps
-  /// the local date where it was recorded.
-  DateTime _localMoment(SleepMoment moment) => parseDate(moment.calendarDate)!;
 }

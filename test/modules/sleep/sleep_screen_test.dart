@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// Checks the sleep screen: woke up on the left, went to bed on the
-/// right, each saved on its own, with the calendar day written below.
+/// right, as dates and times, with one Save.
 library;
 
 import 'dart:io';
@@ -11,7 +11,9 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/sleep/screens/sleep_screen.dart';
+import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_log.dart';
+import 'package:ippo/modules/sleep/sleep_moment.dart';
 import 'package:ippo/modules/sleep/sleep_times.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -44,7 +46,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: SleepScreen(appState: appState)));
   }
 
-  testWidgets('woke up is on the left, went to bed on the right', (
+  testWidgets('woke up on the left, went to bed on the right, one Save', (
     tester,
   ) async {
     await openSleepScreen(tester);
@@ -52,37 +54,63 @@ void main() {
     final wokeUpLeft = tester.getTopLeft(find.text('Woke up')).dx;
     final wentToBedLeft = tester.getTopLeft(find.text('Went to bed')).dx;
     expect(wokeUpLeft, lessThan(wentToBedLeft));
-    // The first guesses, before anything was logged.
-    expect(find.text('07:00'), findsOneWidget);
-    expect(find.text('23:00'), findsOneWidget);
-    // Each side has its own Save button.
-    expect(find.text('Save'), findsNWidgets(2));
-  });
-
-  testWidgets('the calendar day is written under each time', (tester) async {
-    await openSleepScreen(tester);
-
+    expect(find.text('Save'), findsOneWidget);
+    // Woke up starts at the usual time; went to bed is not set yet.
     final day = currentSleepDay(DateTime.now());
-    // Woke up at 07:00 and to bed at 23:00: both on the same day.
-    expect(find.text(formatShortDate(day)), findsNWidgets(2));
+    expect(find.text(formatShortDate(day)), findsOneWidget);
+    expect(find.text('07:00'), findsOneWidget);
+    expect(find.text('Not set'), findsOneWidget);
+    expect(find.text('Clear this day'), findsNothing);
   });
 
-  testWidgets('saving the wake-up keeps the bedtime open', (tester) async {
+  testWidgets('saving in the morning records only the wake-up', (tester) async {
     await openSleepScreen(tester);
 
     await tester.runAsync(() async {
-      await tester.tap(find.text('Save').first);
+      await tester.tap(find.text('Save'));
       await Future<void>.delayed(const Duration(milliseconds: 300));
     });
     await tester.pump();
 
-    // The wake-up is now information with an Edit button; the bedtime
-    // still has its field and Save button.
-    expect(find.text('Edit'), findsOneWidget);
-    expect(find.text('Save'), findsOneWidget);
     final date = formatDate(currentSleepDay(DateTime.now()));
     final log = SleepLog.fromEvents(appState.eventLog!.events);
     expect(log.wakeUpOn(date)!.clock, const ClockTime(7, 0));
+    expect(log.bedtimeOf(date), isNull);
+    expect(find.text('Clear this day'), findsOneWidget);
+  });
+
+  testWidgets('saved times are shown, and can be cleared', (tester) async {
+    await openSleepScreen(tester);
+    final day = currentSleepDay(DateTime.now());
+    await tester.runAsync(() async {
+      final actions = SleepActions(appState);
+      await actions.recordMoment(
+        kind: MomentKind.wokeUp,
+        day: day,
+        at: wakeUpMoment(day, const ClockTime(6, 15)),
+      );
+      await actions.recordMoment(
+        kind: MomentKind.wentToBed,
+        day: day,
+        at: bedtimeMoment(day, const ClockTime(1, 30), const ClockTime(6, 15)),
+      );
+    });
+    await tester.pump();
+
+    expect(find.text('06:15'), findsOneWidget);
+    expect(find.text('01:30'), findsOneWidget);
+    // The bedtime is after midnight: the next calendar day is shown.
+    expect(find.text(formatShortDate(addDays(day, 1))), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Clear this day'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    final date = formatDate(day);
+    final log = SleepLog.fromEvents(appState.eventLog!.events);
+    expect(log.wakeUpOn(date), isNull);
     expect(log.bedtimeOf(date), isNull);
   });
 
