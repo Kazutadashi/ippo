@@ -38,6 +38,44 @@ void main() {
     });
   });
 
+  group('choosing the accent colour', () {
+    const systemBlue = Color(0xFF3366CC);
+    const orangeHex = '#FB8C00';
+
+    test('until a colour is picked, the phone\'s colour is used', () {
+      expect(chooseAccentColor(null, systemBlue), systemBlue);
+      expect(usesSystemAccent(null, systemBlue), isTrue);
+    });
+
+    test('"system" uses the phone\'s colour', () {
+      expect(chooseAccentColor('system', systemBlue), systemBlue);
+      expect(usesSystemAccent('system', systemBlue), isTrue);
+    });
+
+    test('a picked colour wins over the phone\'s colour', () {
+      expect(
+        chooseAccentColor(orangeHex, systemBlue).toARGB32(),
+        parseAccentColor(orangeHex).toARGB32(),
+      );
+      expect(usesSystemAccent(orangeHex, systemBlue), isFalse);
+    });
+
+    test('without a phone colour, the default is used', () {
+      expect(chooseAccentColor(null, null), defaultAccentColor);
+      expect(chooseAccentColor('system', null), defaultAccentColor);
+      expect(usesSystemAccent('system', null), isFalse);
+    });
+
+    test('matching the system keeps the one-shade rule', () {
+      final colors = buildTheme(
+        systemBlue,
+        Brightness.dark,
+        matchSystem: true,
+      ).colorScheme;
+      expect(colors.primaryContainer, colors.primary);
+    });
+  });
+
   test('theme modes are read by name, defaulting to system', () {
     expect(parseThemeMode('dark'), ThemeMode.dark);
     expect(parseThemeMode('light'), ThemeMode.light);

@@ -32,8 +32,34 @@ const List<AccentChoice> accentChoices = [
   AccentChoice('Grey', Color(0xFF757575)),
 ];
 
-/// The accent colour until the user picks one.
+/// The accent colour until the user picks one, when the phone has no
+/// system colour (Linux, or Android before version 12).
 const Color defaultAccentColor = Color(0xFF00897B);
+
+/// The saved accent setting meaning "use the phone's system colour".
+const String systemAccentSetting = 'system';
+
+/// Works out which accent colour to use.
+///
+/// [savedSetting] is the setting from `settings.json`: `system`, a
+/// `#RRGGBB` colour, or null if never set. [systemAccent] is the phone's
+/// own accent, or null if it has none. Until the user picks a colour,
+/// the phone's colour is used, so Ippo matches the rest of the phone.
+Color chooseAccentColor(String? savedSetting, Color? systemAccent) {
+  final wantsSystem =
+      savedSetting == null || savedSetting == systemAccentSetting;
+  if (wantsSystem) {
+    return systemAccent ?? defaultAccentColor;
+  }
+  return parseAccentColor(savedSetting);
+}
+
+/// Returns true if the system colour is in use (see [chooseAccentColor]).
+bool usesSystemAccent(String? savedSetting, Color? systemAccent) {
+  final wantsSystem =
+      savedSetting == null || savedSetting == systemAccentSetting;
+  return wantsSystem && systemAccent != null;
+}
 
 /// Matches a colour written as `#RRGGBB`.
 final RegExp _hexColorPattern = RegExp(r'^#[0-9A-Fa-f]{6}$');
@@ -78,11 +104,20 @@ ThemeMode parseThemeMode(String? name) {
 /// text on it stays readable. "Fidelity" keeps it close to the chosen
 /// colour. See `lib/core/widgets/section_card.dart` for the rest of the
 /// look.
-ThemeData buildTheme(Color accent, Brightness brightness) {
+///
+/// With [matchSystem], the colours are worked out the way Android works
+/// out its own ("tonal spot"), so they match the rest of the phone.
+ThemeData buildTheme(
+  Color accent,
+  Brightness brightness, {
+  bool matchSystem = false,
+}) {
   final generated = ColorScheme.fromSeed(
     seedColor: accent,
     brightness: brightness,
-    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+    dynamicSchemeVariant: matchSystem
+        ? DynamicSchemeVariant.tonalSpot
+        : DynamicSchemeVariant.fidelity,
   );
   final main = generated.primary;
   final onMain = generated.onPrimary;

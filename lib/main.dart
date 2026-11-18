@@ -14,6 +14,7 @@ import 'core/app_state.dart';
 import 'core/home_screen.dart';
 import 'core/storage/data_folder.dart';
 import 'core/storage/settings_file.dart';
+import 'core/system_colors.dart';
 import 'core/theme.dart';
 
 /// Starts the app.
@@ -33,6 +34,7 @@ Future<void> main() async {
     settingsFile: settingsFile,
     isAndroid: Platform.isAndroid,
     defaultDeviceName: _defaultDeviceName(),
+    systemAccentColor: await readSystemAccentColor(),
   );
   runApp(IppoApp(appState: appState));
   await appState.load();
@@ -62,13 +64,19 @@ class IppoApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: appState,
       builder: (context, _) {
-        final settings = appState.settings;
-        final accent = parseAccentColor(settings?.accentColor);
+        final saved = appState.settings?.accentColor;
+        final system = appState.systemAccentColor;
+        final accent = chooseAccentColor(saved, system);
+        final matchSystem = usesSystemAccent(saved, system);
         return MaterialApp(
           title: 'Ippo',
-          theme: buildTheme(accent, Brightness.light),
-          darkTheme: buildTheme(accent, Brightness.dark),
-          themeMode: parseThemeMode(settings?.themeMode),
+          theme: buildTheme(accent, Brightness.light, matchSystem: matchSystem),
+          darkTheme: buildTheme(
+            accent,
+            Brightness.dark,
+            matchSystem: matchSystem,
+          ),
+          themeMode: parseThemeMode(appState.settings?.themeMode),
           home: HomeScreen(appState: appState),
         );
       },

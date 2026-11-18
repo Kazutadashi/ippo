@@ -4,7 +4,7 @@
 /// and the merged event log.
 library;
 
-import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'events/event.dart';
 import 'events/event_log.dart';
@@ -30,6 +30,7 @@ class AppState extends ChangeNotifier {
     required this.settingsFile,
     required this.isAndroid,
     required this.defaultDeviceName,
+    this.systemAccentColor,
   });
 
   /// Where this install's settings are saved.
@@ -40,6 +41,10 @@ class AppState extends ChangeNotifier {
 
   /// The device name used until the user picks one.
   final String defaultDeviceName;
+
+  /// The phone's own accent colour, or null if it has none. See
+  /// `system_colors.dart`.
+  final Color? systemAccentColor;
 
   AppSettings? _settings;
   DataFolder? _dataFolder;

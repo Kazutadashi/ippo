@@ -21,7 +21,12 @@ class AppearanceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = appState.settings;
     final themeMode = parseThemeMode(settings?.themeMode);
-    final accent = parseAccentColor(settings?.accentColor);
+    final systemAccent = appState.systemAccentColor;
+    final isSystemChosen = usesSystemAccent(
+      settings?.accentColor,
+      systemAccent,
+    );
+    final accent = chooseAccentColor(settings?.accentColor, systemAccent);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,16 +54,31 @@ class AppearanceSection extends StatelessWidget {
               appState.setThemeMode(choice.single.name),
         ),
         const SizedBox(height: 16),
-        const Text('Accent colour'),
+        Text(
+          systemAccent == null
+              ? 'Accent colour'
+              : 'Accent colour (the first one follows your phone\'s '
+                    'system colours)',
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 12,
           runSpacing: 12,
           children: [
+            // The phone's own colour comes first, when it has one.
+            if (systemAccent != null)
+              _ColorSwatch(
+                choice: AccentChoice('System', systemAccent),
+                isSelected: isSystemChosen,
+                icon: Icons.smartphone,
+                onTap: () => appState.setAccentColor(systemAccentSetting),
+              ),
             for (final choice in accentChoices)
               _ColorSwatch(
                 choice: choice,
-                isSelected: choice.color.toARGB32() == accent.toARGB32(),
+                isSelected:
+                    !isSystemChosen &&
+                    choice.color.toARGB32() == accent.toARGB32(),
                 onTap: () =>
                     appState.setAccentColor(accentColorToHex(choice.color)),
               ),
@@ -76,11 +96,16 @@ class _ColorSwatch extends StatelessWidget {
     required this.choice,
     required this.isSelected,
     required this.onTap,
+    this.icon,
   });
 
   final AccentChoice choice;
   final bool isSelected;
   final VoidCallback onTap;
+
+  /// Shown on the swatch when it is not selected, for example a phone
+  /// icon on the system colour.
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +134,7 @@ class _ColorSwatch extends StatelessWidget {
               width: 2,
             ),
           ),
-          child: isSelected ? Icon(Icons.check, color: tickColor) : null,
+          child: Icon(isSelected ? Icons.check : icon, color: tickColor),
         ),
       ),
     );
