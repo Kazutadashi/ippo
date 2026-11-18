@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Static analysis settings, used by `flutter analyze`.
+# We start from the standard Flutter lints and add a few that back up
+# the rules in CONTRIBUTING.md.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - linux/**
+  language:
+    # Make types explicit: no silent `dynamic`, no unchecked casts.
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # CONTRIBUTING.md: every public class, function, and field gets a
+    # doc comment.
+    - public_member_api_docs
+    # Errors should never pass silently.
+    - empty_catches
+    - avoid_catches_without_on_clauses
+    # Be explicit about what a function returns and accepts.
+    - always_declare_return_types
+    - type_annotate_public_apis
+    # The app never prints to the console in place of real error handling.
+    - avoid_print
