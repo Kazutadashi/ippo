@@ -73,3 +73,42 @@ class FoodServing {
   String describe(String measuredIn) =>
       '${formatAmount(count)} $unit (${formatAmount(amount)} $measuredIn)';
 }
+
+/// Matches a serving as typed: an optional count (maybe a fraction) and a
+/// unit name, such as `9 chips`, `2/3 cup` or `slice`.
+final RegExp _servingText = RegExp(
+  r'^\s*(\d+(?:[.,]\d+)?(?:\s*/\s*\d+)?)?\s*(.*?)\s*$',
+);
+
+/// Reads a serving as typed in one field: `9 chips` gives 9 and
+/// `chips`, `2/3 cup` gives 0.667 and `cup`, `slice` gives 1 and
+/// `slice`, and `9` alone gives 9 and `pieces`.
+///
+/// Returns null if [text] is empty or the count is 0.
+({double count, String unit})? readServingText(String text) {
+  final match = _servingText.firstMatch(text);
+  if (match == null || text.trim().isEmpty) {
+    return null;
+  }
+  final countText = match.group(1);
+  final unitText = match.group(2)!.trim();
+  final count = countText == null ? 1.0 : _readCount(countText);
+  if (count <= 0) {
+    return null;
+  }
+  return (count: count, unit: unitText.isEmpty ? 'pieces' : unitText);
+}
+
+/// Writes a serving for its field: `9 chips`, `0.7 cup`.
+String writeServingText(FoodServing serving) =>
+    '${formatAmount(serving.count)} ${serving.unit}';
+
+double _readCount(String text) {
+  final parts = text.split('/');
+  final top = double.parse(parts[0].trim().replaceAll(',', '.'));
+  if (parts.length != 2) {
+    return top;
+  }
+  final bottom = double.parse(parts[1].trim());
+  return bottom == 0 ? 0 : top / bottom;
+}

@@ -112,7 +112,15 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
     final period = _period();
     final problem = checkSleepPeriod(period);
     return Scaffold(
-      appBar: AppBar(title: const Text('Nap')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text('Nap'),
+        actions: [AppBarSaveButton(onPressed: problem == null ? _save : null)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -140,11 +148,6 @@ class _SleepFormScreenState extends State<SleepFormScreen> {
             NoteText('${formatDuration(period.duration)} of sleep')
           else
             ProblemText(problem),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: problem == null ? _save : null,
-            child: const Text('Save'),
-          ),
           if (widget.episode != null)
             DeleteButton(label: 'Delete this nap', onPressed: _delete),
         ],

@@ -219,7 +219,15 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
     final conversion = _conversionNote(grams);
     final serving = widget.food?.serving;
     return Scaffold(
-      appBar: AppBar(title: Text(_name)),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(_name),
+        actions: [AppBarSaveButton(onPressed: _save)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -259,8 +267,6 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
           ],
           const SizedBox(height: 16),
           NutrientInfoRow(nutrients: _nutrientsFor(grams)),
-          const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
           if (widget.entry != null)
             DeleteButton(label: 'Delete this entry', onPressed: _delete),
         ],

@@ -129,7 +129,15 @@ class _EditSetScreenState extends State<EditSetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.exercise.name)),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(widget.exercise.name),
+        actions: [AppBarSaveButton(onPressed: _save)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -163,8 +171,6 @@ class _EditSetScreenState extends State<EditSetScreen> {
                 errorText: _reserveProblem,
               ),
             ),
-          const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
           DeleteButton(label: 'Delete this set', onPressed: _delete),
         ],
       ),

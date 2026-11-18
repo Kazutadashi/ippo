@@ -71,7 +71,7 @@ void main() {
     // One list, no meals; adding is done with the two buttons at the
     // bottom right.
     expect(find.text('Quick food'), findsOneWidget);
-    expect(find.text('New food'), findsOneWidget);
+    expect(find.text('Add food'), findsOneWidget);
     expect(find.text('Add'), findsNothing);
     expect(find.text('Breakfast'), findsNothing);
     expect(find.text('Quick entry · 300 kcal'), findsOneWidget);

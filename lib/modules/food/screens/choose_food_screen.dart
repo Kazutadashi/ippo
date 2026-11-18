@@ -91,7 +91,15 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New food')),
+      appBar: AppBar(title: const Text('Add food')),
+      // Creating a food is for the whole screen, so it is a floating
+      // button, as on the other screens.
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'new-food',
+        onPressed: _newFood,
+        icon: const Icon(Icons.add),
+        label: const Text('New food'),
+      ),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -104,15 +112,12 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
               )
               .toList();
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+            // Room at the bottom, so the button never hides a food.
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
             children: [
               SectionCard(
                 children: [
-                  CardHeader(
-                    icon: Icons.list_alt,
-                    title: 'Your foods',
-                    action: HeaderAddButton(onPressed: _newFood),
-                  ),
+                  const CardHeader(icon: Icons.list_alt, title: 'Your foods'),
                   const SizedBox(height: 8),
                   TextField(
                     decoration: const InputDecoration(
@@ -123,9 +128,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (foods.isEmpty)
-                    const NoteText(
-                      'No foods found. Tap Add above to create one.',
-                    ),
+                    const NoteText('No foods found. Tap New food to add one.'),
                   for (final food in foods)
                     ListTile(
                       contentPadding: EdgeInsets.zero,

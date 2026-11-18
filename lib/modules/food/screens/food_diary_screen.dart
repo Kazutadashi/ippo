@@ -90,10 +90,10 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
             ),
             const SizedBox(height: 12),
             FloatingActionButton.extended(
-              heroTag: 'new-food',
+              heroTag: 'add-food',
               onPressed: _addEntry,
               icon: const Icon(Icons.add),
-              label: const Text('New food'),
+              label: const Text('Add food'),
             ),
           ],
         ),

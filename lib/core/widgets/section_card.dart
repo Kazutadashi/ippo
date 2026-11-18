@@ -398,3 +398,23 @@ class InfoTile extends StatelessWidget {
     );
   }
 }
+
+/// The Save button for the top bar of a form screen. Kept at the top, it
+/// is always in reach, however long the form (as in Material's
+/// full-screen dialogs).
+class AppBarSaveButton extends StatelessWidget {
+  /// Creates the button, calling [onPressed] when tapped. With
+  /// [onPressed] null, it is shown disabled.
+  const AppBarSaveButton({super.key, required this.onPressed});
+
+  /// What to do when tapped.
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: FilledButton(onPressed: onPressed, child: const Text('Save')),
+    );
+  }
+}

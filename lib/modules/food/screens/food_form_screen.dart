@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// Adding a food to the food list, or changing one: by typing, or by
-/// filling it in from a nutrition label.
+/// pasting its nutrition label.
+///
+/// The form follows the label: name, serving size, then nutrition, with
+/// the less common nutrients tucked away until needed. Save is in the
+/// top bar, so it is always in reach.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -18,10 +22,34 @@ import '../nutrients.dart';
 import '../nutrition_label.dart';
 import 'label_paste_dialog.dart';
 
-/// The form for a food: name, unit, serving size, and nutrients per 100
-/// g (or ml) or per serving, as on the label.
-///
-/// When adding, closes with the new food's id.
+/// The nutrients shown straight away: they are on every label and are
+/// what most people track.
+const List<String> _mainNutrientKeys = [
+  'proteins_g',
+  'carbohydrates_g',
+  'fat_g',
+];
+
+/// Short names for the nutrient fields, which sit side by side.
+const Map<String, String> _shortNames = {
+  'proteins_g': 'Protein',
+  'carbohydrates_g': 'Carbs',
+  'fat_g': 'Fat',
+  'sugars_g': 'Sugars',
+  'saturated_fat_g': 'Saturated fat',
+  'fiber_g': 'Fiber',
+  'salt_g': 'Salt',
+};
+
+/// The nutrients behind "More nutrients".
+const List<String> _moreNutrientKeys = [
+  'sugars_g',
+  'saturated_fat_g',
+  'fiber_g',
+  'salt_g',
+];
+
+/// The form for a food. When adding, closes with the new food's id.
 class FoodFormScreen extends StatefulWidget {
   /// Creates the form for a new food.
   const FoodFormScreen.add({super.key, required this.appState}) : food = null;
@@ -47,144 +75,225 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
   late final TextEditingController _nameField = TextEditingController(
     text: widget.food?.name ?? '',
   );
-  late final TextEditingController _servingCountField = TextEditingController(
-    text: _numberText(widget.food?.serving?.count),
+
+  /// The serving as typed, such as "9 chips".
+  late final TextEditingController _servingField = TextEditingController(
+    text: _startingServingText,
   );
-  late final TextEditingController _servingUnitField = TextEditingController(
-    text: widget.food?.serving?.unit ?? '',
-  );
-  late final TextEditingController _servingAmountField = TextEditingController(
+
+  /// The serving's weight, such as "28".
+  late final TextEditingController _weightField = TextEditingController(
     text: _numberText(widget.food?.serving?.amount),
   );
+
+  late final TextEditingController _energyField = TextEditingController(
+    text: _numberText(_startingValue(energyKey)),
+  );
   late final Map<String, TextEditingController> _nutrientFields = {
-    for (final kind in allNutrientKinds)
-      kind.key: TextEditingController(
-        text: _numberText(widget.food?.nutrientsPer100.values[kind.key]),
-      ),
+    for (final key in [..._mainNutrientKeys, ..._moreNutrientKeys])
+      key: TextEditingController(text: _numberText(_startingValue(key))),
   };
+
   late String _unit = widget.food?.measuredIn ?? 'g';
 
-  /// Whether the nutrient fields hold values per serving (true) or per
-  /// 100 g or ml (false). A changed food always starts per 100.
-  bool _isPerServing = false;
+  /// Whether the nutrition values are per 100 g (or ml) rather than per
+  /// serving. Only matters when a serving size is filled in; without one,
+  /// values are always per 100.
+  bool _isPer100 = false;
+
+  /// Whether the less common nutrients are shown.
+  late bool _isShowingMore = _moreNutrientKeys.any(
+    (key) => _nutrientFields[key]!.text.isNotEmpty,
+  );
 
   String? _nameProblem;
   String? _servingProblem;
+  String? _energyProblem;
   final Map<String, String> _nutrientProblems = {};
 
   static String _numberText(double? value) =>
       value == null ? '' : formatAmount(value);
 
+  String get _startingServingText {
+    final serving = widget.food?.serving;
+    return serving == null ? '' : writeServingText(serving);
+  }
+
+  /// A stored value, shown per serving if the food has a serving size
+  /// (as on its label), otherwise per 100.
+  double? _startingValue(String key) {
+    final food = widget.food;
+    final per100 = food?.nutrientsPer100.values[key];
+    final serving = food?.serving;
+    if (per100 == null || serving == null) {
+      return per100;
+    }
+    return roundToTenth(per100 * serving.amount / 100);
+  }
+
   @override
   void dispose() {
     _nameField.dispose();
-    _servingCountField.dispose();
-    _servingUnitField.dispose();
-    _servingAmountField.dispose();
+    _servingField.dispose();
+    _weightField.dispose();
+    _energyField.dispose();
     for (final field in _nutrientFields.values) {
       field.dispose();
     }
     super.dispose();
   }
 
-  /// Opens the label window, and fills the form with what it read.
-  Future<void> _fillInFromLabel() async {
+  /// The serving weight typed, or null if none.
+  double? get _servingWeight {
+    final weight = parseAmount(_weightField.text);
+    return weight == null || weight == 0 ? null : weight;
+  }
+
+  /// Whether the nutrition values are per serving.
+  bool get _isPerServing => _servingWeight != null && !_isPer100;
+
+  /// Says what the nutrition values are per, for example "Per serving
+  /// (28 g)" or "Per 100 g".
+  String get _basisText {
+    final weight = _servingWeight;
+    if (_isPerServing && weight != null) {
+      return 'Per serving (${formatAmount(weight)} $_unit)';
+    }
+    return 'Per 100 $_unit';
+  }
+
+  Future<void> _pasteLabel() async {
     final reading = await showDialog<LabelReading>(
       context: context,
       builder: (context) => const LabelPasteDialog(),
     );
-    if (reading == null) {
+    if (reading == null || !mounted) {
       return;
     }
+    final filled = _fillFrom(reading);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Filled in $filled values from the label.')),
+    );
+  }
+
+  /// Fills the form from [reading]. Returns how many values were filled.
+  int _fillFrom(LabelReading reading) {
+    var filled = 0;
     setState(() {
       final name = reading.name;
       if (name != null && _nameField.text.trim().isEmpty) {
         _nameField.text = name;
+        filled++;
       }
       if (widget.food == null) {
         _unit = reading.measuredIn;
       }
       final serving = reading.serving;
       if (serving != null) {
-        _servingCountField.text = formatAmount(serving.count);
-        _servingUnitField.text = serving.unit;
-        _servingAmountField.text = formatAmount(serving.amount);
+        _servingField.text = writeServingText(serving);
+        _weightField.text = formatAmount(serving.amount);
+        filled++;
       }
-      _isPerServing = !reading.isPer100;
-      for (final kind in allNutrientKinds) {
-        final value = reading.nutrients[kind.key];
-        _nutrientFields[kind.key]!.text = _numberText(value);
+      _isPer100 = reading.isPer100;
+      final energy = reading.nutrients[energyKey];
+      _energyField.text = _numberText(energy);
+      if (energy != null) {
+        filled++;
       }
-      _nutrientProblems.clear();
-      _servingProblem = null;
+      for (final entry in _nutrientFields.entries) {
+        final value = reading.nutrients[entry.key];
+        entry.value.text = _numberText(value);
+        if (value != null) {
+          filled++;
+        }
+      }
+      _isShowingMore = _moreNutrientKeys.any(
+        (key) => reading.nutrients.containsKey(key),
+      );
+      _clearProblems();
+      // A label with values per serving needs the serving's weight.
+      if (!reading.isPer100 && serving == null) {
+        _servingProblem =
+            'The label\'s values are per serving: add its weight.';
+      }
     });
+    return filled;
   }
 
-  /// Reads the serving size fields. Returns null if they are empty, and
-  /// notes a problem if they are filled in only partly or wrongly.
-  FoodServing? _readServing() {
-    final countText = _servingCountField.text.trim();
-    final unitText = _servingUnitField.text.trim();
-    final amountText = _servingAmountField.text.trim();
+  void _clearProblems() {
+    _nameProblem = null;
     _servingProblem = null;
-    if (countText.isEmpty && unitText.isEmpty && amountText.isEmpty) {
-      return null;
-    }
-    final count = parseAmount(countText);
-    final amount = parseAmount(amountText);
-    if (count == null || count == 0 || amount == null || amount == 0) {
-      _servingProblem = 'Fill in all three, such as 9 chips, 28 g.';
-      return null;
-    }
-    if (unitText.isEmpty || unitText.length > maximumUnitNameLength) {
-      _servingProblem = 'Name the pieces, such as chips or slices.';
-      return null;
-    }
-    return FoodServing(unit: unitText, count: count, amount: amount);
+    _energyProblem = null;
+    _nutrientProblems.clear();
   }
 
-  /// Reads the typed nutrients and notes any problems. Returns null if
-  /// there is a problem.
-  Map<String, double>? _readNutrientValues() {
-    _nutrientProblems.clear();
+  /// Reads the serving fields. Notes a problem if they do not make sense.
+  FoodServing? _readServing() {
+    final weight = _servingWeight;
+    final servingText = _servingField.text.trim();
+    if (weight == null) {
+      if (servingText.isNotEmpty || _weightField.text.trim().isNotEmpty) {
+        _servingProblem = 'Add the serving\'s weight, such as 28.';
+      }
+      return null;
+    }
+    // Keep a saved serving exactly as it was if its text is unchanged,
+    // so "2/3 cup" does not become "0.7 cup".
+    final saved = widget.food?.serving;
+    if (saved != null && servingText == _startingServingText) {
+      return FoodServing(unit: saved.unit, count: saved.count, amount: weight);
+    }
+    final typed = readServingText(servingText);
+    if (servingText.isEmpty || typed == null) {
+      return FoodServing(unit: 'serving', count: 1, amount: weight);
+    }
+    if (typed.unit.length > maximumUnitNameLength) {
+      _servingProblem = 'Please use a shorter name, such as chips.';
+      return null;
+    }
+    return FoodServing(unit: typed.unit, count: typed.count, amount: weight);
+  }
+
+  /// Reads the nutrition fields, as typed (per serving or per 100).
+  Map<String, double>? _readValues() {
     final values = <String, double>{};
-    for (final kind in allNutrientKinds) {
-      final text = _nutrientFields[kind.key]!.text.trim();
+    final energy = parseAmount(_energyField.text);
+    if (energy == null) {
+      _energyProblem = _energyField.text.trim().isEmpty
+          ? 'Please enter the calories.'
+          : 'Please enter a number.';
+    } else {
+      values[energyKey] = energy;
+    }
+    for (final entry in _nutrientFields.entries) {
+      final text = entry.value.text.trim();
       if (text.isEmpty) {
         continue;
       }
       final value = parseAmount(text);
       if (value == null) {
-        _nutrientProblems[kind.key] = 'Please enter a number, such as 12.5.';
+        _nutrientProblems[entry.key] = 'Not a number';
       } else {
-        values[kind.key] = value;
+        values[entry.key] = value;
       }
     }
-    if (!values.containsKey(energyKey) &&
-        !_nutrientProblems.containsKey(energyKey)) {
-      _nutrientProblems[energyKey] = 'Please enter the calories.';
-    }
-    return _nutrientProblems.isEmpty ? values : null;
+    return _energyProblem == null && _nutrientProblems.isEmpty ? values : null;
   }
 
   Future<void> _save() async {
-    final nameProblem = checkFoodName(_nameField.text);
+    setState(_clearProblems);
+    _nameProblem = checkFoodName(_nameField.text);
     final serving = _readServing();
-    final values = _readNutrientValues();
-    final per100 = values == null
-        ? null
-        : nutrientsPer100From(
-            values,
-            isPer100: !_isPerServing,
-            serving: serving,
-          );
-    if (values != null && per100 == null) {
-      _servingProblem = 'Values per serving need the serving size.';
-    }
-    setState(() => _nameProblem = nameProblem);
-    if (nameProblem != null || per100 == null || _servingProblem != null) {
+    final values = _readValues();
+    setState(() {});
+    if (_nameProblem != null || _servingProblem != null || values == null) {
       return;
     }
+    final per100 = nutrientsPer100From(
+      values,
+      isPer100: !_isPerServing,
+      serving: serving,
+    )!;
 
     final actions = FoodActions(widget.appState);
     final food = widget.food;
@@ -232,116 +341,219 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     );
   }
 
+  /// A number field for one nutrient. "Next" on the keyboard moves on.
+  Widget _numberField(
+    TextEditingController controller,
+    String label,
+    String unit, {
+    String? problem,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: unit,
+        errorText: problem,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.food != null;
+    Widget nutrientField(String key) => _numberField(
+      _nutrientFields[key]!,
+      _shortNames[key]!,
+      'g',
+      problem: _nutrientProblems[key],
+    );
+
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit food' : 'New food')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(isEditing ? 'Edit food' : 'New food'),
+        actions: [AppBarSaveButton(onPressed: _save)],
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
           OutlinedButton.icon(
-            onPressed: _fillInFromLabel,
-            icon: const Icon(Icons.receipt_long),
-            label: const Text('Fill in from label'),
+            onPressed: _pasteLabel,
+            icon: const Icon(Icons.content_paste),
+            label: const Text('Paste nutrition label'),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _nameField,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              labelText: 'Name',
-              errorText: _nameProblem,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const FieldLabel('Measured in'),
-          SegmentedButton<String>(
-            expandedInsets: EdgeInsets.zero,
-            segments: const [
-              ButtonSegment(value: 'g', label: Text('Grams')),
-              ButtonSegment(value: 'ml', label: Text('Millilitres')),
-            ],
-            selected: {_unit},
-            showSelectedIcon: false,
-            // The unit cannot change later: past entries were logged in it.
-            onSelectionChanged: isEditing
-                ? null
-                : (choice) => setState(() => _unit = choice.single),
-          ),
-          const SizedBox(height: 20),
-          const FieldLabel('Serving size, as on the label (optional)'),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          SectionCard(
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _servingCountField,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(labelText: 'How many'),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _servingUnitField,
-                  decoration: const InputDecoration(labelText: 'Of what'),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _servingAmountField,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Weighs',
-                    suffixText: _unit,
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-            ],
-          ),
-          if (_servingProblem != null) ...[
-            const SizedBox(height: 8),
-            ProblemText(_servingProblem!),
-          ],
-          const SizedBox(height: 20),
-          const FieldLabel('The values below are per'),
-          SegmentedButton<bool>(
-            expandedInsets: EdgeInsets.zero,
-            segments: [
-              ButtonSegment(value: false, label: Text('100 $_unit')),
-              const ButtonSegment(value: true, label: Text('Serving')),
-            ],
-            selected: {_isPerServing},
-            showSelectedIcon: false,
-            onSelectionChanged: (choice) =>
-                setState(() => _isPerServing = choice.single),
-          ),
-          for (final kind in allNutrientKinds)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: TextField(
-                controller: _nutrientFields[kind.key],
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+              const CardHeader(icon: Icons.restaurant, title: 'Food'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _nameField,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
-                  labelText: kind.label.trim(),
-                  suffixText: kind.unit,
-                  errorText: _nutrientProblems[kind.key],
+                  labelText: 'Name',
+                  errorText: _nameProblem,
                 ),
               ),
-            ),
-          const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
+            ],
+          ),
+          SectionCard(
+            children: [
+              const CardHeader(icon: Icons.scale, title: 'Serving size'),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _servingField,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'Serving',
+                        hintText: '2 slices',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _weightField,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: 'Weight',
+                        suffixText: _unit,
+                      ),
+                      // Redraw: the nutrition card says what its values
+                      // are per.
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SegmentedButton<String>(
+                expandedInsets: EdgeInsets.zero,
+                segments: const [
+                  ButtonSegment(value: 'g', label: Text('Grams')),
+                  ButtonSegment(value: 'ml', label: Text('Millilitres')),
+                ],
+                selected: {_unit},
+                showSelectedIcon: false,
+                // Fixed once saved: past entries were logged in it.
+                onSelectionChanged: isEditing
+                    ? null
+                    : (choice) => setState(() => _unit = choice.single),
+              ),
+              if (_servingProblem != null) ...[
+                const SizedBox(height: 8),
+                ProblemText(_servingProblem!),
+              ],
+            ],
+          ),
+          SectionCard(
+            children: [
+              const CardHeader(
+                icon: Icons.local_fire_department,
+                title: 'Nutrition',
+              ),
+              NoteText(_basisText),
+              // Only with a serving size can values be per serving.
+              if (_servingWeight != null) ...[
+                const SizedBox(height: 12),
+                SegmentedButton<bool>(
+                  expandedInsets: EdgeInsets.zero,
+                  segments: [
+                    const ButtonSegment(
+                      value: false,
+                      label: Text('Per serving'),
+                    ),
+                    ButtonSegment(value: true, label: Text('Per 100 $_unit')),
+                  ],
+                  selected: {_isPer100},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (choice) =>
+                      setState(() => _isPer100 = choice.single),
+                ),
+              ],
+              const SizedBox(height: 16),
+              _numberField(
+                _energyField,
+                'Calories',
+                'kcal',
+                problem: _energyProblem,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: nutrientField('proteins_g')),
+                  const SizedBox(width: 12),
+                  Expanded(child: nutrientField('carbohydrates_g')),
+                  const SizedBox(width: 12),
+                  Expanded(child: nutrientField('fat_g')),
+                ],
+              ),
+              // Opens and closes smoothly, so it is clear what changed.
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.topCenter,
+                child: _isShowingMore
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Column(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: nutrientField('sugars_g')),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: nutrientField('saturated_fat_g'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: nutrientField('fiber_g')),
+                                const SizedBox(width: 12),
+                                Expanded(child: nutrientField('salt_g')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    : const SizedBox(width: double.infinity),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 48),
+                  ),
+                  onPressed: () =>
+                      setState(() => _isShowingMore = !_isShowingMore),
+                  icon: Icon(
+                    _isShowingMore ? Icons.expand_less : Icons.expand_more,
+                  ),
+                  label: Text(
+                    _isShowingMore ? 'Fewer nutrients' : 'More nutrients',
+                  ),
+                ),
+              ),
+            ],
+          ),
           if (isEditing)
             DeleteButton(label: 'Delete this food', onPressed: _delete),
         ],

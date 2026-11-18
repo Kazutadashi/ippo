@@ -158,7 +158,15 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
   Widget build(BuildContext context) {
     final kindsByKey = {for (final kind in allNutrientKinds) kind.key: kind};
     return Scaffold(
-      appBar: AppBar(title: const Text('Quick food')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text('Quick food'),
+        actions: [AppBarSaveButton(onPressed: _save)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -187,8 +195,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
                 ),
               ),
             ),
-          const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
           if (widget.entry != null)
             DeleteButton(label: 'Delete this entry', onPressed: _delete),
         ],

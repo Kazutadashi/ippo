@@ -181,4 +181,13 @@ salt: 0.4 g
       expect(FoodServing.fromJson('9 chips'), isNull);
     });
   });
+
+  test('a serving typed in one field', () {
+    expect(readServingText('9 chips'), (count: 9.0, unit: 'chips'));
+    expect(readServingText('slice'), (count: 1.0, unit: 'slice'));
+    expect(readServingText('2'), (count: 2.0, unit: 'pieces'));
+    expect(readServingText('2/3 cup')!.count, closeTo(2 / 3, 1e-9));
+    expect(readServingText(''), isNull);
+    expect(readServingText('0 chips'), isNull);
+  });
 }

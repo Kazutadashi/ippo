@@ -1,9 +1,9 @@
 # Filling in a food from its nutrition label
 
-When you add a food (**Food › + New food › Add**), the form has a
-**Fill in from label** button. It reads the text of a nutrition label
-and fills in the name, serving size and nutrients for you. You can
-check and change everything before saving.
+When you add a food (**Food › + Add food › + New food**), the form has
+a **Paste nutrition label** button at the top. It reads the text of a
+nutrition label and fills in the name, serving size and nutrients for
+you. You can check and change everything before saving.
 
 Ippo never goes online, so it cannot read a photo by itself. There are
 three ways to get the label's text in:
@@ -64,8 +64,9 @@ salt: 0.4 g
 - Add a line `per 100 g` if the values are per 100 g instead of per
   serving.
 
-The **Copy the format** button in the window copies this example, so you
-can paste it into your request to the assistant.
+The **Copy the format** button (under **Using a photo?** in the
+window) copies an example, so you can paste it into your request to the
+assistant.
 
 
 ## A request to give an assistant with the photo

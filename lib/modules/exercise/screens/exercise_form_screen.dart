@@ -86,7 +86,15 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.exercise != null;
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit exercise' : 'New exercise')),
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: 'Close without saving',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(isEditing ? 'Edit exercise' : 'New exercise'),
+        actions: [AppBarSaveButton(onPressed: _save)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -112,8 +120,6 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
                 ? null
                 : (choice) => setState(() => _measuredIn = choice.single),
           ),
-          const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
           if (isEditing)
             DeleteButton(label: 'Delete this exercise', onPressed: _delete),
         ],

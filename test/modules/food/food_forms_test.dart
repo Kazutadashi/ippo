@@ -56,10 +56,13 @@ void main() {
       MaterialApp(home: FoodFormScreen.add(appState: appState)),
     );
 
-    await tester.tap(find.text('Fill in from label'));
+    await tester.tap(find.text('Paste nutrition label'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.widgetWithText(TextField, 'Label text'),
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.byType(TextField),
+      ),
       'name: Potato chips\nserving: 9 chips = 28 g\ncalories: 150\n'
       'fat: 9 g\nprotein: 2 g',
     );
@@ -67,7 +70,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextField, 'Potato chips'), findsOneWidget);
-    expect(find.widgetWithText(TextField, 'chips'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '9 chips'), findsOneWidget);
+    expect(find.text('Per serving (28 g)'), findsOneWidget);
+    expect(find.text('Filled in 5 values from the label.'), findsOneWidget);
 
     await tester.runAsync(() async {
       await tester.tap(find.text('Save'));
@@ -165,8 +170,49 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: FoodFormScreen.add(appState: appState)),
     );
-    await tester.tap(find.text('Fill in from label'));
+    await tester.tap(find.text('Paste nutrition label'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Save is in the top bar, and extra nutrients open on demand', (
+    tester,
+  ) async {
+    await setUpApp(tester);
+    await tester.pumpWidget(
+      MaterialApp(home: FoodFormScreen.add(appState: appState)),
+    );
+
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Save')),
+      findsOneWidget,
+    );
+    expect(find.text('Sugars'), findsNothing);
+    await tester.tap(find.text('More nutrients'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sugars'), findsOneWidget);
+  });
+
+  testWidgets('without a serving size, values are per 100 g', (tester) async {
+    await setUpApp(tester);
+    await tester.pumpWidget(
+      MaterialApp(home: FoodFormScreen.add(appState: appState)),
+    );
+    expect(find.text('Per 100 g'), findsOneWidget);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Oats');
+    await tester.enterText(find.widgetWithText(TextField, 'Calories'), '389');
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Save'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+
+    final food = FoodDiary.fromEvents(appState.eventLog!.events)
+        .foods
+        .values
+        .single;
+    expect(food.serving, isNull);
+    expect(food.nutrientsPer100.energyKcal, 389);
   });
 }

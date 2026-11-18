@@ -89,10 +89,19 @@ tall as its tallest tile.
 
 ### Forms (adding or changing one thing)
 
-A screen of its own with a top bar naming the thing ("Nap", "Quick
-food"). Fields at the top, then any information (such as "8 h of
-sleep"), then one full-width **Save** button, then a red **Delete**
-button when changing an existing thing.
+A screen of its own, like Material's full-screen dialog: the top bar
+has ✕ on the left (close without saving), the thing's name ("Nap",
+"New food"), and **Save** on the right (`AppBarSaveButton`). Save stays
+in reach however long the form is. Below: the fields, then any
+information (such as "8 h of sleep"), then a red **Delete** button at
+the very end when changing an existing thing.
+
+Long forms are split into short cards in the order a person thinks
+about the thing (for a food: name, serving size, nutrition). Fields
+most people skip stay closed behind a "More …" link that opens
+smoothly (`AnimatedSize`), and open by themselves when they hold
+values. Number fields use the keyboard's **Next** key
+(`TextInputAction.next`) to move on to the next field.
 
 
 ## 3. Fields, information and buttons
@@ -139,7 +148,8 @@ Rules:
 | Create something for the whole screen | Bottom right, stacked at equal width if more than one | Extended floating button: icon and a short label | **+ New exercise**, **Quick food**, **+ New food** |
 | An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton` | **+ Add** (naps), **Edit** (a logged night), **Refresh** |
 | Change one row of a list | The whole row, plus a ✎ button at its end | `ListTile` with trailing `IconButton` | a food entry, a nap |
-| Save a form | Bottom of the form, full width | Filled button | **Save**, **Save night** |
+| Save a form screen | Right of the top bar | `AppBarSaveButton` | **Save** (New food, Nap) |
+| Save on a module's own screen (not a form) | Bottom of its card, full width | Filled button | **Save** (Sleep's day card) |
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
 
 - At most **one filled button** is in view on a card or form, so the
