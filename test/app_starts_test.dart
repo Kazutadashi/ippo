@@ -56,15 +56,27 @@ void main() {
     return appState;
   }
 
-  testWidgets('on first run, the app opens settings to choose a folder', (
-    tester,
-  ) async {
+  testWidgets('on first run, the app asks for a data folder', (tester) async {
     await startApp(tester, withDataFolder: false);
 
+    expect(find.text('Choose a data folder'), findsOneWidget);
+    // Five tabs: Home and the four modules. Settings is not a tab.
+    expect(find.byType(NavigationDestination), findsNWidgets(5));
+    expect(find.text('Habits'), findsOneWidget);
+    expect(find.text('Settings'), findsNothing);
+
+    await tester.tap(find.text('Choose a data folder'));
+    await tester.pumpAndSettle();
     expect(find.text('Data folder'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Food'), findsOneWidget);
-    expect(find.text('Exercise'), findsOneWidget);
+  });
+
+  testWidgets('the gear on Home opens Settings', (tester) async {
+    await startApp(tester);
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Data folder'), findsOneWidget);
   });
 
   testWidgets('with a data folder, the app opens on Home', (tester) async {
@@ -73,18 +85,20 @@ void main() {
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(DateTime.now())), findsOneWidget);
     // Two tiles per module, all waiting for data.
-    expect(find.byType(InfoTile), findsNWidgets(6));
-    expect(find.text('–'), findsNWidgets(6));
-    // Purely information: nothing on Home can be tapped.
-    expect(
-      find.descendant(
-        of: find.byType(TodayScreen),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is ButtonStyleButton || widget is InkWell,
-        ),
-      ),
-      findsNothing,
+    expect(find.byType(InfoTile), findsNWidgets(8));
+    expect(find.text('–'), findsNWidgets(8));
+    // Information only: everything tappable belongs to the one gear.
+    bool isTappable(Widget widget) =>
+        widget is ButtonStyleButton || widget is InkWell;
+    final tappable = find.descendant(
+      of: find.byType(TodayScreen),
+      matching: find.byWidgetPredicate(isTappable),
     );
+    final inGear = find.descendant(
+      of: find.byType(IconButton),
+      matching: find.byWidgetPredicate(isTappable),
+    );
+    expect(tappable.evaluate().length, inGear.evaluate().length);
   });
 
   testWidgets('Home shows what was logged today', (tester) async {

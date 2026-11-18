@@ -2,9 +2,9 @@
 
 /// The home tab: a quick glance at the day so far.
 ///
-/// Like a weather app, it is purely information: a greeting, the date,
-/// and a grid of tiles from every module. Nothing on it can be tapped;
-/// the bar at the bottom leads to each module.
+/// Like a weather app, it is information: a greeting, the date, and a
+/// grid of tiles from every module. The bar at the bottom leads to each
+/// module; the only thing to tap here is the gear for Settings.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -17,10 +17,17 @@ import 'widgets/section_card.dart';
 /// The home tab.
 class TodayScreen extends StatelessWidget {
   /// Creates the home tab.
-  const TodayScreen({super.key, required this.appState});
+  const TodayScreen({
+    super.key,
+    required this.appState,
+    required this.onOpenSettings,
+  });
 
   /// The app-wide state.
   final AppState appState;
+
+  /// Opens the settings screen.
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +42,18 @@ class TodayScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           children: [
-            Text(greetingFor(now), style: textTheme.headlineSmall),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(greetingFor(now), style: textTheme.headlineSmall),
+                ),
+                IconButton(
+                  tooltip: 'Settings',
+                  icon: const Icon(Icons.settings_outlined),
+                  onPressed: onOpenSettings,
+                ),
+              ],
+            ),
             const SizedBox(height: 4),
             Text(
               describeToday(now),

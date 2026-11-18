@@ -370,8 +370,13 @@ This only affects how the app judges a day, never the stored values.
 
 There is **one value per habit per day**. If several entries exist for
 the same habit and date, the latest one wins. To correct a value, record
-it again. To clear a day back to "nothing recorded", use
-`habit_entry_deleted`.
+it again. To clear a day back to "nothing recorded", every entry for
+that habit and day is deleted with `habit_entry_deleted` (so an older
+entry cannot reappear).
+
+> **Note:** the app currently creates and shows `"yes_no"` habits only,
+> marked ✓ (`value: true`) or ✗ (`value: false`). The other value types
+> are part of the format for later versions and other tools.
 
 **"No" and "nothing recorded" are different.** `value: false` means you
 said you did not do it. No entry means you did not say anything. The app

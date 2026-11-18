@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The app's frame: a bar at the bottom with Home, one tab per module,
-/// and Settings.
+/// The app's frame: a bar at the bottom with Home and one tab per
+/// module. Settings opens from a gear on Home.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -11,12 +11,12 @@ import 'app_state.dart';
 import 'settings/settings_screen.dart';
 import 'today_screen.dart';
 
-/// The app's frame. The tabs are, in order: Home, each module from
-/// `lib/modules/all_modules.dart`, and Settings.
+/// The app's frame. The tabs are, in order: Home, then each module from
+/// `lib/modules/all_modules.dart`. Android recommends at most five tabs,
+/// so Settings is not one; it opens from Home.
 ///
-/// The app opens on Home, or on Settings if no data folder is chosen
-/// yet. Every tab keeps its state (for example the day shown) while
-/// another tab is open.
+/// The app opens on Home. Every tab keeps its state (for example the day
+/// shown) while another tab is open.
 class HomeScreen extends StatefulWidget {
   /// Creates the frame for [appState].
   const HomeScreen({super.key, required this.appState});
@@ -29,17 +29,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  /// The tab of the first module: Home comes before the modules.
-  static const int _firstModuleTab = 1;
+  /// The open tab: 0 is Home, 1 the first module, and so on.
+  int _selectedTab = 0;
 
-  /// The Settings tab, after every module.
-  int get _settingsTab => _firstModuleTab + allModules.length;
-
-  /// The open tab, or null until the settings have loaded and the
-  /// starting tab is known.
-  int? _selectedTab;
-
-  void _openTab(int index) => setState(() => _selectedTab = index);
+  void _openSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => SettingsScreen(appState: widget.appState),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,30 +51,30 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
         final hasDataFolder = widget.appState.dataFolder != null;
-        // A new user must choose a data folder first, in Settings.
-        final selectedTab = _selectedTab ??= hasDataFolder ? 0 : _settingsTab;
+        final chooseFolderFirst = _ChooseDataFolderFirst(
+          onOpenSettings: _openSettings,
+        );
         return Scaffold(
           // IndexedStack keeps every tab alive, so each keeps its state.
           body: IndexedStack(
-            index: selectedTab,
+            index: _selectedTab,
             children: [
               hasDataFolder
-                  ? TodayScreen(appState: widget.appState)
-                  : _ChooseDataFolderFirst(
-                      onOpenSettings: () => _openTab(_settingsTab),
-                    ),
+                  ? TodayScreen(
+                      appState: widget.appState,
+                      onOpenSettings: _openSettings,
+                    )
+                  : chooseFolderFirst,
               for (final module in allModules)
                 hasDataFolder
                     ? module.buildScreen(widget.appState)
-                    : _ChooseDataFolderFirst(
-                        onOpenSettings: () => _openTab(_settingsTab),
-                      ),
-              SettingsScreen(appState: widget.appState),
+                    : chooseFolderFirst,
             ],
           ),
           bottomNavigationBar: NavigationBar(
-            selectedIndex: selectedTab,
-            onDestinationSelected: _openTab,
+            selectedIndex: _selectedTab,
+            onDestinationSelected: (index) =>
+                setState(() => _selectedTab = index),
             destinations: [
               const NavigationDestination(
                 icon: Icon(Icons.home_outlined),
@@ -87,11 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(module.icon),
                   label: module.title,
                 ),
-              const NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Settings',
-              ),
             ],
           ),
         );
@@ -100,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Shown in the Home and module tabs while no data folder is chosen.
+/// Shown while no data folder is chosen, leading to Settings.
 class _ChooseDataFolderFirst extends StatelessWidget {
   const _ChooseDataFolderFirst({required this.onOpenSettings});
 

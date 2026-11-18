@@ -10,10 +10,12 @@ library;
 import '../core/module.dart';
 import 'exercise/exercise_module.dart';
 import 'food/food_module.dart';
+import 'habits/habits_module.dart';
 import 'sleep/sleep_module.dart';
 
 /// Every module, in the order shown on the home screen.
 const List<IppoModule> allModules = [
+  HabitsModule(),
   FoodModule(),
   ExerciseModule(),
   SleepModule(),

@@ -50,9 +50,11 @@ Contents:
 ### The app frame
 
 - A bar along the bottom with one tab per screen: **Home**, then each
-  module in `lib/modules/all_modules.dart`, then **Settings**.
-- The app opens on Home. A new user without a data folder starts on
-  Settings.
+  module in `lib/modules/all_modules.dart`. Android recommends at most
+  five tabs, so **Settings is not a tab**: it opens from a gear at the
+  top right of Home.
+- The app opens on Home. Without a data folder, every tab shows a short
+  welcome with a button leading to Settings.
 - Each tab keeps its state (the day shown, typed numbers) while another
   tab is open.
 
@@ -70,9 +72,9 @@ Nothing sits outside a card except short notes or problems at the top.
 
 ### Home
 
-Home is **purely information**, like a weather app: a quick glance at
-what matters about the day so far. Nothing on it can be tapped; the bar
-at the bottom leads to the modules.
+Home is **information**, like a weather app: a quick glance at what
+matters about the day so far. The bar at the bottom leads to the
+modules; the only thing on Home to tap is the Settings gear.
 
 Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
 18 November"), then a grid of `InfoTile`s, two per row, each row as
@@ -154,6 +156,9 @@ Rules:
 
 - At most **one filled button** is in view on a card or form, so the
   main action is obvious.
+- Every floating button has its own `heroTag`. All tabs stay alive at
+  once, and Flutter cannot animate two floating buttons with the same
+  tag (opening another screen would fail).
 - A card header has **at most one** action.
 - Leave room at the bottom of a scrolling screen so floating buttons
   never cover the last row (96 pixels for one button, 160 for two).
@@ -226,6 +231,9 @@ Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 | Meaning | Icon |
 | --- | --- |
 | Home | `home` (outlined when not selected) |
+| Habits | `check_circle_outline` |
+| A habit still to do | `radio_button_unchecked` |
+| Done / not done (habit grid) | `check` / `close` |
 | Food, food eaten | `restaurant` |
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |
@@ -233,7 +241,7 @@ Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 | Exercise | `fitness_center` |
 | Sleep, a night | `bedtime` |
 | A nap | `airline_seat_flat` |
-| Settings | `settings` (outlined when not selected) |
+| Settings | `settings_outlined` (the gear on Home) |
 | Add, new | `add` |
 | Change one thing | `edit_outlined` |
 | A time field | `schedule` |

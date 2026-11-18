@@ -15,6 +15,7 @@ import 'package:ippo/modules/exercise/exercise.dart';
 import 'package:ippo/modules/exercise/exercise_actions.dart';
 import 'package:ippo/modules/exercise/exercise_log.dart';
 import 'package:ippo/modules/food/food_actions.dart';
+import 'package:ippo/modules/habits/habit_actions.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_moment.dart';
@@ -23,7 +24,7 @@ import 'package:ippo/core/dates.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The tabs along the bottom, in order.
-const List<String> tabNames = ['Home', 'Food', 'Exercise', 'Sleep', 'Settings'];
+const List<String> tabNames = ['Home', 'Habits', 'Food', 'Exercise', 'Sleep'];
 
 void main() {
   late Directory settingsFolder;
@@ -56,6 +57,11 @@ void main() {
         'fat_g': 45.6,
       }),
     );
+    final habitActions = HabitActions(appState);
+    final habitId = (await habitActions.createHabit(
+      'A long habit name such as read ten pages before bed',
+    )).id;
+    await habitActions.recordDay(habitId, date, done: true);
     final exerciseEvent = await ExerciseActions(appState).createExercise(
       name: 'Single-leg squat to a low box, slow',
       measuredIn: MeasuredIn.reps,
@@ -116,6 +122,18 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'the $tab tab');
       }
+
+      // Settings opens from the gear on Home.
+      await tester.tap(
+        find.descendant(
+          of: find.byType(NavigationBar),
+          matching: find.text('Home'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Settings'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'the Settings screen');
     });
   }
 }

@@ -77,6 +77,9 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        // Every floating button needs its own tag: all tabs stay alive at
+        // once, and Flutter cannot animate two buttons with one tag.
+        heroTag: 'new-exercise',
         onPressed: () => _open(ExerciseFormScreen(appState: widget.appState)),
         icon: const Icon(Icons.add),
         label: const Text('New exercise'),
