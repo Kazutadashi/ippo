@@ -11,21 +11,19 @@ import '../../../core/number_input.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_diary.dart';
-import '../food_entry.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
 import 'quick_entry_form_screen.dart';
 
 /// Lists the user's foods, most recently used first, with a search box.
 class ChooseFoodScreen extends StatefulWidget {
-  /// Creates the screen for logging to [meal] on [date] (`YYYY-MM-DD`).
+  /// Creates the screen for logging on [date] (`YYYY-MM-DD`).
   /// [isToday] decides whether the entry gets the current time.
   const ChooseFoodScreen({
     super.key,
     required this.appState,
     required this.date,
     required this.isToday,
-    required this.meal,
   });
 
   /// The app-wide state.
@@ -36,9 +34,6 @@ class ChooseFoodScreen extends StatefulWidget {
 
   /// Whether [date] is today.
   final bool isToday;
-
-  /// The meal to log to (it can still be changed in the next step).
-  final Meal meal;
 
   @override
   State<ChooseFoodScreen> createState() => _ChooseFoodScreenState();
@@ -64,7 +59,6 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
         food: food,
         date: widget.date,
         isToday: widget.isToday,
-        meal: widget.meal,
       ),
     );
   }
@@ -75,7 +69,6 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
         appState: widget.appState,
         date: widget.date,
         isToday: widget.isToday,
-        meal: widget.meal,
       ),
     );
   }
@@ -109,7 +102,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add to ${widget.meal.label}')),
+      appBar: AppBar(title: const Text('Add food')),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {

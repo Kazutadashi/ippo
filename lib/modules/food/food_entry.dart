@@ -10,6 +10,10 @@ import 'nutrients.dart';
 
 /// The meals an entry can belong to. The names are stored in the data
 /// and must never change.
+///
+/// The app no longer asks for a meal (entries are simply listed in the
+/// order they were eaten), but entries saved earlier, or by other tools,
+/// may still have one, so it is still read.
 enum Meal {
   /// Breakfast.
   breakfast('Breakfast'),
@@ -37,25 +41,6 @@ enum Meal {
     }
     return null;
   }
-}
-
-/// Guesses the meal from the time of day, as a starting choice the user
-/// can change.
-Meal guessMeal(DateTime moment) {
-  final minutes = moment.hour * 60 + moment.minute;
-  if (minutes < 10 * 60 + 30) {
-    return Meal.breakfast;
-  }
-  if (minutes < 14 * 60 + 30) {
-    return Meal.lunch;
-  }
-  if (minutes < 17 * 60) {
-    return Meal.snack;
-  }
-  if (minutes < 21 * 60 + 30) {
-    return Meal.dinner;
-  }
-  return Meal.snack;
 }
 
 /// One thing eaten. Created by `food_entry_recorded`.

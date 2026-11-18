@@ -528,7 +528,7 @@ One thing eaten.
 | --- | --- | --- |
 | `date` | date | The day it counts for. |
 | `time` | time of day, optional | When it was eaten. |
-| `meal` | string, optional | `"breakfast"`, `"lunch"`, `"dinner"` or `"snack"`. |
+| `meal` | string, optional | `"breakfast"`, `"lunch"`, `"dinner"` or `"snack"`. The app does not ask for a meal (it lists entries in the order they were eaten), so new entries leave this out; it is kept for data from older versions and other tools. |
 | `food_id` | string, optional | The food. Missing for a quick entry (see below). |
 | `name` | string | The food's name at the time, copied. |
 | `amount` | number, optional | How much, in the food's `measured_in` units. |

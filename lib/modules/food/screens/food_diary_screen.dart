@@ -12,22 +12,13 @@ import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
-import '../nutrients.dart';
 import 'choose_food_screen.dart';
 import 'food_entry_form_screen.dart';
 import 'nutrient_summary.dart';
 import 'quick_entry_form_screen.dart';
 
-/// The icon shown for each meal.
-const Map<Meal, IconData> _mealIcons = {
-  Meal.breakfast: Icons.free_breakfast,
-  Meal.lunch: Icons.lunch_dining,
-  Meal.dinner: Icons.dinner_dining,
-  Meal.snack: Icons.cookie,
-};
-
-/// Shows one day's total, then one card per meal with its entries and
-/// an Add button.
+/// Shows one day's total, then everything eaten that day in the order
+/// it was logged.
 class FoodDiaryScreen extends StatefulWidget {
   /// Creates the diary screen.
   const FoodDiaryScreen({super.key, required this.appState});
@@ -43,14 +34,13 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   /// The day being shown, at local midnight. Starts at today.
   DateTime _day = today();
 
-  void _addEntry(Meal meal) {
+  void _addEntry() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ChooseFoodScreen(
           appState: widget.appState,
           date: formatDate(_day),
           isToday: _day == today(),
-          meal: meal,
         ),
       ),
     );
@@ -77,9 +67,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           final diary = FoodDiary.fromEvents(events);
           final date = formatDate(_day);
           final entries = diary.entriesOn(date);
-          final entriesWithoutMeal = entries
-              .where((entry) => entry.meal == null)
-              .toList();
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
@@ -91,28 +78,34 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
                 ),
               SectionCard(
                 children: [
-                  const CardHeader(icon: Icons.restaurant, title: 'Total'),
+                  const CardHeader(icon: Icons.functions, title: 'Total'),
                   const SizedBox(height: 8),
                   NutrientInfoRow(nutrients: diary.totalOn(date)),
                 ],
               ),
-              for (final meal in Meal.values)
-                _MealCard(
-                  icon: _mealIcons[meal]!,
-                  title: meal.label,
-                  entries: entries.where((entry) => entry.meal == meal),
-                  onAdd: () => _addEntry(meal),
-                  onEdit: _editEntry,
-                ),
-              // Entries without a meal can only come from other tools.
-              if (entriesWithoutMeal.isNotEmpty)
-                _MealCard(
-                  icon: Icons.restaurant_menu,
-                  title: 'Other',
-                  entries: entriesWithoutMeal,
-                  onAdd: null,
-                  onEdit: _editEntry,
-                ),
+              SectionCard(
+                children: [
+                  CardHeader(
+                    icon: Icons.restaurant,
+                    title: 'Eaten',
+                    action: HeaderAddButton(onPressed: _addEntry),
+                  ),
+                  if (entries.isEmpty)
+                    const NoteText('Nothing logged on this day.'),
+                  for (final entry in entries)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(entry.name),
+                      subtitle: Text(_describeEntry(entry)),
+                      trailing: IconButton(
+                        tooltip: 'Edit entry',
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _editEntry(entry),
+                      ),
+                      onTap: () => _editEntry(entry),
+                    ),
+                ],
+              ),
             ],
           );
         },
@@ -121,63 +114,15 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
   }
 }
 
-/// One meal's card: its name and energy, its entries, and an Add button.
-class _MealCard extends StatelessWidget {
-  const _MealCard({
-    required this.icon,
-    required this.title,
-    required this.entries,
-    required this.onAdd,
-    required this.onEdit,
-  });
-
-  final IconData icon;
-  final String title;
-  final Iterable<FoodEntry> entries;
-  final VoidCallback? onAdd;
-  final ValueChanged<FoodEntry> onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    var total = Nutrients.none;
-    for (final entry in entries) {
-      total = total.plus(entry.nutrients);
-    }
-    final onAdd = this.onAdd;
-    return SectionCard(
-      children: [
-        CardHeader(
-          icon: icon,
-          title: entries.isEmpty
-              ? title
-              : '$title · ${formatAmount(total.energyKcal)} kcal',
-          action: onAdd == null ? null : HeaderAddButton(onPressed: onAdd),
-        ),
-        if (entries.isEmpty) const NoteText('Nothing logged.'),
-        for (final entry in entries)
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(entry.name),
-            subtitle: Text(_describeEntry(entry)),
-            trailing: IconButton(
-              tooltip: 'Edit entry',
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: () => onEdit(entry),
-            ),
-            onTap: () => onEdit(entry),
-          ),
-      ],
-    );
-  }
-}
-
-/// Describes an entry's amount and energy, for example
-/// `150 g · 280 kcal` or `Quick entry · 850 kcal`.
+/// Describes an entry, for example `07:30 · 150 g · 280 kcal` or
+/// `Quick entry · 850 kcal`. The time is left out when it is not known.
 String _describeEntry(FoodEntry entry) {
-  final energy = '${formatAmount(entry.nutrients.energyKcal)} kcal';
   final amount = entry.amount;
-  if (amount == null) {
-    return 'Quick entry · $energy';
-  }
-  return '${formatAmount(amount)} ${entry.measuredIn ?? ''} · $energy';
+  final parts = [
+    if (entry.time != null) entry.time!,
+    if (amount == null) 'Quick entry',
+    if (amount != null) '${formatAmount(amount)} ${entry.measuredIn ?? ''}',
+    '${formatAmount(entry.nutrients.energyKcal)} kcal',
+  ];
+  return parts.join(' · ');
 }

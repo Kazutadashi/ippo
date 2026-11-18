@@ -16,7 +16,6 @@ import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
-import 'meal_picker.dart';
 
 /// The nutrients a quick entry asks for. Energy is required.
 const List<String> _quickEntryNutrientKeys = [
@@ -35,7 +34,6 @@ class QuickEntryFormScreen extends StatefulWidget {
     required this.appState,
     required String this.date,
     required this.isToday,
-    required Meal this.meal,
   }) : entry = null;
 
   /// Creates the form for changing [entry].
@@ -44,8 +42,7 @@ class QuickEntryFormScreen extends StatefulWidget {
     required this.appState,
     required FoodEntry this.entry,
   }) : date = null,
-       isToday = false,
-       meal = null;
+       isToday = false;
 
   /// The app-wide state.
   final AppState appState;
@@ -55,9 +52,6 @@ class QuickEntryFormScreen extends StatefulWidget {
 
   /// Whether [date] is today, so the entry gets the current time.
   final bool isToday;
-
-  /// The meal to start with, when adding.
-  final Meal? meal;
 
   /// The entry to change, when editing.
   final FoodEntry? entry;
@@ -78,8 +72,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
             : formatAmount(widget.entry!.nutrients.values[key]!),
       ),
   };
-  late Meal _meal =
-      widget.meal ?? widget.entry?.meal ?? guessMeal(DateTime.now());
   String? _nameProblem;
   String? _energyProblem;
 
@@ -128,7 +120,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         return actions.recordQuickEntry(
           date: widget.date!,
           time: widget.isToday ? formatTimeOfDay(DateTime.now()) : null,
-          meal: _meal,
           name: _nameField.text,
           nutrients: nutrients,
         );
@@ -137,7 +128,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         entry,
         name: _nameField.text,
         nutrients: nutrients,
-        meal: _meal,
       );
     });
     if (saved && mounted) {
@@ -197,11 +187,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
                 ),
               ),
             ),
-          const SizedBox(height: 16),
-          MealPicker(
-            selected: _meal,
-            onChanged: (meal) => setState(() => _meal = meal),
-          ),
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: const Text('Save')),
           if (widget.entry != null)

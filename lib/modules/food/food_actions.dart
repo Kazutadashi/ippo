@@ -72,14 +72,12 @@ class FoodActions {
   Future<Event> recordFoodEntry({
     required String date,
     required String? time,
-    required Meal meal,
     required Food food,
     required double amount,
   }) {
     return _write('food_entry_recorded', {
       'date': date,
       if (time != null) 'time': time,
-      'meal': meal.name,
       'food_id': food.id,
       'name': food.name,
       'amount': jsonNumber(amount),
@@ -93,20 +91,18 @@ class FoodActions {
   Future<Event> recordQuickEntry({
     required String date,
     required String? time,
-    required Meal meal,
     required String name,
     required Nutrients nutrients,
   }) {
     return _write('food_entry_recorded', {
       'date': date,
       if (time != null) 'time': time,
-      'meal': meal.name,
       'name': name.trim(),
       'nutrients': nutrients.toJson(),
     });
   }
 
-  /// Changes the amount and meal of an entry made from a food.
+  /// Changes the amount of an entry made from a food.
   ///
   /// The nutrients are scaled from the entry's own copy, not from the
   /// food's current values, so a later fix to the food does not sneak
@@ -114,7 +110,6 @@ class FoodActions {
   Future<Event> changeFoodEntryAmount(
     FoodEntry entry, {
     required double newAmount,
-    required Meal meal,
   }) {
     final oldAmount = entry.amount;
     final newNutrients = oldAmount == null || oldAmount == 0
@@ -124,26 +119,20 @@ class FoodActions {
       'target_id': entry.id,
       'changes': {
         'amount': jsonNumber(newAmount),
-        'meal': meal.name,
         'nutrients': newNutrients.toJson(),
       },
     });
   }
 
-  /// Changes the name, nutrients and meal of a quick entry.
+  /// Changes the name and nutrients of a quick entry.
   Future<Event> changeQuickEntry(
     FoodEntry entry, {
     required String name,
     required Nutrients nutrients,
-    required Meal meal,
   }) {
     return _write('food_entry_changed', {
       'target_id': entry.id,
-      'changes': {
-        'name': name.trim(),
-        'meal': meal.name,
-        'nutrients': nutrients.toJson(),
-      },
+      'changes': {'name': name.trim(), 'nutrients': nutrients.toJson()},
     });
   }
 

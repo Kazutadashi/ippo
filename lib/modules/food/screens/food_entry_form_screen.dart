@@ -15,10 +15,9 @@ import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
-import 'meal_picker.dart';
 import 'nutrient_summary.dart';
 
-/// The form for an entry made from a food: amount and meal.
+/// The form for an entry made from a food: the amount.
 ///
 /// Closes with `true` when something was saved or deleted.
 class FoodEntryFormScreen extends StatefulWidget {
@@ -29,7 +28,6 @@ class FoodEntryFormScreen extends StatefulWidget {
     required Food this.food,
     required String this.date,
     required this.isToday,
-    required Meal this.meal,
   }) : entry = null;
 
   /// Creates the form for changing [entry].
@@ -39,8 +37,7 @@ class FoodEntryFormScreen extends StatefulWidget {
     required FoodEntry this.entry,
   }) : food = null,
        date = null,
-       isToday = false,
-       meal = null;
+       isToday = false;
 
   /// The app-wide state.
   final AppState appState;
@@ -53,9 +50,6 @@ class FoodEntryFormScreen extends StatefulWidget {
 
   /// Whether [date] is today, so the entry gets the current time.
   final bool isToday;
-
-  /// The meal to start with, when adding.
-  final Meal? meal;
 
   /// The entry to change, when editing.
   final FoodEntry? entry;
@@ -70,8 +64,6 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         ? ''
         : formatAmount(widget.entry!.amount!),
   );
-  late Meal _meal =
-      widget.meal ?? widget.entry?.meal ?? guessMeal(DateTime.now());
   String? _amountProblem;
 
   @override
@@ -112,16 +104,11 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         return actions.recordFoodEntry(
           date: widget.date!,
           time: widget.isToday ? formatTimeOfDay(DateTime.now()) : null,
-          meal: _meal,
           food: food,
           amount: amount,
         );
       }
-      return actions.changeFoodEntryAmount(
-        entry!,
-        newAmount: amount,
-        meal: _meal,
-      );
+      return actions.changeFoodEntryAmount(entry!, newAmount: amount);
     });
     if (saved && mounted) {
       Navigator.of(context).pop(true);
@@ -167,11 +154,6 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             // Redraw so the preview below follows the typed amount.
             onChanged: (_) => setState(() => _amountProblem = null),
             onSubmitted: (_) => _save(),
-          ),
-          const SizedBox(height: 16),
-          MealPicker(
-            selected: _meal,
-            onChanged: (meal) => setState(() => _meal = meal),
           ),
           const SizedBox(height: 16),
           NutrientInfoRow(nutrients: _nutrientsFor(amount)),

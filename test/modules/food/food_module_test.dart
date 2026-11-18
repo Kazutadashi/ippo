@@ -12,7 +12,6 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
-import 'package:ippo/modules/food/food_entry.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 
 const String day = '2026-11-17';
@@ -77,7 +76,6 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: '07:30',
-      meal: Meal.breakfast,
       food: currentDiary().foods[oatsId]!,
       amount: 60,
     );
@@ -86,7 +84,7 @@ void main() {
     expect(entry.name, 'Rolled oats');
     expect(entry.amount, 60);
     expect(entry.measuredIn, 'g');
-    expect(entry.meal, Meal.breakfast);
+    expect(entry.meal, isNull);
     expect(entry.time, '07:30');
     expect(entry.foodId, oatsId);
     expect(entry.nutrients.values, {
@@ -101,7 +99,6 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: null,
-      meal: Meal.lunch,
       food: currentDiary().foods[oatsId]!,
       amount: 100,
     );
@@ -117,7 +114,6 @@ void main() {
     // written without ".0".
     expect(event['data'], {
       'date': day,
-      'meal': 'lunch',
       'food_id': oatsId,
       'name': 'Rolled oats',
       'amount': 100,
@@ -130,7 +126,6 @@ void main() {
     await actions.recordQuickEntry(
       date: day,
       time: null,
-      meal: Meal.dinner,
       name: 'Restaurant lunch',
       nutrients: const Nutrients({'energy_kcal': 850}),
     );
@@ -147,21 +142,18 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: null,
-      meal: Meal.breakfast,
       food: oats,
       amount: 50,
     );
     await actions.recordQuickEntry(
       date: day,
       time: null,
-      meal: Meal.snack,
       name: 'Apple',
       nutrients: const Nutrients({'energy_kcal': 80}),
     );
     await actions.recordQuickEntry(
       date: '2026-11-18',
       time: null,
-      meal: Meal.snack,
       name: 'Other day',
       nutrients: const Nutrients({'energy_kcal': 500}),
     );
@@ -177,7 +169,6 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: null,
-      meal: Meal.breakfast,
       food: currentDiary().foods[oatsId]!,
       amount: 100,
     );
@@ -200,7 +191,6 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: null,
-      meal: Meal.breakfast,
       food: currentDiary().foods[oatsId]!,
       amount: 100,
     );
@@ -211,11 +201,10 @@ void main() {
     );
 
     final entry = currentDiary().entriesOn(day).single;
-    await actions.changeFoodEntryAmount(entry, newAmount: 50, meal: Meal.snack);
+    await actions.changeFoodEntryAmount(entry, newAmount: 50);
 
     final changed = (await diaryFromDisk()).entriesOn(day).single;
     expect(changed.amount, 50);
-    expect(changed.meal, Meal.snack);
     expect(changed.nutrients.energyKcal, 194.5);
     expect(changed.nutrients.values['proteins_g'], 6.6);
   });
@@ -224,7 +213,6 @@ void main() {
     await actions.recordQuickEntry(
       date: day,
       time: null,
-      meal: Meal.snack,
       name: 'Apple',
       nutrients: const Nutrients({'energy_kcal': 80}),
     );
@@ -242,7 +230,6 @@ void main() {
     await actions.recordFoodEntry(
       date: day,
       time: null,
-      meal: Meal.breakfast,
       food: currentDiary().foods[oatsId]!,
       amount: 100,
     );
@@ -272,7 +259,6 @@ void main() {
       await actions.recordFoodEntry(
         date: day,
         time: null,
-        meal: Meal.snack,
         food: currentDiary().foods[id]!,
         amount: 10,
       );
@@ -301,13 +287,5 @@ void main() {
     expect(diary.invalidCount, 2);
     expect(diary.foods, isEmpty);
     expect(diary.entries, isEmpty);
-  });
-
-  test('meal guesses follow the time of day', () {
-    expect(guessMeal(DateTime(2026, 1, 1, 7)), Meal.breakfast);
-    expect(guessMeal(DateTime(2026, 1, 1, 12, 30)), Meal.lunch);
-    expect(guessMeal(DateTime(2026, 1, 1, 16)), Meal.snack);
-    expect(guessMeal(DateTime(2026, 1, 1, 19)), Meal.dinner);
-    expect(guessMeal(DateTime(2026, 1, 1, 23)), Meal.snack);
   });
 }

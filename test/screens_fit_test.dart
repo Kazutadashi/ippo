@@ -15,7 +15,6 @@ import 'package:ippo/modules/exercise/exercise.dart';
 import 'package:ippo/modules/exercise/exercise_actions.dart';
 import 'package:ippo/modules/exercise/exercise_log.dart';
 import 'package:ippo/modules/food/food_actions.dart';
-import 'package:ippo/modules/food/food_entry.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_episode.dart';
@@ -49,7 +48,6 @@ void main() {
     await FoodActions(appState).recordQuickEntry(
       date: date,
       time: null,
-      meal: Meal.breakfast,
       name: 'A rather long name for a restaurant breakfast plate',
       nutrients: const Nutrients({
         'energy_kcal': 1234.5,
