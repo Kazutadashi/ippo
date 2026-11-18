@@ -30,4 +30,8 @@ abstract class IppoModule {
   /// for example `3 entries · 1,240 kcal`. It answers "did I log
   /// today?", so it says so when nothing was logged.
   String summarizeToday(AppState appState);
+
+  /// Whether anything was logged in this module today. The home screen
+  /// uses this to list what is still to log.
+  bool hasLoggedToday(AppState appState);
 }

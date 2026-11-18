@@ -69,7 +69,9 @@ void main() {
   testWidgets('with a data folder, the app opens on Home', (tester) async {
     await startApp(tester);
 
+    expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(DateTime.now())), findsOneWidget);
+    expect(find.text('Nothing logged yet today.'), findsOneWidget);
     // Nothing logged yet: each module says so.
     expect(find.text('Nothing logged today'), findsNWidgets(3));
   });
@@ -92,6 +94,10 @@ void main() {
     );
 
     expect(find.text('1 entry · 80 kcal'), findsOneWidget);
+    expect(
+      find.text('Logged today: Food. Still to log: Exercise, Sleep.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('tapping a card on Home opens that module', (tester) async {
@@ -101,6 +107,12 @@ void main() {
     await tester.pump();
 
     expect(find.text('New exercise'), findsOneWidget);
+  });
+
+  test('the greeting follows the time of day', () {
+    expect(greetingFor(DateTime(2026, 1, 1, 7)), 'Good morning');
+    expect(greetingFor(DateTime(2026, 1, 1, 13)), 'Good afternoon');
+    expect(greetingFor(DateTime(2026, 1, 1, 21)), 'Good evening');
   });
 
   testWidgets('dark mode and the accent colour are applied', (tester) async {

@@ -42,5 +42,12 @@ class SleepModule implements IppoModule {
   }
 
   @override
+  bool hasLoggedToday(AppState appState) {
+    final log = SleepLog.fromEvents(appState.eventLog?.events ?? []);
+    final today = formatDate(DateTime.now());
+    return log.nightOn(today) != null || log.napsOn(today).isNotEmpty;
+  }
+
+  @override
   Widget buildScreen(AppState appState) => SleepScreen(appState: appState);
 }

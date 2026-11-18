@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../modules/all_modules.dart';
 import 'app_state.dart';
 import 'module.dart';
+import 'widgets/section_card.dart';
 
 /// The home tab. Tapping a module's card opens that module's tab.
 class TodayScreen extends StatelessWidget {
@@ -34,10 +35,16 @@ class TodayScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           children: [
+            Text(greetingFor(DateTime.now()), style: textTheme.headlineMedium),
+            const SizedBox(height: 4),
             Text(
               describeToday(DateTime.now()),
-              style: textTheme.headlineMedium,
+              style: textTheme.titleMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
             ),
+            const SizedBox(height: 12),
+            NoteText(describeWhatIsLogged(appState)),
             const SizedBox(height: 12),
             for (final module in allModules)
               Card(
@@ -92,4 +99,38 @@ String describeToday(DateTime day) {
     'December',
   ];
   return '${weekdays[day.weekday - 1]}, ${day.day} ${months[day.month - 1]}';
+}
+
+/// A greeting for the time of day: `Good morning`, `Good afternoon` or
+/// `Good evening`.
+String greetingFor(DateTime moment) {
+  if (moment.hour < 12) {
+    return 'Good morning';
+  }
+  if (moment.hour < 18) {
+    return 'Good afternoon';
+  }
+  return 'Good evening';
+}
+
+/// Says which modules have something logged today and which do not, for
+/// example `Logged today: Food. Still to log: Exercise, Sleep.`
+String describeWhatIsLogged(AppState appState) {
+  final logged = <String>[];
+  final notLogged = <String>[];
+  for (final module in allModules) {
+    if (module.hasLoggedToday(appState)) {
+      logged.add(module.title);
+    } else {
+      notLogged.add(module.title);
+    }
+  }
+  if (notLogged.isEmpty) {
+    return 'Everything is logged for today.';
+  }
+  if (logged.isEmpty) {
+    return 'Nothing logged yet today.';
+  }
+  return 'Logged today: ${logged.join(', ')}. '
+      'Still to log: ${notLogged.join(', ')}.';
 }
