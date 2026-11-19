@@ -11,10 +11,33 @@ NUTRIENTS = [
     "proteins_g",
     "carbohydrates_g",
     "sugars_g",
+    "added_sugars_g",
+    "fiber_g",
     "fat_g",
     "saturated_fat_g",
-    "fiber_g",
+    "monounsaturated_fat_g",
+    "polyunsaturated_fat_g",
+    "trans_fat_g",
+    "cholesterol_mg",
     "salt_g",
+    "sodium_mg",
+    "potassium_mg",
+    "calcium_mg",
+    "iron_mg",
+    "magnesium_mg",
+    "zinc_mg",
+    "phosphorus_mg",
+    "vitamin_a_ug",
+    "vitamin_c_mg",
+    "vitamin_d_ug",
+    "vitamin_e_mg",
+    "vitamin_k_ug",
+    "thiamin_mg",
+    "riboflavin_mg",
+    "niacin_mg",
+    "vitamin_b6_mg",
+    "folate_ug",
+    "vitamin_b12_ug",
 ]
 
 
@@ -24,7 +47,8 @@ def foods(events):
     Columns: ``food_id``, ``name``, ``measured_in`` (``"g"`` or
     ``"ml"``), ``serving_unit``, ``serving_count``, ``serving_amount``
     (for example 9 "chips" weigh 28 g), one ``<nutrient>_per_100``
-    column per nutrient, ``deleted``, ``recorded_utc``.
+    column per nutrient, ``ingredients`` (as on the label), ``deleted``,
+    ``recorded_utc``.
     """
     rows = []
     for food in collect_things(events, "food", "food_created", "food"):
@@ -32,6 +56,7 @@ def foods(events):
             "food_id": food["id"],
             "name": food.get("name"),
             "measured_in": food.get("measured_in"),
+            "ingredients": food.get("ingredients"),
             "deleted": food["deleted"],
             "recorded_utc": food["recorded_utc"],
         }
@@ -47,7 +72,7 @@ def foods(events):
     columns = (
         ["food_id", "name", "measured_in", "serving_unit", "serving_count", "serving_amount"]
         + [f"{nutrient}_per_100" for nutrient in NUTRIENTS]
-        + ["deleted", "recorded_utc"]
+        + ["ingredients", "deleted", "recorded_utc"]
     )
     return table(rows, columns)
 

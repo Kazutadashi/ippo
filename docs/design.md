@@ -158,6 +158,23 @@ the reader to guess.
   The note takes the mark's place, so an empty tile has no hole.
   Screen readers read a tile as one item.
 
+### Daily amounts and the calorie limit
+
+Numbers about food are shown **against what is normal for a day**, so
+they mean something: a thin bar under each nutrient fills up to its
+daily reference amount ("73 g of 50 g"), on the Food page and on Home.
+The amounts are the EU's reference intakes for an adult (scaled to the
+user's calorie limit, with protein by body weight when known); see
+`lib/modules/food/daily_references.dart` for every source. They are
+averages for adults, never presented as targets. The Food page's
+**All nutrients** opens every other nutrient of the day the same way.
+
+The calorie limit is set on the **Body and calories** screen, reached
+from the Food page's Total card and from Settings: sex, year of birth
+and height, weight logged over time, and from them the BMR
+(Mifflin-St Jeor) with the energy used at each activity level, which
+help choose a limit. A new limit counts from the day it is set.
+
 ### Forms (adding or changing one thing)
 
 A screen of its own, like Material's full-screen dialog: the top bar
@@ -529,8 +546,9 @@ and shares it, which keeps every screen fast as years of data build up.
 
 A new module also needs:
 
-- `homeTile` (its tile on Home) and, if it has one, `weekRow` (its
-  row of the week grid), from `IppoModule`;
+- `homeTile` (its tile on Home), and if it has them, `weekRows` (its
+  rows of the week grid), `datesLogged` (for the logging calendar) and
+  `buildSettingsCard` (a card in Settings), from `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.
 

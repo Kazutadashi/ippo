@@ -35,19 +35,21 @@ class ExerciseModule extends IppoModule {
   Widget buildIcon() => const DumbbellIcon();
 
   /// How many exercises were done on [day], with one mark each saying
-  /// whether it beat its last session; then how many did, and how many
-  /// of the last seven days had a workout.
+  /// whether it beat its last session; then how many did (or when the
+  /// last workout was), and the day's steps.
   @override
   HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = ExerciseLog.of(appState);
     final exercises = log.activeExercises;
+    final date = formatDate(day);
+    final steps = log.stepsOn(date);
+    final stepsLine = steps == null ? null : '${steps.steps} steps';
     if (exercises.isEmpty) {
-      return const HomeTile(
+      return HomeTile(
         value: HomeTile.unknownValue,
-        lines: ['No exercises yet'],
+        lines: ['No exercises yet', if (stepsLine != null) stepsLine],
       );
     }
-    final date = formatDate(day);
     final progress = [
       for (final exercise in exercises) _progressOf(log, exercise, date),
     ];
@@ -65,39 +67,51 @@ class ExerciseModule extends IppoModule {
           _sinceLastWorkout(log, day, isToday: day == currentDay(now))
         else
           '$beat beat last time',
-        'Trained $trainedDays of the last 7 days',
+        // The day's steps when logged; otherwise the week's workouts.
+        stepsLine ?? 'Trained $trainedDays of the last 7 days',
       ],
     );
   }
 
-  /// How many exercises were done on each of the seven days.
+  /// Two rows: how many exercises were done each day, and the steps
+  /// walked, in thousands to fit ("8.4").
   @override
-  WeekRow? weekRow(AppState appState, DateTime day) {
+  List<WeekRow> weekRows(AppState appState, DateTime day) {
     final log = ExerciseLog.of(appState);
-    if (log.activeExercises.isEmpty) {
-      return null;
-    }
-    final cells = <String?>[];
-    for (final column in weekEndingOn(day)) {
-      final date = formatDate(column);
-      final done = log.activeExercises
-          .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
-          .length;
-      cells.add(done == 0 ? null : '$done');
-    }
-    return WeekRow(
-      label: 'Exercises',
-      cells: cells,
-      description: 'Exercises done each day',
-    );
+    final columns = weekEndingOn(day);
+    return [
+      if (log.activeExercises.isNotEmpty)
+        WeekRow(
+          label: 'Exercises',
+          cells: [
+            for (final column in columns)
+              _exercisesDone(log, formatDate(column)),
+          ],
+          description: 'Exercises done each day',
+        ),
+      if (log.steps.any((count) => !count.isDeleted))
+        WeekRow(
+          label: 'Steps (k)',
+          cells: [
+            for (final column in columns)
+              _thousands(log.stepsOn(formatDate(column))?.steps),
+          ],
+          description: 'Steps walked each day, in thousands',
+        ),
+    ];
   }
 
-  /// Days with any set logged.
+  /// Days with any set or steps logged.
   @override
-  Set<String> datesLogged(AppState appState) => {
-    for (final set in ExerciseLog.of(appState).sets)
-      if (!set.isDeleted) set.date,
-  };
+  Set<String> datesLogged(AppState appState) {
+    final log = ExerciseLog.of(appState);
+    return {
+      for (final set in log.sets)
+        if (!set.isDeleted) set.date,
+      for (final count in log.steps)
+        if (!count.isDeleted) count.date,
+    };
+  }
 
   @override
   Widget buildScreen(AppState appState) =>
@@ -131,6 +145,18 @@ String _sinceLastWorkout(
   }
   return 'Last workout $days days ${isToday ? 'ago' : 'before'}';
 }
+
+/// How many exercises have sets on [date], or null for none.
+String? _exercisesDone(ExerciseLog log, String date) {
+  final done = log.activeExercises
+      .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
+      .length;
+  return done == 0 ? null : '$done';
+}
+
+/// [steps] in thousands to one decimal, `8.4`, or null for none.
+String? _thousands(int? steps) =>
+    steps == null ? null : (steps / 1000).toStringAsFixed(1);
 
 /// Whether any exercise has a set on [date].
 bool _trainedOn(ExerciseLog log, String date) => log.activeExercises.any(

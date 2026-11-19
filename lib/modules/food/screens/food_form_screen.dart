@@ -59,6 +59,11 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     text: widget.food?.name ?? widget.initialName,
   );
 
+  /// The ingredients, as on the label.
+  late final TextEditingController _ingredientsField = TextEditingController(
+    text: widget.food?.ingredients ?? '',
+  );
+
   /// The serving as typed, such as "9 chips".
   late final TextEditingController _servingField = TextEditingController(
     text: _startingServingText,
@@ -117,6 +122,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
   @override
   void dispose() {
     _nameField.dispose();
+    _ingredientsField.dispose();
     _servingField.dispose();
     _weightField.dispose();
     _energyField.dispose();
@@ -189,6 +195,11 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
         if (value != null) {
           filled++;
         }
+      }
+      final ingredients = reading.ingredients;
+      if (ingredients != null) {
+        _ingredientsField.text = ingredients;
+        filled++;
       }
       _isShowingMore = moreNutrientKeys.any(
         (key) => reading.nutrients.containsKey(key),
@@ -288,6 +299,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
           measuredIn: _unit,
           nutrientsPer100: per100,
           serving: serving,
+          ingredients: _ingredientsField.text,
         );
         newFoodId = event.id;
         return;
@@ -298,6 +310,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
         nutrientsPer100: per100,
         serving: serving,
         removeServing: serving == null && food.serving != null,
+        ingredients: _ingredientsField.text,
       );
     });
     if (saved && mounted) {
@@ -327,6 +340,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
   /// Everything the user can change here, for the discard guard.
   String _snapshot() => [
     _nameField.text,
+    _ingredientsField.text,
     _servingField.text,
     _weightField.text,
     _unit,
@@ -464,6 +478,20 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
                   isShowingMore: _isShowingMore,
                   onShowMoreChanged: (show) =>
                       setState(() => _isShowingMore = show),
+                ),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.list_alt, title: 'Ingredients'),
+                TextField(
+                  controller: _ingredientsField,
+                  minLines: 2,
+                  maxLines: 6,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Ingredients, as on the label',
+                  ),
                 ),
               ],
             ),

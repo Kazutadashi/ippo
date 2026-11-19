@@ -5,6 +5,10 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../daily_references.dart';
+
+import '../../body/body_log.dart';
+
 import '../../../core/app_state.dart';
 import '../../../core/clock_time.dart';
 import '../../../core/dates.dart';
@@ -329,7 +333,14 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               onChanged: (time) => setState(() => _time = time),
             ),
             const SizedBox(height: 16),
-            NutrientInfoRow(nutrients: _nutrientsFor(grams)),
+            // This amount against a whole day's normal amounts.
+            NutrientInfoRow(
+              nutrients: _nutrientsFor(grams),
+              references: dailyReferencesOn(
+                BodyLog.of(widget.appState),
+                widget.entry?.date ?? widget.date ?? formatDate(today()),
+              ),
+            ),
             if (widget.entry != null)
               DeleteButton(label: 'Delete this entry', onPressed: _delete),
             // Changing the food itself (its name or label values) starts

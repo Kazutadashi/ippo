@@ -59,11 +59,11 @@ class HabitsModule extends IppoModule {
   /// The percentage of habits done on each of the seven days; a day
   /// with nothing marked shows as empty.
   @override
-  WeekRow? weekRow(AppState appState, DateTime day) {
+  List<WeekRow> weekRows(AppState appState, DateTime day) {
     final log = HabitLog.of(appState);
     final habits = log.shownHabits;
     if (habits.isEmpty) {
-      return null;
+      return const [];
     }
     final cells = <String?>[];
     for (final column in weekEndingOn(day)) {
@@ -75,11 +75,13 @@ class HabitsModule extends IppoModule {
           .round();
       cells.add(anyMarked ? '$percent' : null);
     }
-    return WeekRow(
-      label: 'Habits (%)',
-      cells: cells,
-      description: 'Percentage of habits done each day',
-    );
+    return [
+      WeekRow(
+        label: 'Habits (%)',
+        cells: cells,
+        description: 'Percentage of habits done each day',
+      ),
+    ];
   }
 
   /// Days with any habit marked, done or not.

@@ -55,14 +55,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final tiles = [
       for (final module in allModules) _tileFor(module, appState, day, now),
     ];
-    // The modules' rows of the week grid, for those that have one.
-    final weekRows = <WeekGridRow>[];
-    for (final module in allModules) {
-      final row = module.weekRow(appState, day);
-      if (row != null) {
-        weekRows.add((title: module.title, icon: module.icon, row: row));
-      }
-    }
+    // The modules' rows of the week grid, for those that have any.
+    final weekRows = <WeekGridRow>[
+      for (final module in allModules)
+        for (final row in module.weekRows(appState, day))
+          (title: module.title, icon: module.icon, row: row),
+    ];
     // How many areas have data on each day, for the logging calendar.
     final loggedAreas = <String, int>{};
     for (final module in allModules) {

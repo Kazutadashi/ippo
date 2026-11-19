@@ -20,6 +20,7 @@ import '../exercise_set.dart';
 import 'edit_set_screen.dart';
 import 'exercise_cards.dart';
 import 'exercise_form_screen.dart';
+import 'steps_card.dart';
 
 /// Shows every exercise with the day's sets and a quick way to add more.
 class ExerciseHomeScreen extends StatefulWidget {
@@ -121,11 +122,17 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
                       'where you add the day\'s sets and reps.',
                     ),
                   ),
+                // The day's steps first: one number, typed in once a day.
+                StepsCard(
+                  appState: widget.appState,
+                  date: formatDate(shownDay),
+                  saved: log.stepsOn(formatDate(shownDay)),
+                ),
                 // Says once how to fix a mistake, which is otherwise
                 // hidden.
                 if (log.activeExercises.isNotEmpty)
                   const Padding(
-                    padding: EdgeInsets.only(bottom: Spacing.small),
+                    padding: EdgeInsets.symmetric(vertical: Spacing.small),
                     child: NoteText('Tap a set to change or remove it.'),
                   ),
                 for (final exercise in log.activeExercises)

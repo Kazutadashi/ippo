@@ -26,6 +26,7 @@ class Food {
     required this.nutrientsPer100,
     required this.serving,
     required this.isDeleted,
+    this.ingredients,
   });
 
   /// Reads a food from its collected events. Returns null if the data is
@@ -51,6 +52,9 @@ class Food {
       nutrientsPer100: nutrientsPer100,
       serving: FoodServing.fromJson(fields['serving']),
       isDeleted: record.isDeleted,
+      ingredients: fields['ingredients'] is String
+          ? fields['ingredients'] as String
+          : null,
     );
   }
 
@@ -68,6 +72,9 @@ class Food {
 
   /// The serving size from the label, such as "9 chips (28 g)", if known.
   final FoodServing? serving;
+
+  /// The ingredients as written on the label, if known.
+  final String? ingredients;
 
   /// Whether the food was deleted. Entries that used it keep their own
   /// copy of its name and nutrients.

@@ -8,6 +8,7 @@ import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'exercise.dart';
 import 'exercise_set.dart';
+import 'step_count.dart';
 
 /// The module's name in event files. Never change it.
 const String exerciseModuleName = 'exercise';
@@ -18,6 +19,7 @@ class ExerciseLog {
   ExerciseLog({
     required this.exercises,
     required this.sets,
+    required this.steps,
     required this.invalidCount,
   });
 
@@ -50,9 +52,20 @@ class ExerciseLog {
       }
     }
 
+    final steps = <StepCount>[];
+    for (final record in _collect(events, 'steps_recorded', 'steps')) {
+      final count = StepCount.fromRecord(record);
+      if (count == null) {
+        invalidCount++;
+      } else {
+        steps.add(count);
+      }
+    }
+
     return ExerciseLog(
       exercises: exercises,
       sets: sets,
+      steps: steps,
       invalidCount: invalidCount,
     );
   }
@@ -62,6 +75,22 @@ class ExerciseLog {
 
   /// Every set, including deleted ones, in the order they were logged.
   final List<ExerciseSet> sets;
+
+  /// Every step count, including deleted ones, in the order logged.
+  final List<StepCount> steps;
+
+  /// The steps on [date] (`YYYY-MM-DD`): the count logged last for that
+  /// day that is not deleted, or null if none. (Normally there is one per
+  /// day, changed in place; two can arrive from two devices.)
+  StepCount? stepsOn(String date) {
+    StepCount? latest;
+    for (final count in steps) {
+      if (count.date == date && !count.isDeleted) {
+        latest = count;
+      }
+    }
+    return latest;
+  }
 
   /// How many things were skipped because their data was not valid.
   final int invalidCount;

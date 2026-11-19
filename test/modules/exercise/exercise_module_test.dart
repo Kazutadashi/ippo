@@ -245,6 +245,29 @@ void main() {
     expect(log.exercises, isEmpty);
   });
 
+  test('steps: one count per day, changed in place', () async {
+    await actions.saveSteps(date: day1, steps: 6000, existing: null);
+    var log = await logFromDisk();
+    await actions.saveSteps(
+      date: day1,
+      steps: 6500,
+      existing: log.stepsOn(day1),
+    );
+
+    log = await logFromDisk();
+    expect(log.steps.length, 1);
+    expect(log.stepsOn(day1)!.steps, 6500);
+    expect(log.stepsOn('2026-01-01'), isNull);
+
+    const module = ExerciseModule();
+    final now = DateTime.parse('${day1}T20:00:00');
+    final tile = module.homeTile(appState, currentDay(now), now);
+    expect(tile.lines, ['No exercises yet', '6500 steps']);
+    final row = module.weekRows(appState, currentDay(now)).single;
+    expect(row.label, 'Steps (k)');
+    expect(row.cells.last, '6.5');
+  });
+
   test('home tile: exercises done, what beat last time, the week', () async {
     const module = ExerciseModule();
     final now = DateTime(2026, 11, 18, 20);
@@ -273,7 +296,7 @@ void main() {
       describeTile(module.homeTile(appState, day, now)),
       '3 of 3 done | 2 beat last time, Trained 1 of the last 7 days',
     );
-    expect(module.weekRow(appState, day)!.cells, [
+    expect(module.weekRows(appState, day).single.cells, [
       null,
       null,
       null,

@@ -37,8 +37,13 @@ Details:
 - Sodium is turned into salt (salt = sodium × 2.5) if no salt is given.
 - Serving sizes can be fractions: "2/3 cup (55g)".
 - Commas work as decimal marks: "3,5 g".
-- Trans fat, cholesterol, added sugars and % daily values are skipped,
-  because Ippo does not track them.
+- Every nutrient on the label is kept, including trans fat,
+  cholesterol, added sugars, minerals and vitamins (see "Nutrients" in
+  `docs/data-format.md`). Amounts in mg, mcg or µg are turned into each
+  nutrient's own unit. A line with only a % daily value ("Vitamin A
+  10%") is skipped: it gives no amount.
+- **Ingredients**: everything after "Ingredients:" up to the next empty
+  line is kept as the food's ingredients.
 
 
 ## The simple format
@@ -56,6 +61,11 @@ sugars: 1 g
 fiber: 1 g
 protein: 2 g
 salt: 0.4 g
+cholesterol: 0 mg
+vitamin d: 2 mcg
+calcium: 20 mg
+
+ingredients: Potatoes, sunflower oil, salt.
 ```
 
 - `serving` is how many pieces, what they are, and what they weigh.

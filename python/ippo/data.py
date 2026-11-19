@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from . import daily, exercise, food, habits, sleep
+from . import body, daily, exercise, food, habits, sleep
 from .reading import read_events
 
 
@@ -84,6 +84,22 @@ class IppoData:
     def exercise_days(self):
         """See :func:`ippo.exercise.exercise_days`."""
         return self._table(exercise.exercise_days)
+
+    def steps(self):
+        """See :func:`ippo.exercise.steps`."""
+        return self._table(exercise.steps)
+
+    def weights(self):
+        """See :func:`ippo.body.weights`."""
+        return self._table(body.weights)
+
+    def profile(self):
+        """See :func:`ippo.body.profile`."""
+        return self._table(body.profile)
+
+    def energy_targets(self):
+        """See :func:`ippo.body.energy_targets`."""
+        return self._table(body.energy_targets)
 
     def sleep_days(self):
         """See :func:`ippo.sleep.sleep_days`."""
@@ -165,8 +181,9 @@ class IppoData:
 TABLE_NAMES = [
     "habits", "habit_entries", "habit_days",
     "foods", "food_entries", "food_days",
-    "exercises", "sets", "exercise_days",
+    "exercises", "sets", "exercise_days", "steps",
     "sleep_days", "naps",
+    "weights", "profile", "energy_targets",
     "daily", "devices",
 ]
 

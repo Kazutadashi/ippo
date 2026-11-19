@@ -17,6 +17,10 @@ import '../food_actions.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
+import '../../body/body_log.dart';
+import '../../body/screens/body_screen.dart';
+import '../daily_references.dart';
+import 'nutrient_bars.dart';
 import 'choose_food_screen.dart';
 import 'food_entry_form_screen.dart';
 import 'nutrient_summary.dart';
@@ -87,6 +91,14 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
       );
     }
     return removed;
+  }
+
+  void _openBody() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => BodyScreen(appState: widget.appState),
+      ),
+    );
   }
 
   /// One meal's row: tap it to change it, or swipe it left to remove
@@ -170,6 +182,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
             final date = formatDate(shownDay);
             final entries = diary.entriesOn(date);
             final lastMeal = latestTimedEntry(entries);
+            final body = BodyLog.of(widget.appState);
+            final references = dailyReferencesOn(body, date);
+            final energyTarget = body.energyTargetOn(date);
             return ListView(
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
@@ -184,13 +199,59 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                   ),
                 SectionCard(
                   children: [
-                    const CardHeader(
+                    CardHeader(
                       icon: Icons.local_fire_department,
                       title: 'Total',
+                      // Body details and the daily limit.
+                      action: TextButton.icon(
+                        onPressed: _openBody,
+                        icon: const Icon(Icons.tune),
+                        label: Text(
+                          energyTarget == null ? 'Set limit' : 'Limit',
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    NutrientInfoRow(nutrients: diary.totalOn(date)),
+                    NutrientInfoRow(
+                      nutrients: diary.totalOn(date),
+                      references: references,
+                      energyTarget: energyTarget,
+                    ),
+                    // With a limit: how much is left, or how far over.
+                    if (energyTarget != null) ...[
+                      const SizedBox(height: Spacing.small),
+                      ShareBar(
+                        share: diary.totalOn(date).energyKcal / energyTarget,
+                        height: 6,
+                      ),
+                      const SizedBox(height: Spacing.tight),
+                      NoteText(
+                        _leftOrOver(
+                          energyTarget - diary.totalOn(date).energyKcal,
+                        ),
+                      ),
+                    ],
                     // When the last meal was, as on Home.
+                    // Every other nutrient, folded away until asked for.
+                    Theme(
+                      // No lines above and below the opened list.
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        childrenPadding: EdgeInsets.zero,
+                        title: Text(
+                          'All nutrients',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        children: [
+                          AllNutrientsList(
+                            nutrients: diary.totalOn(date),
+                            references: references,
+                          ),
+                        ],
+                      ),
+                    ),
                     if (lastMeal != null) ...[
                       const Divider(height: Spacing.screen),
                       _LastMealLine(
@@ -232,6 +293,11 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
     );
   }
 }
+
+/// "733 kcal left" or "120 kcal over", for [left] kilocalories left.
+String _leftOrOver(double left) => left >= 0
+    ? '${formatEnergy(left)} left'
+    : '${formatEnergy(-left)} over the limit';
 
 /// The last meal's time, and on the day itself how long ago that was:
 /// "Last meal" on the left, "7:15 pm" and "8 h ago" on the right.

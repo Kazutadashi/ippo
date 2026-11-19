@@ -44,6 +44,7 @@ class LabelReading {
     required this.measuredIn,
     required this.isPer100,
     required this.nutrients,
+    this.ingredients,
   });
 
   /// The food's name, if the text gave one (`name: ...`).
@@ -61,36 +62,57 @@ class LabelReading {
   /// The values found, by nutrient field name (see `nutrients.dart`).
   final Map<String, double> nutrients;
 
+  /// The ingredients, as written after "Ingredients:", if given.
+  final String? ingredients;
+
   /// Whether anything useful was found.
-  bool get isEmpty => serving == null && nutrients.isEmpty && name == null;
+  bool get isEmpty =>
+      serving == null &&
+      nutrients.isEmpty &&
+      name == null &&
+      ingredients == null;
 }
 
-/// Which words on a line mean which nutrient. Checked in this order, so
-/// "saturated fat" is found before "fat" and "sugars" before
-/// "carbohydrate".
+/// Which words on a line mean which nutrient, and the unit its field
+/// is in. Checked in this order, so the more specific words come first:
+/// "monounsaturated" before "saturated", "added sugars" before "sugars",
+/// "vitamin b12" before "vitamin b1", and every kind of fat before "fat".
 const List<(List<String>, String)> _nutrientWords = [
+  (['trans'], 'trans_fat_g'),
+  (['monounsaturat'], 'monounsaturated_fat_g'),
+  (['polyunsaturat'], 'polyunsaturated_fat_g'),
   (['saturated', 'saturates'], 'saturated_fat_g'),
+  (['cholesterol'], 'cholesterol_mg'),
+  (['added sugar'], 'added_sugars_g'),
   (['sugar'], 'sugars_g'),
   (['fiber', 'fibre'], 'fiber_g'),
   (['protein'], 'proteins_g'),
   (['carbohydrate', 'carbs', 'carb'], 'carbohydrates_g'),
   (['fat'], 'fat_g'),
   (['salt'], 'salt_g'),
+  (['sodium'], 'sodium_mg'),
+  (['potassium'], 'potassium_mg'),
+  (['calcium'], 'calcium_mg'),
+  (['iron'], 'iron_mg'),
+  (['magnesium'], 'magnesium_mg'),
+  (['zinc'], 'zinc_mg'),
+  (['phosphorus'], 'phosphorus_mg'),
+  (['vitamin b12', 'cobalamin'], 'vitamin_b12_ug'),
+  (['vitamin b6'], 'vitamin_b6_mg'),
+  (['thiamin', 'vitamin b1'], 'thiamin_mg'),
+  (['riboflavin', 'vitamin b2'], 'riboflavin_mg'),
+  (['niacin', 'vitamin b3'], 'niacin_mg'),
+  (['folate', 'folic acid', 'vitamin b9'], 'folate_ug'),
+  (['vitamin a'], 'vitamin_a_ug'),
+  (['vitamin c'], 'vitamin_c_mg'),
+  (['vitamin d'], 'vitamin_d_ug'),
+  (['vitamin e'], 'vitamin_e_mg'),
+  (['vitamin k'], 'vitamin_k_ug'),
 ];
 
 /// Lines with these words are about something Ippo does not track (or
 /// would be mistaken for something it does), so they are skipped.
-const List<String> _skippedWords = [
-  'trans',
-  'cholesterol',
-  'from fat',
-  'added',
-  'unsaturat',
-  'poly',
-  'mono',
-  'alcohol',
-  'daily value',
-];
+const List<String> _skippedWords = ['from fat', 'alcohol', 'daily value'];
 
 /// Matches a number such as `9`, `1.5` or `1,5`.
 final RegExp _number = RegExp(r'\d+(?:[.,]\d+)?');
@@ -122,12 +144,28 @@ LabelReading readNutritionLabel(String text) {
     measuredIn = 'ml';
   }
   final nutrients = <String, double>{};
-  double? sodiumMilligrams;
+  // The ingredients run from "Ingredients:" to the next empty line.
+  final ingredients = <String>[];
+  var isReadingIngredients = false;
 
   for (final rawLine in text.split('\n')) {
     final line = rawLine.trim();
     final lower = line.toLowerCase();
     if (line.isEmpty) {
+      isReadingIngredients = false;
+      continue;
+    }
+    if (lower.startsWith('ingredients')) {
+      isReadingIngredients = true;
+      final colon = line.indexOf(':');
+      final rest = colon < 0 ? '' : line.substring(colon + 1).trim();
+      if (rest.isNotEmpty) {
+        ingredients.add(rest);
+      }
+      continue;
+    }
+    if (isReadingIngredients) {
+      ingredients.add(line);
       continue;
     }
     if (lower.startsWith('name:') || lower.startsWith('name =')) {
@@ -152,26 +190,25 @@ LabelReading readNutritionLabel(String text) {
       }
       continue;
     }
-    if (lower.contains('sodium')) {
-      sodiumMilligrams = _readMilligrams(lower);
-      continue;
-    }
     for (final (words, key) in _nutrientWords) {
-      if (words.any(lower.contains)) {
-        final grams = _readGrams(lower);
-        // The first matching line wins (for example "Total Sugars" before
-        // a later line repeating sugars).
-        if (grams != null && !nutrients.containsKey(key)) {
-          nutrients[key] = grams;
-        }
-        break;
+      final word = words.where(lower.contains).firstOrNull;
+      if (word == null) {
+        continue;
       }
+      final amount = _readAmount(lower, word, nutrientKindOf(key)!.unit);
+      // The first matching line wins (for example "Total Sugars" before
+      // a later line repeating sugars).
+      if (amount != null && !nutrients.containsKey(key)) {
+        nutrients[key] = amount;
+      }
+      break;
     }
   }
 
   // Labels in the US give sodium, not salt. Salt is 2.5 times sodium.
-  if (!nutrients.containsKey('salt_g') && sodiumMilligrams != null) {
-    nutrients['salt_g'] = roundToTenth(sodiumMilligrams * 2.5 / 1000);
+  final sodium = nutrients['sodium_mg'];
+  if (!nutrients.containsKey('salt_g') && sodium != null) {
+    nutrients['salt_g'] = roundToTenth(sodium * 2.5 / 1000);
   }
 
   return LabelReading(
@@ -180,6 +217,7 @@ LabelReading readNutritionLabel(String text) {
     measuredIn: measuredIn,
     isPer100: isPer100,
     nutrients: nutrients,
+    ingredients: ingredients.isEmpty ? null : ingredients.join(' '),
   );
 }
 
@@ -235,26 +273,43 @@ double? _readKilocalories(String lower) {
   return _firstNumber(lower);
 }
 
-/// Reads grams on a nutrient line: the first number, turned from mg if
-/// it is followed by "mg".
-double? _readGrams(String lower) {
-  final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(mg|g)?').firstMatch(lower);
-  if (match == null) {
-    return null;
+/// Reads the amount on a nutrient line, in [unit] (`g`, `mg` or `µg`).
+///
+/// The number after the nutrient's [word] is read first ("Vitamin B12
+/// 2.4 mcg", where the 12 is part of the name), else the first number on
+/// the line ("Includes 10 g Added Sugars"). A unit after the number
+/// (g, mg, mcg or µg) is turned into [unit]; without one, the number is
+/// taken to be in [unit] already. A number followed by % is a share of
+/// a daily value, not an amount, so it is never read as one.
+double? _readAmount(String lower, String word, String unit) {
+  final afterWord = lower.substring(lower.indexOf(word) + word.length);
+  final withoutWord = lower.replaceFirst(word, ' ');
+  for (final text in [afterWord, withoutWord]) {
+    final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(mcg|µg|ug|mg|g|%)?')
+        .firstMatch(text);
+    if (match == null) {
+      continue;
+    }
+    final found = match.group(2);
+    if (found == '%') {
+      // A share of a daily value; the amount may be elsewhere on the
+      // line ("Includes 0g Added Sugars 0%").
+      continue;
+    }
+    final value = _toNumber(match.group(1)!);
+    return _convert(value, from: found ?? unit, to: unit);
   }
-  final value = _toNumber(match.group(1)!);
-  return match.group(2) == 'mg' ? value / 1000 : value;
+  return null;
 }
 
-/// Reads milligrams on a sodium line: the first number, turned from
-/// grams if it is followed by "g" alone.
-double? _readMilligrams(String lower) {
-  final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(mg|g)?').firstMatch(lower);
-  if (match == null) {
-    return null;
-  }
-  final value = _toNumber(match.group(1)!);
-  return match.group(2) == 'g' ? value * 1000 : value;
+/// [value] in [from] (g, mg, mcg, µg or ug) turned into [to].
+double _convert(double value, {required String from, required String to}) {
+  double inMicrograms(String unit) => switch (unit) {
+    'g' => 1000000,
+    'mg' => 1000,
+    _ => 1,
+  };
+  return value * inMicrograms(from) / inMicrograms(to);
 }
 
 double? _firstNumber(String text) {

@@ -17,7 +17,11 @@ serving: 9 chips = 28 g
 calories: 150
 fat: 9 g
 carbohydrates: 15 g
-protein: 2 g''';
+protein: 2 g
+vitamin d: 2 mcg
+calcium: 20 mg
+
+ingredients: Potatoes, sunflower oil, salt.''';
 
 /// Asks for a label's text and reads it. Closes with the reading, or
 /// with nothing if cancelled.

@@ -24,7 +24,8 @@ Format version: **1**
 10. [Module: food](#10-module-food)
 11. [Module: time tracking](#11-module-time-tracking)
 12. [Module: sleep](#12-module-sleep)
-13. [Using your data elsewhere](#13-using-your-data-elsewhere)
+13. [Module: body](#13-module-body)
+14. [Using your data elsewhere](#14-using-your-data-elsewhere)
 
 
 ## 1. The big picture
@@ -406,7 +407,7 @@ Example: the four value types.
 `module` is `"exercise"`.
 
 This module logs exercise sets: how many reps of an exercise you did,
-or how long you held it.
+or how long you held it; and the steps walked each day.
 
 ### Things in this module
 
@@ -414,6 +415,7 @@ or how long you held it.
 | --- | --- | --- | --- |
 | exercise | `exercise_created` | yes | yes |
 | set | `set_recorded` | yes | yes |
+| steps | `steps_recorded` | yes | yes |
 
 ### `exercise_created`
 
@@ -443,6 +445,19 @@ A set has `reps` or `seconds`, never both, matching the exercise's
 format. To put all exercises in one column, take whichever is present
 and keep the unit beside it (the Python package does this).
 
+### `steps_recorded`
+
+The steps walked on one day, typed in from a watch or phone.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The day. |
+| `steps` | integer | How many steps. |
+
+A day has one count: the app changes it in place (`steps_changed`)
+rather than adding another. If two devices each record one for the
+same day, the one recorded last counts.
+
 
 ## 10. Module: food
 
@@ -464,16 +479,31 @@ Nutrient values always use these field names. They follow the names
 used by [Open Food Facts](https://world.openfoodfacts.org/), so data
 from there is easy to match.
 
-| Field | Unit |
+Each field name ends in its unit: `_g` grams, `_mg` milligrams, `_ug`
+micrograms, `_kcal` kilocalories.
+
+| Field | What |
 | --- | --- |
-| `energy_kcal` | kilocalories |
-| `proteins_g` | grams |
-| `carbohydrates_g` | grams |
-| `sugars_g` | grams |
-| `fat_g` | grams |
-| `saturated_fat_g` | grams |
-| `fiber_g` | grams |
-| `salt_g` | grams |
+| `energy_kcal` | energy |
+| `proteins_g` | protein |
+| `carbohydrates_g` | carbohydrates |
+| `sugars_g` | of which sugars |
+| `added_sugars_g` | of which added sugars |
+| `fiber_g` | fibre |
+| `fat_g` | fat |
+| `saturated_fat_g` | of which saturated |
+| `monounsaturated_fat_g` | of which monounsaturated |
+| `polyunsaturated_fat_g` | of which polyunsaturated |
+| `trans_fat_g` | of which trans |
+| `cholesterol_mg` | cholesterol |
+| `salt_g` | salt |
+| `sodium_mg` | sodium |
+| `potassium_mg`, `calcium_mg`, `iron_mg`, `magnesium_mg`, `zinc_mg`, `phosphorus_mg` | minerals |
+| `vitamin_a_ug`, `vitamin_c_mg`, `vitamin_d_ug`, `vitamin_e_mg`, `vitamin_k_ug` | vitamins |
+| `thiamin_mg`, `riboflavin_mg`, `niacin_mg`, `vitamin_b6_mg`, `folate_ug`, `vitamin_b12_ug` | B vitamins |
+
+Salt is 2.5 times sodium. Labels that give only sodium (as in the US)
+get both fields: the app works out salt from sodium.
 
 Only `energy_kcal` is required. The others are optional.
 
@@ -490,6 +520,7 @@ example, looks lower than it was.
 | `measured_in` | string | `"g"` for grams or `"ml"` for millilitres. |
 | `nutrients_per_100` | object | Nutrients per 100 g or per 100 ml, using the fields above. |
 | `serving` | object, optional | The serving size from the label. See below. |
+| `ingredients` | string, optional | The ingredients, as written on the label. |
 
 `serving` describes the label's serving size, such as "9 chips (28 g)":
 
@@ -667,7 +698,60 @@ night, so analyses usually flag or leave out such nights. Clock times
 timestamp, which is the time on the clock where you were.
 
 
-## 13. Using your data elsewhere
+## 13. Module: body
+
+`module` is `"body"`.
+
+This module records the body measurements that work out the basal
+metabolic rate (BMR), and the daily energy limit. The food screens
+use them: the limit, and the daily reference amounts of nutrients.
+
+### Things in this module
+
+| Thing | Created by | `_changed` | `_deleted` / `_restored` |
+| --- | --- | --- | --- |
+| weight | `weight_recorded` | yes | yes |
+
+### `profile_recorded`
+
+Facts that rarely change. Each field an event has replaces the value
+before it; a missing field keeps the earlier value.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `sex` | string, optional | `"female"` or `"male"`; the BMR formula differs. |
+| `birth_year` | integer, optional | The year of birth, for the age. |
+| `height_cm` | number, optional | Height in centimetres. |
+
+### `weight_recorded`
+
+One weighing. A day has one: the app changes it in place
+(`weight_changed`).
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The day. |
+| `weight_kg` | number | Weight in kilograms. |
+
+### `energy_target_recorded`
+
+The daily energy limit, from a day on.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The first day it applies to. |
+| `energy_kcal` | number, optional | The most kilocalories a day. Missing means "no limit" (the limit was removed). |
+
+The limit on a day is the one with the latest `date` on or before it;
+of two with the same `date`, the one recorded last. So a new limit
+never changes past days.
+
+The app works out the BMR with the Mifflin-St Jeor equation: 10 ×
+weight (kg) + 6.25 × height (cm) − 5 × age (years), plus 5 for men or
+minus 161 for women. It is not stored: it follows from these fields.
+
+
+## 14. Using your data elsewhere
 
 Everything above is enough to write a reader in any language. Most
 people will not need to.

@@ -33,10 +33,11 @@ const double tileGap = 8;
 const double tilePadding = 12;
 
 /// The least height of the mark's row, before text scaling: room for
-/// two small lines (Protein over "73 g"), the tallest mark. Every tile
+/// two small lines and a bar (Protein, "73 g", and its bar), the
+/// tallest mark. Every tile
 /// keeps the row, even without a mark, so the grey lines under it start
 /// at the same height in every tile.
-const double _markRowHeight = 36;
+const double _markRowHeight = 42;
 
 /// A module's tile on Home. Plain information: it never does anything
 /// when tapped.

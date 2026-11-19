@@ -8,6 +8,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../body/body_log.dart';
+import 'daily_references.dart';
+import 'screens/nutrient_bars.dart';
+import '../body/screens/body_screen.dart';
 import 'nutrients.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
@@ -45,16 +49,16 @@ class FoodModule extends IppoModule {
       );
     }
     final values = diary.totalOn(date).values;
+    final body = BodyLog.of(appState);
+    final references = dailyReferencesOn(body, date);
+    final target = body.energyTargetOn(date);
+    final energy = values[energyKey] ?? 0;
     const names = {
       'proteins_g': 'Protein',
       'carbohydrates_g': 'Carbs',
       'fat_g': 'Fat',
     };
-    final macros = [
-      for (final name in names.entries)
-        if (values.containsKey(name.key))
-          TileDetail(formatGrams(values[name.key]!), label: name.value),
-    ];
+    final hasMacros = names.keys.any(values.containsKey);
     final isToday = day == currentDay(now);
     final lastMealLine = _lastMealLine(
       latestTimedEntry(entries),
@@ -62,15 +66,39 @@ class FoodModule extends IppoModule {
       now,
       isToday,
     );
+    // With a limit, how much is left matters more than the last meal
+    // (which the Food page shows).
+    final firstLine = target == null
+        ? lastMealLine
+        : energy <= target
+        ? '${formatEnergy(target - energy)} left'
+        : '${formatEnergy(energy - target)} over';
     return HomeTile(
-      value: formatEnergy(values[energyKey] ?? 0),
-      // Today is not over: the total is so far, which is why it is
-      // usually below the average.
-      valueNote: isToday ? 'so far' : null,
-      // Only quick entries have no macros; then no mark.
-      mark: macros.isEmpty ? null : LabelledValues(details: macros),
+      value: formatEnergy(energy),
+      // Against the limit when there is one; otherwise "so far": today is
+      // not over, which is why it is usually below the average.
+      valueNote: target != null
+          ? 'of ${target.round()}'
+          : isToday
+          ? 'so far'
+          : null,
+      // Protein, carbs and fat, each with a bar of its daily amount.
+      // Only quick entries have none; then no mark.
+      mark: hasMacros
+          ? NutrientBars(
+              amounts: [
+                for (final name in names.entries)
+                  NutrientAmount(
+                    name.key,
+                    name.value,
+                    values[name.key],
+                    references[name.key],
+                  ),
+              ],
+            )
+          : null,
       lines: [
-        if (lastMealLine != null) lastMealLine,
+        if (firstLine != null) firstLine,
         if (averageLine != null) averageLine,
       ],
     );
@@ -78,11 +106,11 @@ class FoodModule extends IppoModule {
 
   /// The energy eaten on each of the seven days, in kilocalories.
   @override
-  WeekRow? weekRow(AppState appState, DateTime day) {
+  List<WeekRow> weekRows(AppState appState, DateTime day) {
     final diary = FoodDiary.of(appState);
     // Nothing ever logged: no row yet, as for the other modules.
     if (diary.entries.isEmpty) {
-      return null;
+      return const [];
     }
     final cells = [
       for (final column in weekEndingOn(day))
@@ -91,11 +119,13 @@ class FoodModule extends IppoModule {
         else
           '${diary.totalOn(formatDate(column)).energyKcal.round()}',
     ];
-    return WeekRow(
-      label: 'Food (kcal)',
-      cells: cells,
-      description: 'Energy eaten each day, in kilocalories',
-    );
+    return [
+      WeekRow(
+        label: 'Food (kcal)',
+        cells: cells,
+        description: 'Energy eaten each day, in kilocalories',
+      ),
+    ];
   }
 
   /// Days with any food logged.
@@ -104,6 +134,12 @@ class FoodModule extends IppoModule {
     for (final entry in FoodDiary.of(appState).entries)
       if (!entry.isDeleted) entry.date,
   };
+
+  /// Body details and the daily calorie limit: set there, and also
+  /// reached from the Food page.
+  @override
+  Widget? buildSettingsCard(AppState appState) =>
+      BodySettingsCard(appState: appState);
 
   @override
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);

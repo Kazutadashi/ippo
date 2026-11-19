@@ -37,24 +37,30 @@ class FoodActions {
     required String measuredIn,
     required Nutrients nutrientsPer100,
     FoodServing? serving,
+    String? ingredients,
   }) {
+    final text = ingredients?.trim() ?? '';
     return _write('food_created', {
       'name': name.trim(),
       'measured_in': measuredIn,
       'nutrients_per_100': nutrientsPer100.toJson(),
       if (serving != null) 'serving': serving.toJson(),
+      if (text.isNotEmpty) 'ingredients': text,
     });
   }
 
   /// Changes a food. Only the fields given are changed. Set
-  /// [removeServing] to remove the serving size.
+  /// [removeServing] to remove the serving size. Empty [ingredients]
+  /// remove them.
   Future<Event> changeFood(
     String foodId, {
     String? name,
     Nutrients? nutrientsPer100,
     FoodServing? serving,
     bool removeServing = false,
+    String? ingredients,
   }) {
+    final text = ingredients?.trim();
     return _write('food_changed', {
       'target_id': foodId,
       'changes': {
@@ -63,6 +69,7 @@ class FoodActions {
           'nutrients_per_100': nutrientsPer100.toJson(),
         if (serving != null) 'serving': serving.toJson(),
         if (removeServing) 'serving': null,
+        if (text != null) 'ingredients': text.isEmpty ? null : text,
       },
     });
   }

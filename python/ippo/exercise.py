@@ -70,3 +70,24 @@ def exercise_days(events):
     grouped = sets(events).groupby(["date", "exercise_id", "exercise", "unit"])
     result = grouped["value"].agg(sets="count", total="sum", best="max")
     return result.reset_index()
+
+
+def steps(events):
+    """One row per day with steps logged. If two counts were recorded for
+    the same day (from two devices), the one recorded last counts, as in
+    the app; deleted counts are left out.
+
+    Columns: ``date``, ``steps``, ``recorded_utc``.
+    """
+    rows = [
+        {"date": item.get("date"), "steps": item.get("steps"), "recorded_utc": item["recorded_utc"]}
+        for item in collect_things(events, "exercise", "steps_recorded", "steps")
+        if not item["deleted"]
+    ]
+    result = table(rows, ["date", "steps", "recorded_utc"])
+    result["date"] = as_dates(result["date"])
+    result["steps"] = pd.to_numeric(result["steps"], errors="coerce")
+    result = result.dropna(subset=["date", "steps"]).sort_values(["date", "recorded_utc"])
+    result = result.drop_duplicates("date", keep="last")
+    result["steps"] = result["steps"].astype(int)
+    return result.reset_index(drop=True)

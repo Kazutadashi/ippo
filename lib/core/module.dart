@@ -52,9 +52,14 @@ abstract class IppoModule {
   /// "–" as the value until something is, so Home never jumps.
   HomeTile homeTile(AppState appState, DateTime day, DateTime now);
 
-  /// The module's row in Home's week grid: one value for each of the
-  /// seven days ending on [day], oldest first. Null for no row.
-  WeekRow? weekRow(AppState appState, DateTime day) => null;
+  /// The module's rows in Home's week grid, usually one: one value for
+  /// each of the seven days ending on [day], oldest first. Empty for no
+  /// row.
+  List<WeekRow> weekRows(AppState appState, DateTime day) => const [];
+
+  /// A card for the Settings screen, such as Food's body details and
+  /// calorie limit, or null for none.
+  Widget? buildSettingsCard(AppState appState) => null;
 
   /// Every day (`YYYY-MM-DD`) with anything logged in this module, for
   /// Home's logging calendar, which shows days with gaps in the data.

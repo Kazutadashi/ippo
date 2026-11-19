@@ -43,9 +43,47 @@ Protein 2g
       'fiber_g': 1,
       'sugars_g': 1,
       'proteins_g': 2,
+      'trans_fat_g': 0,
+      'cholesterol_mg': 0,
+      'added_sugars_g': 0,
+      'sodium_mg': 170,
       // 170 mg sodium is 0.425 g salt, rounded.
       'salt_g': 0.4,
     });
+  });
+
+  test('vitamins, minerals and ingredients are read too', () {
+    const text = '''
+Serving size 1 cup (240 mL)
+Calories 110
+Vitamin D 2.5mcg 10%
+Calcium 300mg 25%
+Iron 0.1mg 0%
+Potassium 380mg 8%
+Vitamin A 10%
+Vitamin B12 1.2 mcg 50%
+Riboflavin 0.4mg 30%
+
+Ingredients: Milk, vitamin A palmitate,
+vitamin D3.
+
+Contains: milk.
+''';
+
+    final reading = readNutritionLabel(text);
+
+    expect(reading.measuredIn, 'ml');
+    expect(reading.nutrients, {
+      'energy_kcal': 110,
+      'vitamin_d_ug': 2.5,
+      'calcium_mg': 300,
+      'iron_mg': 0.1,
+      'potassium_mg': 380,
+      // "Vitamin A 10%" gives only a share of a daily value: not read.
+      'vitamin_b12_ug': 1.2,
+      'riboflavin_mg': 0.4,
+    });
+    expect(reading.ingredients, 'Milk, vitamin A palmitate, vitamin D3.');
   });
 
   test('a European label, values per 100 g', () {

@@ -165,7 +165,7 @@ void main() {
         describeTile(module.homeTile(appState, currentDay(monday), monday)),
         '– | Not logged yet',
       );
-      expect(module.weekRow(appState, currentDay(monday)), isNull);
+      expect(module.weekRows(appState, currentDay(monday)), isEmpty);
     });
 
     test('the night before, awake since, and the usual', () async {
@@ -186,7 +186,7 @@ void main() {
       );
       // The night is drawn as a bar.
       expect(tile.mark, isNotNull);
-      final row = module.weekRow(appState, currentDay(morning))!;
+      final row = module.weekRows(appState, currentDay(morning)).single;
       expect(row.label, 'Sleep (h)');
       expect(row.cells.last, '7.5');
     });

@@ -13,6 +13,7 @@ import '../../core/number_input.dart';
 import 'exercise.dart';
 import 'exercise_log.dart';
 import 'exercise_set.dart';
+import 'step_count.dart';
 
 /// Writes the exercise module's events through [appState].
 ///
@@ -118,6 +119,22 @@ class ExerciseActions {
   /// Undoes [deleteSet].
   Future<Event> restoreSet(String setId) =>
       _write('set_restored', {'target_id': setId});
+
+  /// Saves the steps walked on [date]: a new count, or a change to the
+  /// day's count if there is one ([existing]), so a day has one count.
+  Future<Event> saveSteps({
+    required String date,
+    required int steps,
+    required StepCount? existing,
+  }) {
+    if (existing == null) {
+      return _write('steps_recorded', {'date': date, 'steps': steps});
+    }
+    return _write('steps_changed', {
+      'target_id': existing.id,
+      'changes': {'steps': steps},
+    });
+  }
 
   Future<Event> _write(String type, Map<String, Object?> data) {
     return appState.writeEvent(

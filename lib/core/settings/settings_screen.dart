@@ -6,6 +6,7 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../modules/all_modules.dart';
 import '../app_state.dart';
 import '../widgets/section_card.dart';
 import 'appearance_section.dart';
@@ -51,6 +52,8 @@ class SettingsScreen extends StatelessWidget {
                 BackupSection(appState: appState),
               ],
             ),
+            // Cards that modules add, such as Food's body details.
+            if (appState.dataFolder != null) ..._moduleCards(),
             SectionCard(
               children: [
                 const CardHeader(icon: Icons.palette, title: 'Appearance'),
@@ -94,6 +97,18 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The Settings cards the modules add, in the order of the tabs.
+  List<Widget> _moduleCards() {
+    final cards = <Widget>[];
+    for (final module in allModules) {
+      final card = module.buildSettingsCard(appState);
+      if (card != null) {
+        cards.add(card);
+      }
+    }
+    return cards;
   }
 
   /// Asks for a new device name, then saves it. A problem (such as an

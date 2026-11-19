@@ -37,17 +37,53 @@ String formatGrams(double grams) =>
 /// The field name for energy, the one nutrient that is always required.
 const String energyKey = 'energy_kcal';
 
-/// Every nutrient Ippo knows, in the order they are shown.
+/// Every nutrient Ippo knows, in the order they are shown, as on a
+/// label: energy and the macronutrients first, then fats, minerals and
+/// vitamins. Each field name ends in its unit (`_g`, `_mg`, `_ug` for
+/// micrograms).
 const List<NutrientKind> allNutrientKinds = [
   NutrientKind(energyKey, 'Energy', 'kcal'),
   NutrientKind('proteins_g', 'Protein', 'g'),
   NutrientKind('carbohydrates_g', 'Carbohydrates', 'g'),
   NutrientKind('sugars_g', '  of which sugars', 'g'),
+  NutrientKind('added_sugars_g', '  of which added sugars', 'g'),
+  NutrientKind('fiber_g', 'Fiber', 'g'),
   NutrientKind('fat_g', 'Fat', 'g'),
   NutrientKind('saturated_fat_g', '  of which saturated', 'g'),
-  NutrientKind('fiber_g', 'Fiber', 'g'),
+  NutrientKind('monounsaturated_fat_g', '  of which monounsaturated', 'g'),
+  NutrientKind('polyunsaturated_fat_g', '  of which polyunsaturated', 'g'),
+  NutrientKind('trans_fat_g', '  of which trans', 'g'),
+  NutrientKind('cholesterol_mg', 'Cholesterol', 'mg'),
   NutrientKind('salt_g', 'Salt', 'g'),
+  NutrientKind('sodium_mg', 'Sodium', 'mg'),
+  NutrientKind('potassium_mg', 'Potassium', 'mg'),
+  NutrientKind('calcium_mg', 'Calcium', 'mg'),
+  NutrientKind('iron_mg', 'Iron', 'mg'),
+  NutrientKind('magnesium_mg', 'Magnesium', 'mg'),
+  NutrientKind('zinc_mg', 'Zinc', 'mg'),
+  NutrientKind('phosphorus_mg', 'Phosphorus', 'mg'),
+  NutrientKind('vitamin_a_ug', 'Vitamin A', 'µg'),
+  NutrientKind('vitamin_c_mg', 'Vitamin C', 'mg'),
+  NutrientKind('vitamin_d_ug', 'Vitamin D', 'µg'),
+  NutrientKind('vitamin_e_mg', 'Vitamin E', 'mg'),
+  NutrientKind('vitamin_k_ug', 'Vitamin K', 'µg'),
+  NutrientKind('thiamin_mg', 'Thiamin (B1)', 'mg'),
+  NutrientKind('riboflavin_mg', 'Riboflavin (B2)', 'mg'),
+  NutrientKind('niacin_mg', 'Niacin (B3)', 'mg'),
+  NutrientKind('vitamin_b6_mg', 'Vitamin B6', 'mg'),
+  NutrientKind('folate_ug', 'Folate', 'µg'),
+  NutrientKind('vitamin_b12_ug', 'Vitamin B12', 'µg'),
 ];
+
+/// The kind of nutrient with field name [key], or null if unknown.
+NutrientKind? nutrientKindOf(String key) {
+  for (final kind in allNutrientKinds) {
+    if (kind.key == key) {
+      return kind;
+    }
+  }
+  return null;
+}
 
 /// A set of nutrient values. Nutrients that are not known are missing,
 /// which is different from zero.

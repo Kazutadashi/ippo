@@ -35,16 +35,20 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 
 | Method | One row per | Notes |
 | --- | --- | --- |
-| `daily()` | day | Habits done, food totals, sleep times, sets. Every calendar day is present, so gaps show. |
+| `daily()` | day | Habits done, food totals, sleep times, sets, steps, weight, the energy limit. Every calendar day is present, so gaps show. |
 | `habits()` | habit | Including deleted ones (`deleted`). |
 | `habit_entries()` | habit and day | The latest value counts. `True` done, `False` said no; no row means nothing recorded. |
 | `habit_days()` | day | The habit grid: one column per habit. |
-| `foods()` | food | Nutrients per 100 g or ml, and the serving size. |
+| `foods()` | food | Nutrients per 100 g or ml (vitamins and minerals too), the serving size, and the ingredients. |
 | `food_entries()` | thing eaten | Nutrients for the amount eaten. A missing nutrient is unknown, never zero. |
 | `food_days()` | day | Totals, and `<nutrient>_complete`: whether every entry that day gave that nutrient. |
 | `exercises()` | exercise | `measured_in` is `reps` or `seconds`. |
 | `sets()` | set | `value` with `unit`, for every exercise. |
 | `exercise_days()` | exercise and day | `sets`, `total`, `best`. |
+| `steps()` | day | Steps walked. |
+| `weights()` | day | Weight in kg. |
+| `profile()` | one row | The latest sex, year of birth and height. |
+| `energy_targets()` | limit set | The daily energy limit, from its `date` on (empty `energy_kcal`: no limit). |
 | `sleep_days()` | day | Wake-up and bedtime (exact, local, and as hours), sleep before the day, time zone changes, naps. |
 | `naps()` | nap | |
 | `devices()` | device | When each device's data was last seen. |

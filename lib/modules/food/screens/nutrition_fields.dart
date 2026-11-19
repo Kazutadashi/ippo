@@ -16,33 +16,37 @@ const List<String> mainNutrientKeys = [
   'fat_g',
 ];
 
-/// The nutrients behind "More nutrients".
-const List<String> moreNutrientKeys = [
-  'sugars_g',
-  'saturated_fat_g',
-  'fiber_g',
-  'salt_g',
+/// The nutrients behind "More nutrients": every other one Ippo knows,
+/// in label order (fats, sugars, minerals, vitamins).
+final List<String> moreNutrientKeys = [
+  for (final kind in allNutrientKinds)
+    if (kind.key != energyKey && !mainNutrientKeys.contains(kind.key)) kind.key,
 ];
 
 /// Every nutrient field, energy first.
-const List<String> allNutrientFieldKeys = [
+final List<String> allNutrientFieldKeys = [
   energyKey,
   ...mainNutrientKeys,
   ...moreNutrientKeys,
 ];
 
-/// Short names for the fields, which sit side by side. The same words
-/// are used everywhere in the app.
-const Map<String, String> nutrientFieldNames = {
-  energyKey: 'Energy',
-  'proteins_g': 'Protein',
-  'carbohydrates_g': 'Carbs',
-  'fat_g': 'Fat',
-  'sugars_g': 'Sugars',
-  'saturated_fat_g': 'Saturated fat',
-  'fiber_g': 'Fiber',
-  'salt_g': 'Salt',
-};
+/// Short names for the fields, which sit side by side: "Carbs" rather
+/// than "Carbohydrates", and "Saturated fat" rather than "of which
+/// saturated". The same words are used everywhere in the app.
+String nutrientFieldName(String key) {
+  const short = {
+    energyKey: 'Energy',
+    'proteins_g': 'Protein',
+    'carbohydrates_g': 'Carbs',
+    'sugars_g': 'Sugars',
+    'added_sugars_g': 'Added sugars',
+    'saturated_fat_g': 'Saturated fat',
+    'monounsaturated_fat_g': 'Monounsat. fat',
+    'polyunsaturated_fat_g': 'Polyunsat. fat',
+    'trans_fat_g': 'Trans fat',
+  };
+  return short[key] ?? nutrientKindOf(key)?.label.trim() ?? key;
+}
 
 /// Energy across the width; protein, carbs and fat on one row; the rest
 /// behind "More nutrients". Only energy is required; the others are
@@ -76,8 +80,8 @@ class NutritionFields extends StatelessWidget {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        labelText: nutrientFieldNames[key],
-        suffixText: key == energyKey ? 'kcal' : 'g',
+        labelText: nutrientFieldName(key),
+        suffixText: nutrientKindOf(key)?.unit,
         errorText: problems[key],
       ),
     );
@@ -91,6 +95,11 @@ class NutritionFields extends StatelessWidget {
         for (var index = 0; index < keys.length; index++) ...[
           if (index > 0) const SizedBox(width: 12),
           Expanded(child: _field(keys[index])),
+        ],
+        // A last field alone keeps its half of the row.
+        if (keys.length == 1) ...[
+          const SizedBox(width: 12),
+          const Expanded(child: SizedBox()),
         ],
       ],
     );
@@ -113,9 +122,15 @@ class NutritionFields extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 12),
                   child: Column(
                     children: [
-                      _row(moreNutrientKeys.sublist(0, 2)),
-                      const SizedBox(height: 12),
-                      _row(moreNutrientKeys.sublist(2)),
+                      // Two to a row, in label order.
+                      for (
+                        var start = 0;
+                        start < moreNutrientKeys.length;
+                        start += 2
+                      ) ...[
+                        if (start > 0) const SizedBox(height: 12),
+                        _row(moreNutrientKeys.skip(start).take(2).toList()),
+                      ],
                     ],
                   ),
                 )

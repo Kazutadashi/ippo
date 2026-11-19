@@ -8,7 +8,8 @@ nights?").
 
 import pandas as pd
 
-from .exercise import sets
+from .body import energy_target_on, energy_targets, weights
+from .exercise import sets, steps
 from .food import food_days
 from .habits import habit_entries
 from .sleep import sleep_days
@@ -30,7 +31,10 @@ def daily(events):
     - ``woke_up_h``, ``went_to_bed_h``, ``sleep_before_h``,
       ``time_zone_changed``, ``awake_h``, ``nap_h`` from
       :func:`ippo.sleep.sleep_days`.
-    - ``exercise_sets``: how many sets were logged.
+    - ``exercise_sets``: how many sets were logged; ``steps``: the
+      steps walked.
+    - ``weight_kg``: the weight logged that day; ``energy_target_kcal``:
+      the daily energy limit that applied.
 
     Counts are 0 on days without entries. Measurements (nutrients, sleep
     times) are empty, because "not logged" is not the same as zero.
@@ -39,10 +43,19 @@ def daily(events):
     food = food_days(events)
     sleep = sleep_days(events)[_SLEEP_COLUMNS]
     exercise = sets(events)
+    walked = steps(events)
+    weighed = weights(events)
 
     known_days = [
         days
-        for days in (entries["date"], food.index.to_series(), sleep.index.to_series(), exercise["date"])
+        for days in (
+            entries["date"],
+            food.index.to_series(),
+            sleep.index.to_series(),
+            exercise["date"],
+            walked["date"],
+            weighed["date"],
+        )
         if not days.empty
     ]
     if not known_days:
@@ -56,6 +69,9 @@ def daily(events):
     result["habits_logged"] = habits.size()
     result = result.join(food).join(sleep)
     result["exercise_sets"] = exercise.groupby("date").size()
+    result["steps"] = walked.set_index("date")["steps"].astype("Int64")
+    result["weight_kg"] = weighed.set_index("date")["weight_kg"]
+    result["energy_target_kcal"] = energy_target_on(energy_targets(events), days)
 
     for count in ("habits_done", "habits_logged", "food_entries", "exercise_sets"):
         result[count] = result[count].fillna(0).astype(int)

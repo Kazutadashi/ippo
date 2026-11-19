@@ -85,23 +85,25 @@ class SleepModule extends IppoModule {
   /// The hours slept the night before each of the seven days, to a
   /// tenth: `7.5`.
   @override
-  WeekRow? weekRow(AppState appState, DateTime day) {
+  List<WeekRow> weekRows(AppState appState, DateTime day) {
     final log = SleepLog.of(appState);
     final hours = [
       for (final column in weekEndingOn(day))
         log.sleepBefore(formatDate(column))?.inMinutes,
     ];
     if (hours.every((minutes) => minutes == null)) {
-      return null;
+      return const [];
     }
-    return WeekRow(
-      label: 'Sleep (h)',
-      cells: [
-        for (final minutes in hours)
-          minutes == null ? null : (minutes / 60).toStringAsFixed(1),
-      ],
-      description: 'Hours slept each night',
-    );
+    return [
+      WeekRow(
+        label: 'Sleep (h)',
+        cells: [
+          for (final minutes in hours)
+            minutes == null ? null : (minutes / 60).toStringAsFixed(1),
+        ],
+        description: 'Hours slept each night',
+      ),
+    ];
   }
 
   /// Days with a wake-up, a bedtime or a nap logged.

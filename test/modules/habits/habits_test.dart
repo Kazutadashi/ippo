@@ -152,7 +152,7 @@ void main() {
         describeTile(module.homeTile(appState, currentDay(now), now)),
         '– | No habits yet',
       );
-      expect(module.weekRow(appState, currentDay(now)), isNull);
+      expect(module.weekRows(appState, currentDay(now)), isEmpty);
 
       final read = (await actions.createHabit('Read')).id;
       final stretch = (await actions.createHabit('Stretch')).id;
@@ -167,7 +167,7 @@ void main() {
         describeTile(module.homeTile(appState, currentDay(now), now)),
         '1 of 3 done | Read: 3 days, 7-day avg 1.5 of 3',
       );
-      final row = module.weekRow(appState, currentDay(now))!;
+      final row = module.weekRows(appState, currentDay(now)).single;
       expect(row.label, 'Habits (%)');
       expect(row.cells, [null, null, null, null, '33', '67', '33']);
     });

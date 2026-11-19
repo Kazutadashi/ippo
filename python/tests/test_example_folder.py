@@ -34,7 +34,7 @@ class ReadingTest(unittest.TestCase):
     def test_every_event_is_read_once(self):
         # 39 events were written; one needs a newer version. The conflict
         # copy only repeats events, and the hidden file is not read.
-        self.assertEqual(len(self.data.events), 38)
+        self.assertEqual(len(self.data.events), 48)
         self.assertTrue(self.data.events["id"].is_unique)
         self.assertNotIn("019cffff-0000-7000-8000-00000000ffff", set(self.data.events["id"]))
 
@@ -54,7 +54,7 @@ class ReadingTest(unittest.TestCase):
 
     def test_devices(self):
         devices = self.data.devices().set_index("device_name")
-        self.assertEqual(devices.loc["my-phone", "events"], 35)
+        self.assertEqual(devices.loc["my-phone", "events"], 45)
         self.assertEqual(devices.loc["my-desktop", "events"], 3)
 
     def test_a_folder_without_events_is_explained(self):
@@ -158,6 +158,37 @@ class SleepTest(unittest.TestCase):
         self.assertEqual(self.days.loc["2026-03-01", "naps"], 0)
 
 
+class StepsAndBodyTest(unittest.TestCase):
+    def setUp(self):
+        self.data = ippo.load(EXAMPLE, now=NOW)
+
+    def test_steps_changed_in_place_and_deleted(self):
+        steps = self.data.steps()
+        self.assertEqual(list(steps["date"].dt.strftime("%Y-%m-%d")), ["2026-03-02"])
+        self.assertEqual(steps.loc[0, "steps"], 6400)
+
+    def test_profile_fields_are_replaced_one_by_one(self):
+        profile = self.data.profile().iloc[0]
+        self.assertEqual((profile["sex"], profile["birth_year"], profile["height_cm"]), ("female", 1990, 169))
+
+    def test_a_changed_weight(self):
+        self.assertEqual(self.data.weights().loc[0, "weight_kg"], 70.2)
+
+    def test_the_limit_counts_from_its_day(self):
+        daily = self.data.daily()
+        self.assertTrue(pd.isna(daily.loc["2026-03-01", "energy_target_kcal"]))
+        self.assertEqual(daily.loc["2026-03-03", "energy_target_kcal"], 1900)
+        self.assertEqual(daily.loc["2026-03-02", "steps"], 6400)
+        self.assertEqual(daily.loc["2026-03-01", "weight_kg"], 70.2)
+
+    def test_foods_keep_vitamins_and_ingredients(self):
+        foods = self.data.foods().set_index("name")
+        milk = foods.loc["Fortified milk"]
+        self.assertEqual(milk["vitamin_d_ug_per_100"], 1.1)
+        self.assertEqual(milk["calcium_mg_per_100"], 120)
+        self.assertEqual(milk["ingredients"], "Milk, vitamin D3.")
+
+
 class DailyTest(unittest.TestCase):
     def setUp(self):
         self.data = ippo.load(EXAMPLE, now=NOW)
@@ -182,7 +213,7 @@ class DailyTest(unittest.TestCase):
             self.assertEqual(sleep.loc[0, "woke_up_utc"], "2026-03-01T06:00:00.000+00:00")
             self.assertEqual(sleep.loc[0, "woke_up_local"], "2026-03-01T07:00:00.000")
             events = pd.read_csv(Path(out) / "events.csv")
-            self.assertEqual(len(events), 38)
+            self.assertEqual(len(events), 48)
 
 
 class EmptyFolderTest(unittest.TestCase):

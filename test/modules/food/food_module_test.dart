@@ -17,6 +17,7 @@ import 'package:ippo/modules/food/food_diary.dart';
 import 'package:ippo/modules/food/food_module.dart';
 import 'package:ippo/modules/food/food_serving.dart';
 import 'package:ippo/modules/food/nutrients.dart';
+import 'package:ippo/modules/food/screens/nutrient_bars.dart';
 
 const String day = '2026-11-17';
 
@@ -326,9 +327,9 @@ void main() {
       describeTile(tile),
       '689 kcal so far | Last meal 3 h ago, 7-day avg 900 kcal',
     );
-    // Protein, carbs and fat are the mark.
-    expect(tile.mark, isA<LabelledValues>());
-    final row = module.weekRow(appState, currentDay(now))!;
+    // Protein, carbs and fat are the mark, each against its daily amount.
+    expect(tile.mark, isA<NutrientBars>());
+    final row = module.weekRows(appState, currentDay(now)).single;
     expect(row.label, 'Food (kcal)');
     expect(row.cells, [null, null, null, null, '900', null, '689']);
   });
