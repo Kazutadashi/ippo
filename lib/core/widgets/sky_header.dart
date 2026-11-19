@@ -255,33 +255,30 @@ class _SkyPainter extends CustomPainter {
     final far = _ridge(random, w, y(0.40), land * 0.25, 0.5, count: 33);
     _fillBelow(canvas, far, h, palette.far);
 
-    // The mountains: a row of smaller peaks behind, fainter with distance,
-    // then a row of tall ones in front. Each peak has a lit face, a shaded
-    // face and snow, like the app's icon; how many there are, where they
-    // stand and how tall they are changes with the seed.
+    // A valley: snowy peaks far off in the middle, framed by two giant
+    // granite walls, with a waterfall dropping from one of them. Where
+    // the walls stand, their shapes and which one has the fall change
+    // with the seed.
     _peakRow(
       canvas,
       random,
       width: w,
       base: y(0.95),
       minHeight: land * 0.35,
-      maxHeight: land * 0.55,
-      count: 4 + random.nextInt(3),
-      distance: 0.45,
-    );
-    _peakRow(
-      canvas,
-      random,
-      width: w,
-      base: y(1.0),
-      minHeight: land * 0.60,
-      maxHeight: land * 0.95,
-      count: 2 + random.nextInt(3),
-      distance: 0,
+      maxHeight: land * 0.65,
+      count: 3 + random.nextInt(3),
+      distance: 0.35,
     );
     if (palette.mist) {
       _mist(canvas, w, y(0.55), land * 0.25);
     }
+    final leftWall = _wall(canvas, random, size, y, land, onLeft: true);
+    final rightWall = _wall(canvas, random, size, y, land, onLeft: false);
+    _waterfall(
+      canvas,
+      random.nextBool() ? leftWall : rightWall,
+      bottom: y(0.86),
+    );
 
     // The near ridge: rolling, with pines along its top.
     final near = _ridge(random, w, y(0.86), land * 0.16, 0.4, count: 33);
@@ -440,6 +437,137 @@ class _SkyPainter extends CustomPainter {
 
   void _fill(Canvas canvas, Color color, List<Offset> points) {
     canvas.drawPath(Path()..addPolygon(points, true), Paint()..color = color);
+  }
+
+  /// A giant granite wall at one side of the valley, like those of
+  /// Yosemite: a high rim (flat or domed), a sheer face toward the
+  /// valley, and vertical streaks in the rock. Returns where the top of
+  /// its face is, for a waterfall.
+  Offset _wall(
+    Canvas canvas,
+    Random random,
+    Size size,
+    double Function(double) y,
+    double land, {
+    required bool onLeft,
+  }) {
+    final w = size.width;
+    final h = size.height;
+    // Draw as if on the left; the right wall is the mirror image.
+    double side(double x) => onLeft ? x : w - x;
+    final edge = w * (0.18 + random.nextDouble() * 0.12);
+    final rim = y(-0.05 + random.nextDouble() * 0.25);
+    final isDome = random.nextDouble() < 0.4;
+
+    // The rim, from the outer edge of the screen to the top of the face:
+    // a dome curves up and over; a flat top wanders a little.
+    final top = <Offset>[];
+    const steps = 12;
+    for (var step = 0; step <= steps; step++) {
+      final t = step / steps;
+      final x = edge * t;
+      final lift = isDome
+          ? sin(t * pi * 0.85) * land * 0.18
+          : (random.nextDouble() - 0.5) * land * 0.05;
+      top.add(Offset(x, rim + land * 0.12 * (1 - t) - lift));
+    }
+    // The face: nearly straight down, leaning out a little at the foot,
+    // with a few small steps in the rock.
+    final faceTop = top.last;
+    final face = <Offset>[];
+    const faceSteps = 8;
+    for (var step = 1; step <= faceSteps; step++) {
+      final t = step / faceSteps;
+      face.add(
+        Offset(
+          faceTop.dx + w * 0.05 * t * t + (random.nextDouble() - 0.5) * 3,
+          faceTop.dy + (h - faceTop.dy) * t,
+        ),
+      );
+    }
+    final outline = [
+      for (final point in [...top, ...face, Offset(0, h)])
+        Offset(side(point.dx), point.dy),
+    ];
+    final shape = Path()..addPolygon(outline, true);
+    canvas.drawPath(shape, Paint()..color = palette.mid);
+
+    canvas
+      ..save()
+      ..clipPath(shape);
+    // The sheer face toward the valley is in shadow: a band along it.
+    final shadowBand = [
+      faceTop,
+      ...face,
+      Offset(face.last.dx - w * 0.07, h),
+      Offset(faceTop.dx - w * 0.05, faceTop.dy + land * 0.05),
+    ];
+    _fill(canvas, palette.shade, [
+      for (final point in shadowBand) Offset(side(point.dx), point.dy),
+    ]);
+    // Vertical streaks in the granite, of varied length and strength.
+    final streak = Paint()
+      ..strokeCap = StrokeCap.round
+      ..color = palette.shade;
+    for (var count = 0; count < 22; count++) {
+      final x = random.nextDouble() * (faceTop.dx + w * 0.04);
+      final from = rim - land * 0.25 + random.nextDouble() * land * 0.3;
+      final length = land * (0.2 + random.nextDouble() * 0.6);
+      streak
+        ..strokeWidth = 0.8 + random.nextDouble() * 1.6
+        ..color = palette.shade.withValues(
+          alpha: 0.25 + random.nextDouble() * 0.35,
+        );
+      canvas.drawLine(
+        Offset(side(x), from),
+        Offset(side(x + (random.nextDouble() - 0.5) * 2), from + length),
+        streak,
+      );
+    }
+    // A thin light edge along the rim, where light catches it.
+    canvas.drawPath(
+      Path()..addPolygon([
+        for (final point in top) Offset(side(point.dx), point.dy),
+        for (final point in top.reversed) Offset(side(point.dx), point.dy + 2),
+      ], true),
+      Paint()..color = palette.snow.withValues(alpha: 0.35),
+    );
+    canvas.restore();
+    return Offset(side(faceTop.dx - w * 0.012), faceTop.dy + land * 0.04);
+  }
+
+  /// A waterfall from [top] (on a wall's rim) straight down to [bottom]:
+  /// a thin white ribbon that thins out as it falls, a faint glow around
+  /// it, and spray where it lands.
+  void _waterfall(Canvas canvas, Offset top, {required double bottom}) {
+    final fall = Rect.fromLTRB(top.dx - 3, top.dy, top.dx + 3, bottom);
+    Shader ribbon(double strength) => LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Colors.white.withValues(alpha: strength),
+        Colors.white.withValues(alpha: strength * 0.35),
+      ],
+    ).createShader(fall);
+    canvas
+      ..drawLine(
+        top,
+        Offset(top.dx, bottom),
+        Paint()
+          ..strokeWidth = 6
+          ..shader = ribbon(0.12),
+      )
+      ..drawLine(
+        top,
+        Offset(top.dx, bottom),
+        Paint()
+          ..strokeWidth = 1.8
+          ..shader = ribbon(0.85),
+      )
+      ..drawOval(
+        Rect.fromCenter(center: Offset(top.dx, bottom), width: 22, height: 9),
+        Paint()..color = Colors.white.withValues(alpha: 0.18),
+      );
   }
 
   /// A soft band of mist lying in the valleys.

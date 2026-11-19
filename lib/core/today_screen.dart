@@ -89,7 +89,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
               children: [
                 SkyHeader(
                   phase: SkyPhase.of(now),
-                  height: topInset + 116,
+                  height: topInset + 156,
                   clearTop: topInset + 44,
                   // New mountains each day, the same all day long.
                   seed: SkyHeader.seedFor(today()),
