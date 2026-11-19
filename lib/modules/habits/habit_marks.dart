@@ -66,8 +66,8 @@ class _Dot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 14,
-      height: 14,
+      width: 12,
+      height: 12,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: mark == DayMark.done ? color : null,
@@ -77,7 +77,7 @@ class _Dot extends StatelessWidget {
                 color: mark == DayMark.notDone
                     ? color.withValues(alpha: 0.35)
                     : color,
-                width: 2,
+                width: 1.5,
               ),
       ),
     );
@@ -132,8 +132,8 @@ class StreakSquares extends StatelessWidget {
     required double strength,
   }) {
     return Container(
-      width: 12,
-      height: 12,
+      width: 11,
+      height: 11,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
         color: isDone ? color.withValues(alpha: strength) : null,
@@ -182,7 +182,7 @@ class HabitWeekStrip extends StatelessWidget {
               child: Column(
                 children: [
                   _dayDot(color, _shareDone(addDays(day, -back))),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(
                     letters[addDays(day, -back).weekday - 1],
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -208,12 +208,12 @@ class HabitWeekStrip extends StatelessWidget {
 
   Widget _dayDot(Color color, double share) {
     return Container(
-      width: 18,
-      height: 18,
+      width: 13,
+      height: 13,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: share == 0 ? null : color.withValues(alpha: 0.25 + 0.75 * share),
-        border: share == 0 ? Border.all(color: color, width: 2) : null,
+        border: share == 0 ? Border.all(color: color, width: 1.5) : null,
       ),
     );
   }

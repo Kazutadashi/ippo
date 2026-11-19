@@ -161,8 +161,8 @@ void main() {
       await actions.recordDay(read, '2026-11-15', done: true);
 
       expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-        'Habits: 1 of 3 | Stretch and Study left',
-        'Streaks: 3 days | Read',
+        'Habits: 1 of 3 | ',
+        'Streaks: 3 days Read | ',
       ]);
     });
   });
@@ -233,6 +233,7 @@ String describeDetail(TileDetail detail) =>
 /// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
   for (final fact in facts)
-    '${fact.label}: ${fact.value} | '
+    '${fact.label}: ${fact.value}'
+        '${fact.valueNote == null ? '' : ' ${fact.valueNote}'} | '
         '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

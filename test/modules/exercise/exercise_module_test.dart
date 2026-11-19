@@ -250,7 +250,7 @@ void main() {
     final now = DateTime(2026, 11, 18, 20);
     final day = currentDay(now);
     expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: – | No sets logged yet',
+      'Exercise:  | No sets logged yet',
     ]);
 
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
@@ -258,14 +258,14 @@ void main() {
     await createExercise('Squat', MeasuredIn.reps);
     await addSets(pushUp, '2026-11-16', 15, 1);
     expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: – | Last workout 2 days ago',
+      'Exercise:  | Last workout 2 days ago',
     ]);
 
     await addSets(pushUp, '2026-11-18', 20, 1);
     await addSets(pushUp, '2026-11-18', 18, 1);
     await addSets(plank, '2026-11-18', 45, 1);
     expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: best sets: 2 exercises | Push-up 20 reps, Plank 45 s',
+      'Exercise: best sets:  | Push-up 20 reps, Plank 45 s',
     ]);
     expect(
       describeDetail(module.weekSummary(appState, day)!),
@@ -281,6 +281,7 @@ String describeDetail(TileDetail detail) =>
 /// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
   for (final fact in facts)
-    '${fact.label}: ${fact.value} | '
+    '${fact.label}: ${fact.value}'
+        '${fact.valueNote == null ? '' : ' ${fact.valueNote}'} | '
         '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

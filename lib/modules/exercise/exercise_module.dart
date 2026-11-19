@@ -60,17 +60,17 @@ class ExerciseModule extends IppoModule {
       return [
         TodayFact(
           label: 'Exercise',
-          value: TodayFact.unknownValue,
+          value: '',
           note: _sinceLastWorkout(log, day, isToday: day == currentDay(now)),
           isWide: true,
         ),
       ];
     }
-    final count = bestSets.length;
+    // Only the best sets: they are what shows progress.
     return [
       TodayFact(
         label: 'Exercise: best sets',
-        value: count == 1 ? '1 exercise' : '$count exercises',
+        value: '',
         details: bestSets,
         isWide: true,
       ),

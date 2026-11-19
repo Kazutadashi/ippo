@@ -53,7 +53,8 @@ abstract class IppoModule {
   List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now);
 
   /// One number about the seven days ending on [day], for Home's "Last
-  /// 7 days" tile, such as "Sleep / night" and "7 h 40 min". Null if the
+  /// 7 days" tile, such as "Sleep" and "7 h 40 min" (an average per day,
+  /// or a count). Keep the label to one short word: four sit side by side. Null if the
   /// module has nothing to add, or nothing was logged.
   TileDetail? weekSummary(AppState appState, DateTime day) => null;
 
@@ -74,6 +75,7 @@ class TodayFact {
   const TodayFact({
     required this.label,
     required this.value,
+    this.valueNote,
     this.details = const [],
     this.note,
     this.isWide = false,
@@ -86,10 +88,15 @@ class TodayFact {
   /// What the value is, for example `Last meal`.
   final String label;
 
-  /// The value, shown large, for example `3 h ago`, or [unknownValue].
+  /// The value, shown large, for example `3 h ago`, or [unknownValue];
+  /// empty for a tile without one.
   final String value;
 
-  /// Up to three small facts, for example a food's name and its time.
+  /// A short word beside the value, such as the habit a streak belongs
+  /// to.
+  final String? valueNote;
+
+  /// Small facts for the footer, for example a food's name and its time.
   final List<TileDetail> details;
 
   /// A short note instead of details, for example `Not logged yet`.

@@ -7,12 +7,13 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_state.dart';
+import '../../core/clock_time.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
 import '../../core/theme.dart';
 import 'screens/sleep_screen.dart';
 import 'nap.dart';
-import 'night_bar.dart';
+import 'time_span_bar.dart';
 import 'sleep_moment.dart';
 import 'sleep_log.dart';
 
@@ -93,7 +94,7 @@ class SleepModule extends IppoModule {
     if (nights == 0) {
       return null;
     }
-    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep / night');
+    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep');
   }
 
   @override
@@ -101,8 +102,8 @@ class SleepModule extends IppoModule {
 }
 
 /// The "Awake for" tile: time since waking up today, or, once you went
-/// to bed, how long the day lasted. Looking back at an earlier day, only
-/// the day's length can be shown.
+/// to bed, how long the day lasted, with the day drawn as a bar. Looking
+/// back at an earlier day, only the day's length can be shown.
 TodayFact _awakeFact(
   SleepMoment? wakeUp,
   SleepMoment? bedtime,
@@ -121,10 +122,11 @@ TodayFact _awakeFact(
     return TodayFact(
       label: 'Awake for',
       value: formatDuration(bedtime.atUtc.difference(wakeUp.atUtc)),
-      details: [
-        TileDetail(wakeUp.clock.shown, label: 'Woke'),
-        TileDetail(bedtime.clock.shown, label: 'Bed'),
-      ],
+      visual: _DayBar(
+        start: wakeUp.clock,
+        end: bedtime.clock,
+        endLabel: bedtime.clock.shown,
+      ),
     );
   }
   if (!isToday) {
@@ -138,7 +140,11 @@ TodayFact _awakeFact(
   return TodayFact(
     label: 'Awake for',
     value: awake.isNegative ? TodayFact.unknownValue : formatDuration(awake),
-    details: [TileDetail(wakeUp.clock.shown, label: 'Woke')],
+    visual: _DayBar(
+      start: wakeUp.clock,
+      end: ClockTime(now.hour, now.minute),
+      endLabel: 'now',
+    ),
   );
 }
 
@@ -151,7 +157,7 @@ Duration _totalOf(List<Nap> naps) {
   return total;
 }
 
-/// The night bar in the sleep module's colour, toned for the theme.
+/// The night, from bedtime to waking up, in the sleep module's colour.
 class _SleepBar extends StatelessWidget {
   const _SleepBar({
     required this.bedtime,
@@ -165,10 +171,47 @@ class _SleepBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NightBar(
-      bedtime: bedtime.clock,
-      wakeUp: wakeUp.clock,
+    return TimeSpanBar(
+      start: bedtime.clock,
+      end: wakeUp.clock,
+      trackStartHour: TimeSpanBar.nightStartHour,
+      trackHours: TimeSpanBar.nightHours,
+      startLabel: bedtime.clock.shown,
+      endLabel: wakeUp.clock.shown,
       color: moduleTone(base, Theme.of(context).brightness),
+      description:
+          'Bed at ${bedtime.clock.shown}, woke at ${wakeUp.clock.shown}',
+    );
+  }
+}
+
+/// The day, from waking up to [end] (now, or bedtime), in the sleep
+/// module's colour.
+class _DayBar extends StatelessWidget {
+  const _DayBar({
+    required this.start,
+    required this.end,
+    required this.endLabel,
+  });
+
+  final ClockTime start;
+  final ClockTime end;
+  final String endLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return TimeSpanBar(
+      start: start,
+      end: end,
+      trackStartHour: TimeSpanBar.dayStartHour,
+      trackHours: TimeSpanBar.dayHours,
+      startLabel: start.shown,
+      endLabel: endLabel,
+      color: moduleTone(
+        const SleepModule().color,
+        Theme.of(context).brightness,
+      ),
+      description: 'Awake from ${start.shown} to $endLabel',
     );
   }
 }

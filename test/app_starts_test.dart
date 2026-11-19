@@ -67,8 +67,9 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
     // Home shows more tiles per row: the first three share one row.
     final tiles = find.byType(InfoTile);
-    final firstTop = tester.getTopLeft(tiles.at(0)).dy;
-    expect(tester.getTopLeft(tiles.at(2)).dy, firstTop);
+    // (The first tile, the week, takes a whole row of its own.)
+    final firstTop = tester.getTopLeft(tiles.at(1)).dy;
+    expect(tester.getTopLeft(tiles.at(3)).dy, firstTop);
   });
 
   testWidgets('on first run, the app asks for a data folder', (tester) async {
@@ -101,7 +102,7 @@ void main() {
     expect(find.text(describeToday(today())), findsOneWidget);
     // The modules' tiles and the week, all waiting for data.
     expect(find.byType(InfoTile), findsNWidgets(8));
-    expect(find.text('–'), findsNWidgets(7));
+    expect(find.text('–'), findsNWidgets(6));
     expect(find.text('Nothing logged in these days.'), findsOneWidget);
     // Information only: everything tappable is the gear or the day bar.
     bool isTappable(Widget widget) =>
@@ -136,10 +137,10 @@ void main() {
       },
     );
 
-    // The Energy tile shows today's total, and the week its average.
-    expect(find.text('Energy'), findsOneWidget);
+    // The Energy tile shows today's total, and the week its average
+    // (also labelled Energy, inside "Last 7 days").
+    expect(find.text('Energy'), findsNWidgets(2));
     expect(find.text('80 kcal'), findsNWidgets(2));
-    expect(find.text('Energy / day'), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

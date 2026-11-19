@@ -50,6 +50,8 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final now = DateTime.now();
     final day = shownDay;
     final tiles = <_Tile>[
+      // The week first: the wider view, before the details of the day.
+      _weekTile(appState, day),
       for (final module in allModules)
         for (final fact in module.dayFacts(appState, day, now))
           _Tile(
@@ -58,13 +60,14 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
               color: moduleTone(module.color, Theme.of(context).brightness),
               label: fact.label,
               value: fact.value,
+              valueNote: fact.valueNote,
               details: fact.details,
               note: fact.note,
               visual: fact.visual,
+              isWide: fact.isWide,
             ),
             isWide: fact.isWide,
           ),
-      _weekTile(appState, day),
     ];
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
@@ -80,18 +83,19 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
           padding: EdgeInsets.zero,
           children: [
             // The landscape runs up behind the status bar, with the
-            // greeting and the gear on its sky.
+            // greeting and the gear on its sky, and the date with the day
+            // bar on the ground at its foot.
             Stack(
               children: [
                 SkyHeader(
                   phase: SkyPhase.of(now),
-                  height: topInset + 184,
-                  clearTop: topInset + 60,
+                  height: topInset + 116,
+                  clearTop: topInset + 44,
                 ),
                 Positioned(
-                  top: topInset + 12,
+                  top: topInset + 2,
                   left: Spacing.screen,
-                  right: Spacing.small,
+                  right: Spacing.tight,
                   child: Row(
                     children: [
                       Expanded(
@@ -99,7 +103,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                           // Looking back at another day, the heading
                           // says so.
                           showsToday ? greetingFor(now) : 'Looking back',
-                          style: textTheme.headlineSmall?.copyWith(
+                          style: textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                             shadows: const [
@@ -117,28 +121,31 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     ],
                   ),
                 ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // The date, and the day bar for looking back at earlier
-                  // days (and coming back to today).
-                  Row(
+                Positioned(
+                  left: Spacing.screen,
+                  right: 0,
+                  bottom: 0,
+                  child: Row(
                     children: [
                       Expanded(
                         child: Text(
                           describeToday(day),
-                          style: textTheme.titleMedium?.copyWith(
-                            color: colors.onSurfaceVariant,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: colors.onSurface,
                           ),
                         ),
                       ),
                       DayBar(day: day, onChanged: showDay),
                     ],
                   ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                   // Only for someone who has not logged anything yet:
                   // where logging happens. It goes away by itself.
                   if (eventLog != null && eventLog.events.isEmpty) ...[
@@ -154,7 +161,6 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     const SizedBox(height: Spacing.small),
                     NoteText(staleDevice),
                   ],
-                  const SizedBox(height: Spacing.small),
                   _TileGrid(tiles: tiles),
                 ],
               ),
@@ -208,27 +214,39 @@ class _Tile {
   final bool isWide;
 }
 
-/// The "Last 7 days" tile: one number from each module about the week
-/// ending on [day], such as sleep per night and energy per day. A
+/// The "Last 7 days" tile, one slim row: the week's days as dots (from
+/// the first module that draws them, the habits) on the left, and one
+/// number from each module on the right, such as sleep per night. A
 /// summary, not a chart: the trends belong in an analysis of the data.
 _Tile _weekTile(AppState appState, DateTime day) {
   final summaries = [
     for (final module in allModules)
       if (module.weekSummary(appState, day) case final summary?) summary,
   ];
-  final firstDay = addDays(day, -6);
   Widget? strip;
   for (final module in allModules) {
     strip ??= module.weekStrip(appState, day);
   }
+  final hasNothing = summaries.isEmpty && strip == null;
   return _Tile(
     InfoTile(
       icon: Icons.date_range,
       label: 'Last 7 days',
-      value: '${formatShortDate(firstDay)} to ${formatShortDate(day)}',
-      visual: strip,
-      details: summaries,
-      note: summaries.isEmpty ? 'Nothing logged in these days.' : null,
+      value: '',
+      note: hasNothing ? 'Nothing logged in these days.' : null,
+      visual: hasNothing
+          ? null
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (strip != null) Expanded(flex: 5, child: strip),
+                if (strip != null && summaries.isNotEmpty)
+                  const SizedBox(width: Spacing.medium),
+                if (summaries.isNotEmpty)
+                  Expanded(flex: 6, child: LabelledValues(details: summaries)),
+              ],
+            ),
+      isWide: true,
     ),
     isWide: true,
   );

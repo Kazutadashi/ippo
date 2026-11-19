@@ -174,11 +174,12 @@ void main() {
       final morning = DateTime(2026, 11, 17, 9, 15);
       expect(
         describeTiles(module.dayFacts(appState, currentDay(morning), morning)),
-        ['Sleep: 7 h 30 min | ', 'Awake for: 2 h 45 min | Woke 06:30'],
+        ['Sleep: 7 h 30 min | ', 'Awake for: 2 h 45 min | '],
       );
-      // The night is drawn as a bar instead of written out.
+      // The night and the day are drawn as bars instead of written out.
       final sleep = module.dayFacts(appState, currentDay(morning), morning);
       expect(sleep.first.visual, isNotNull);
+      expect(sleep.last.visual, isNotNull);
     });
 
     test('at 01:00, the day before is still today', () async {
@@ -189,7 +190,7 @@ void main() {
         describeTiles(
           module.dayFacts(appState, currentDay(lateNight), lateNight),
         )[1],
-        'Awake for: 18 h | Woke 07:00',
+        'Awake for: 18 h | ',
       );
     });
 
@@ -202,7 +203,7 @@ void main() {
         describeTiles(
           module.dayFacts(appState, currentDay(lateNight), lateNight),
         )[1],
-        'Awake for: 18 h | Woke 07:00, Bed 01:00',
+        'Awake for: 18 h | ',
       );
     });
   });
@@ -249,6 +250,7 @@ String describeDetail(TileDetail detail) =>
 /// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
   for (final fact in facts)
-    '${fact.label}: ${fact.value} | '
+    '${fact.label}: ${fact.value}'
+        '${fact.valueNote == null ? '' : ' ${fact.valueNote}'} | '
         '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

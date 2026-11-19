@@ -53,17 +53,12 @@ class HabitsModule extends IppoModule {
     final done = habits
         .where((habit) => log.markOn(habit.id, date) == DayMark.done)
         .length;
-    final open = [
-      for (final habit in habits)
-        if (log.markOn(habit.id, date) == DayMark.none) habit.name,
-    ];
     return [
       // How the day is going: one dot per habit, and what is still open.
       TodayFact(
         label: 'Habits',
         value: '$done of ${habits.length}',
         visual: HabitDots(habits: habits, log: log, date: date),
-        note: _describeOpen(open),
       ),
       _streaksFact(log, habits, day),
     ];
@@ -96,30 +91,15 @@ class HabitsModule extends IppoModule {
       }
     }
     final percent = (100 * done / (7 * habits.length)).round();
-    return TileDetail('$percent %', label: 'Habits done');
+    return TileDetail('$percent %', label: 'Habits');
   }
 
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
 }
 
-/// What is still open, in one short line: "Stretch and Meditate left",
-/// "Stretch and 2 more left", or that every habit is marked.
-String _describeOpen(List<String> open) {
-  if (open.isEmpty) {
-    return 'Every habit is marked.';
-  }
-  if (open.length == 1) {
-    return '${open.single} left';
-  }
-  if (open.length == 2) {
-    return '${open[0]} and ${open[1]} left';
-  }
-  return '${open[0]} and ${open.length - 1} more left';
-}
-
-/// The "Streaks" tile: the longest current streak, and which habit it
-/// is, then the next longest.
+/// The "Streaks" tile: the longest current streak, which habit it is,
+/// and that habit's last seven days.
 TodayFact _streaksFact(HabitLog log, List<Habit> habits, DateTime day) {
   final streaks = [
     for (final habit in habits)
@@ -133,16 +113,12 @@ TodayFact _streaksFact(HabitLog log, List<Habit> habits, DateTime day) {
       note: 'No streak right now.',
     );
   }
-  final second = streaks.length > 1 && streaks[1].days > 0 ? streaks[1] : null;
+  // The longest streak, which habit it is, and its last seven days.
   return TodayFact(
     label: 'Streaks',
     value: _days(best.days),
+    valueNote: best.habit.name,
     visual: StreakSquares(habit: best.habit, log: log, day: day),
-    details: [
-      TileDetail(best.habit.name),
-      if (second != null)
-        TileDetail('${second.habit.name}: ${_days(second.days)}'),
-    ],
   );
 }
 

@@ -8,7 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'section_card.dart';
 import 'value_text.dart';
 
-/// One small fact under a tile's value.
+/// One small fact in a tile's footer.
 ///
 /// With a [label], it is a labelled number, such as "Fat" and "6 g".
 /// Without one, it is a line of its own, such as a food's name.
@@ -33,18 +33,25 @@ class TileDetail {
 /// The value shown when nothing is known yet.
 const String unknownTileValue = '–';
 
-/// A tile of information for the home screen: an icon and label, a large
-/// value, and up to two lines of detail. Plain information: it never
-/// does anything when tapped.
+/// The height of a tile's footer, before the user's text size: room for
+/// two short lines, or one small picture.
+const double _footerHeight = 30;
+
+/// A tile of information for the home screen. Plain information: it
+/// never does anything when tapped.
 ///
-/// The details are never joined into one line. Either every detail has
-/// a label, and they sit side by side as small columns ("Protein / 5 g",
-/// "Carbs / 22 g"), or they are plain lines, one fact per line, the most
-/// identifying first ("Honey", then "at 14:43"). A [note] replaces the
-/// details, for example "Not logged yet".
+/// Every tile has the same three parts, always at the same places, so
+/// tiles side by side line up:
 ///
-/// Every tile keeps room for two lines of detail, so tiles stay the same
-/// height through the day as things are logged.
+/// 1. a header: the module's icon and the tile's label, in its colour;
+/// 2. the value, digits large and units small ("260 kcal"), with an
+///    optional short [valueNote] beside it ("Read"); an empty value
+///    leaves this line out;
+/// 3. a footer of fixed height holding one thing: a small picture
+///    ([visual]), a [note], labelled numbers side by side ("Protein /
+///    5 g"), or up to two plain lines ("Honey", then "at 14:43").
+///
+/// Facts are never joined into one line with "·" or commas.
 class InfoTile extends StatelessWidget {
   /// Creates the tile.
   const InfoTile({
@@ -52,50 +59,58 @@ class InfoTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.valueNote,
     this.details = const [],
     this.note,
     this.color,
     this.visual,
+    this.isWide = false,
   });
 
   /// The icon next to the label: the module's own icon.
   final IconData icon;
+
+  /// What the value is, for example `Last meal`.
+  final String label;
+
+  /// The value, shown large; [unknownTileValue] while nothing is known;
+  /// empty to leave the value line out.
+  final String value;
+
+  /// A short word beside the value, such as the habit a streak belongs
+  /// to.
+  final String? valueNote;
+
+  /// Small facts for the footer: up to four labelled numbers, or two
+  /// plain lines.
+  final List<TileDetail> details;
+
+  /// A short note for the footer, such as "Not logged yet".
+  final String? note;
 
   /// The module's colour, already toned for the theme: the icon and
   /// label take it, and the tile gets a soft tint of it. Null for a tile
   /// that belongs to no module, which stays neutral.
   final Color? color;
 
-  /// A small picture between the value and the details, such as one dot
-  /// per habit or a night's sleep as a bar.
+  /// A small picture for the footer, such as one dot per habit or a
+  /// night's sleep as a bar.
   final Widget? visual;
 
-  /// What the value is, for example `Last meal`.
-  final String label;
-
-  /// The value, shown large, or [unknownTileValue].
-  final String value;
-
-  /// Up to four small facts below the value (four fit on a wide tile).
-  final List<TileDetail> details;
-
-  /// A short note shown instead of [details].
-  final String? note;
+  /// Whether the tile takes a whole row. A wide tile's footer grows to
+  /// fit what it holds.
+  final bool isWide;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
     final muted = colors.onSurfaceVariant;
-    final isUnknown = value == unknownTileValue;
-    // Room for two lines of body text, at whatever text size the user
-    // chose, so every tile has the same height.
-    final bodyStyle = textTheme.bodyMedium!;
-    final lineHeight = MediaQuery.textScalerOf(context)
-        .scale(bodyStyle.fontSize! * (bodyStyle.height ?? 1.4));
+    final tint = color;
+    final footerHeight = MediaQuery.textScalerOf(context).scale(_footerHeight);
+    final footer = _footer(textTheme, muted);
     // Screen readers read the whole tile as one item: "Last meal,
     // 3 h ago, Honey, at 14:43".
-    final tint = color;
     return MergeSemantics(
       child: Card(
         margin: EdgeInsets.zero,
@@ -108,18 +123,18 @@ class InfoTile extends StatelessWidget {
                 colors.surfaceContainer,
               ),
         child: Padding(
-          padding: const EdgeInsets.all(Spacing.medium),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 16, color: tint ?? colors.primary),
-                  const SizedBox(width: Spacing.small),
+                  Icon(icon, size: 14, color: tint ?? colors.primary),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       label,
-                      style: textTheme.labelLarge?.copyWith(
+                      style: textTheme.labelMedium?.copyWith(
                         color: tint ?? muted,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -127,51 +142,18 @@ class InfoTile extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: Spacing.tight),
-              // A new value fades in, so a change is noticed but calm.
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 150),
-                layoutBuilder: (current, previous) => Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [...previous, if (current != null) current],
-                ),
-                child: KeyedSubtree(
-                  key: ValueKey(value),
-                  child: isUnknown
-                      // A quiet dash: an empty tile steps back. Screen
-                      // readers skip it and read the note instead.
-                      ? ExcludeSemantics(
-                          child: Text(
-                            value,
-                            style: textTheme.headlineSmall?.copyWith(
-                              color: muted,
-                            ),
-                          ),
-                        )
-                      // Shrink a value that is still too wide, rather
-                      // than wrapping it.
-                      : FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: ValueText(
-                            value,
-                            style: textTheme.headlineSmall,
-                            unitStyle: textTheme.titleSmall?.copyWith(
-                              color: muted,
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-              if (visual != null) ...[
-                const SizedBox(height: Spacing.small),
-                visual!,
+              if (value.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                _valueLine(textTheme, muted),
               ],
-              const SizedBox(height: Spacing.tight),
-              ConstrainedBox(
-                constraints: BoxConstraints(minHeight: 2 * lineHeight),
-                child: _detailsArea(textTheme, colors),
-              ),
+              const SizedBox(height: 6),
+              if (isWide)
+                footer
+              else
+                SizedBox(
+                  height: footerHeight,
+                  child: Align(alignment: Alignment.centerLeft, child: footer),
+                ),
             ],
           ),
         ),
@@ -179,76 +161,150 @@ class InfoTile extends StatelessWidget {
     );
   }
 
-  Widget _detailsArea(TextTheme textTheme, ColorScheme colors) {
+  /// The value, with its note beside it.
+  Widget _valueLine(TextTheme textTheme, Color muted) {
+    final note = valueNote;
+    // A new value fades in, so a change is noticed but calm.
+    final valueText = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 150),
+      child: KeyedSubtree(
+        key: ValueKey(value),
+        child: value == unknownTileValue
+            // A quiet dash: an empty tile steps back. Screen readers skip
+            // it and read the note instead.
+            ? ExcludeSemantics(
+                child: Text(
+                  value,
+                  style: textTheme.titleLarge?.copyWith(color: muted),
+                ),
+              )
+            : ValueText(
+                value,
+                style: textTheme.titleLarge,
+                unitStyle: textTheme.labelMedium?.copyWith(color: muted),
+              ),
+      ),
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        // Shrink a value that is too wide, rather than wrapping it.
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: valueText,
+          ),
+        ),
+        if (note != null) ...[
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              note,
+              style: textTheme.bodySmall?.copyWith(color: muted),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// The footer: one of a picture, a note, labelled numbers or lines.
+  Widget _footer(TextTheme textTheme, Color muted) {
+    final visual = this.visual;
+    if (visual != null) {
+      return visual;
+    }
     final note = this.note;
-    final muted = colors.onSurfaceVariant;
     if (note != null || details.isEmpty) {
       return Text(
         note ?? '',
-        style: textTheme.bodyMedium?.copyWith(color: muted),
+        style: textTheme.bodySmall?.copyWith(color: muted),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       );
     }
-    final allLabelled = details.every((detail) => detail.label != null);
-    if (allLabelled) {
-      // Small columns: a grey label above each value, as on the Food
-      // screen's Total card.
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final detail in details.take(4))
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    detail.label!,
-                    style: textTheme.labelSmall?.copyWith(color: muted),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  // Shrink a value that is too wide ("11:30 pm" in a
-                  // narrow column) rather than cutting it off.
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          detail.value,
-                          style: textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                        ),
-                        if (detail.badge != null) ...[
-                          const SizedBox(width: Spacing.tight),
-                          _Badge(text: detail.badge!, color: color),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      );
+    if (details.every((detail) => detail.label != null)) {
+      return LabelledValues(details: details, color: color);
     }
     // Plain lines: the first is the thing itself, in normal text; the
     // second says when or how much, in grey.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         for (var index = 0; index < details.length && index < 2; index++)
           Text(
             details[index].value,
-            style: textTheme.bodyMedium?.copyWith(
+            style: textTheme.bodySmall?.copyWith(
               color: details[index].color ?? (index == 0 ? null : muted),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+          ),
+      ],
+    );
+  }
+}
+
+/// Labelled numbers side by side, in equal columns: a small grey label
+/// above each value, as on the Food screen's Total card.
+class LabelledValues extends StatelessWidget {
+  /// Creates the columns for [details] (each with a label), at most four.
+  const LabelledValues({super.key, required this.details, this.color});
+
+  /// The values and their labels.
+  final List<TileDetail> details;
+
+  /// The colour of badges, such as "+2".
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final detail in details.take(4))
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  detail.label!,
+                  style: textTheme.labelSmall?.copyWith(color: muted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // Shrink a value that is too wide ("11:30 pm" in a
+                // narrow column) rather than cutting it off.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        detail.value,
+                        style: textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                      ),
+                      if (detail.badge != null) ...[
+                        const SizedBox(width: Spacing.tight),
+                        _Badge(text: detail.badge!, color: color),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
       ],
     );
@@ -266,10 +322,10 @@ class _Badge extends StatelessWidget {
   Widget build(BuildContext context) {
     final tone = color ?? Theme.of(context).colorScheme.primary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         color: tone.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         text,

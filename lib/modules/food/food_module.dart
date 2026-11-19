@@ -69,7 +69,7 @@ class FoodModule extends IppoModule {
     // a day without food.
     return TileDetail(
       '${formatAmount(total / loggedDays)} kcal',
-      label: 'Energy / day',
+      label: 'Energy',
     );
   }
 

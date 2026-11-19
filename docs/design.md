@@ -91,10 +91,12 @@ with the moon rising, night with stars), fading into the page. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.
 
-Then: a greeting ("Good afternoon"), the date ("Wednesday,
-18 Nov") beside the day bar, then a grid of `InfoTile`s, two per row (one per row
-with large text, up to four on a wide window), each row as tall as its
-tallest tile. Two notes appear only when needed: for someone who has
+The greeting ("Good afternoon") and the gear sit on its sky; the date
+("Wednesday, 18 Nov") and the day bar sit on the ground at its foot.
+Then the "Last 7 days" row, and a grid of `InfoTile`s, two per row (one
+per row with large text, up to four on a wide window), each row as tall
+as its tallest tile. Everything fits on one phone screen, so Home is a
+glance, not a scroll. Two notes appear only when needed: for someone who has
 logged nothing yet ("Log things in the tabs below."), and when another
 device has not synced for more than a day.
 
@@ -112,9 +114,14 @@ device has not synced for more than a day.
 - Every tile must earn its place: something a person wants to know at a
   glance. Totals that mix unlike things (all reps of all exercises) do
   not; a best set, a streak or the time since the last meal do.
-- A tile has a label, **one large value** (digits large, units small
-  and grey: `ValueText`), and up to **two slots** below it. Facts are
-  **never joined into one line** with "·" or commas. Either:
+- Every tile has the **same three parts at the same places**, so tiles
+  side by side line up: a header (module icon and label, in the
+  module's colour); **one value** (digits large, units small and grey:
+  `ValueText`), with an optional short word beside it (a streak's
+  habit); and a **footer of fixed height** holding exactly one thing.
+  A wide tile may leave out the value (Exercise shows only its best
+  sets). Facts are **never joined into one line** with "·" or commas.
+  The footer is one of: a small picture (below); or
   - **labelled numbers side by side**, a small grey label above each
     value: *Protein 5 g*, *Carbs 22 g*, *Fat 6 g*; *Bed 23:30*,
     *Woke 07:00*; or
