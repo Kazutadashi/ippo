@@ -166,7 +166,16 @@ ThemeData buildTheme(
     chipTheme: ChipThemeData(backgroundColor: tint, side: BorderSide.none),
     // A slightly lower title bar than Material's 64, so more of each
     // screen is content; the same on every screen.
-    appBarTheme: const AppBarTheme(toolbarHeight: 52),
+    // It also keeps the page's colour when content scrolls under it:
+    // Material would switch it to a lighter grey, which looks like a
+    // stray box (on the Habits grid in landscape, for example). A plain
+    // colour here is used whether or not anything is under it.
+    appBarTheme: AppBarTheme(
+      toolbarHeight: 52,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+    ),
   );
   return theme.copyWith(textTheme: _withTabularDigits(theme.textTheme));
 }
