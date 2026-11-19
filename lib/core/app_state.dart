@@ -10,6 +10,7 @@ import 'dates.dart';
 import 'events/event.dart';
 import 'events/event_log.dart';
 import 'events/event_log_reader.dart';
+import 'events/backup_and_clear.dart';
 import 'events/folder_readme.dart';
 import 'events/monthly_backup.dart';
 import 'events/event_writer.dart';
@@ -184,6 +185,33 @@ class AppState extends ChangeNotifier {
       _errorMessage = 'Could not make this month\'s backup: ${error.message}';
       notifyListeners();
     }
+  }
+
+  /// Copies every event file into a new folder under `backups/`. Returns
+  /// that folder's path. Throws [DataFolderException] on failure.
+  Future<String> backUpNow() {
+    return backUpAllEvents(_requireDataFolder(), now: DateTime.now());
+  }
+
+  /// Deletes every event file, from every device, after a full backup,
+  /// and shows the app empty. Returns the backup folder's path. Throws
+  /// [DataFolderException] on failure; nothing is deleted unless the
+  /// backup worked.
+  Future<String> clearAllData() async {
+    final backupFolder = await clearAllEvents(
+      _requireDataFolder(),
+      now: DateTime.now(),
+    );
+    await reloadEvents();
+    return backupFolder;
+  }
+
+  DataFolder _requireDataFolder() {
+    final dataFolder = _dataFolder;
+    if (dataFolder == null) {
+      throw DataFolderException('Please choose a data folder first.');
+    }
+    return dataFolder;
   }
 
   /// Writes a new event to this device's file and adds it to [eventLog].

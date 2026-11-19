@@ -74,6 +74,24 @@ class LocalDataFolder implements DataFolder {
     }
   }
 
+  @override
+  Future<void> deleteFile(String filePath) async {
+    checkRelativePath(filePath);
+    final file = File(_fullPath(filePath));
+    // A File refers to files only: a folder at this path is left alone,
+    // because FileSystemEntity.typeSync tells them apart.
+    if (FileSystemEntity.typeSync(file.path) != FileSystemEntityType.file) {
+      return;
+    }
+    try {
+      await file.delete();
+    } on FileSystemException catch (error) {
+      throw DataFolderException(
+        'Could not delete "$filePath": ${error.message}',
+      );
+    }
+  }
+
   /// Checks a data folder path the user typed.
   ///
   /// Returns null if [path] is an absolute path to an existing folder,

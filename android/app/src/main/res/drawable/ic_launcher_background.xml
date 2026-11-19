@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- The background of Ippo's launcher icon: a spring meadow. A pale sage
+     sky fades down to two soft green hills. Drawn by hand for Ippo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- The sky. -->
+    <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="0"
+                android:endY="108">
+                <item android:offset="0" android:color="#FFE4EED8" />
+                <item android:offset="1" android:color="#FFC9DDB8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- The far hill, then the near one. -->
+    <path
+        android:fillColor="#FF9DBF84"
+        android:pathData="M0,84 C20,74 38,76 56,82 C74,88 92,80 108,74 L108,108 L0,108 Z" />
+    <path
+        android:fillColor="#FF7FA866"
+        android:pathData="M0,94 C24,86 46,90 66,95 C84,99 98,94 108,90 L108,108 L0,108 Z" />
+</vector>

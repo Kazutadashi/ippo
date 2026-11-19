@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The settings screen: data folder, appearance, this device, and the
-/// list of devices with when each was last seen.
+/// The settings screen: data folder, backing up and clearing, appearance,
+/// this device, and the list of devices with when each was last seen.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../app_state.dart';
 import '../widgets/section_card.dart';
 import 'appearance_section.dart';
+import 'backup_section.dart';
 import 'devices_section.dart';
 
 /// The settings screen.
@@ -37,6 +38,16 @@ class SettingsScreen extends StatelessWidget {
                 const CardHeader(icon: Icons.folder, title: 'Data folder'),
                 const SizedBox(height: 4),
                 _DataFolderSection(appState: appState),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(
+                  icon: Icons.backup_outlined,
+                  title: 'Back up and clear',
+                ),
+                const SizedBox(height: 4),
+                BackupSection(appState: appState),
               ],
             ),
             SectionCard(

@@ -48,6 +48,12 @@ class AndroidDataFolder implements DataFolder {
     await _call<Object?>('appendText', {'path': filePath, 'text': text});
   }
 
+  @override
+  Future<void> deleteFile(String filePath) async {
+    checkRelativePath(filePath);
+    await _call<Object?>('deleteFile', {'path': filePath});
+  }
+
   /// Calls a Kotlin method and turns its errors into [DataFolderException].
   Future<T> _call<T>(String method, Map<String, String> arguments) async {
     try {

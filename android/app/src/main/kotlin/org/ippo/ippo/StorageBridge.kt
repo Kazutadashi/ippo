@@ -45,6 +45,8 @@ import java.util.concurrent.Executors
  * - `readText(folderUri, path)`: the whole file as UTF-8 text.
  * - `appendText(folderUri, path, text)`: adds `text` to the end of the file,
  *   creating the file and its parent folders if needed.
+ * - `deleteFile(folderUri, path)`: deletes one file (never a folder). Only
+ *   "Clear all data" in Settings uses it, after making a full backup.
  */
 class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHandler {
 
@@ -91,6 +93,10 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
                 val text = call.argument<String>("text")
                     ?: throw IllegalArgumentException("Missing argument: text")
                 appendText(folderUriArgument(call), pathArgument(call), text)
+                null
+            }
+            "deleteFile" -> runInBackground(result) {
+                deleteFile(folderUriArgument(call), pathArgument(call))
                 null
             }
             else -> result.notImplemented()
@@ -186,6 +192,25 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
         val output = resolver.openOutputStream(fileUri, "wa")
             ?: throw FileNotFoundException("Could not open for appending: $path")
         output.use { stream -> stream.write(text.toByteArray(Charsets.UTF_8)) }
+    }
+
+    /**
+     * Deletes one file. Used only by "Clear all data", which the user
+     * confirms and which makes a full backup first. A folder is never
+     * deleted, and a file that is already gone is not an error.
+     */
+    private fun deleteFile(folderUri: Uri, path: String) {
+        val parts = splitPath(path)
+        val parentId = findDocumentId(folderUri, parts.dropLast(1)) ?: return
+        val file = listChildren(folderUri, parentId)
+            .firstOrNull { child -> child.name == parts.last() } ?: return
+        if (file.isFolder) {
+            throw IllegalArgumentException("Not a file: $path")
+        }
+        val fileUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, file.id)
+        if (!DocumentsContract.deleteDocument(resolver, fileUri)) {
+            throw FileNotFoundException("Could not delete: $path")
+        }
     }
 
     /** One entry inside a folder. */
