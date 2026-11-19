@@ -13,6 +13,7 @@ import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
+import '../nutrients.dart';
 import 'choose_food_screen.dart';
 import 'food_entry_form_screen.dart';
 import 'nutrient_summary.dart';
@@ -150,7 +151,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                         title: Text(entry.name),
                         subtitle: _EntryDetails(entry: entry),
                         trailing: Text(
-                          '${formatAmount(entry.nutrients.energyKcal)} kcal',
+                          formatEnergy(entry.nutrients.energyKcal),
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         onTap: () => _editEntry(entry),

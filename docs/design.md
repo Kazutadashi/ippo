@@ -260,10 +260,12 @@ Rules:
 - **The number people scan goes on the right** (`trailing`), in one
   column: "280 kcal".
 - Rows are in the order things happened.
-- Small things a person adds several of in a row (sets) can be chips
-  (`ActionChip`, filled by the theme so they never look like empty
-  fields), with their unit ("20 reps") and a `FieldLabel` above them
-  that names the day ("Sets today"). Tapping one opens it for changing.
+- Numbers that only make sense side by side, such as the sets of an
+  exercise, go in a **small table that names every row and column**:
+  a column per set ("Set 1", "Set 2"), the unit in the corner ("reps"),
+  a row for the day shown, and the last session under it in grey, so
+  it is plain what each number is and whether the day went better.
+  Tapping a number of the day shown opens it for changing.
 
 
 ## 6. Text and wording
@@ -399,7 +401,7 @@ guidance).
   (`isDense`), so fields, buttons and list rows are shorter
   everywhere. Do not undo this per screen.
 - Put things that belong together **on one row** when they fit:
-  Reps, Sets and Add; Protein, Carbs and Fat; Woke up and Went to bed.
+  − Reps + and Add set; Protein, Carbs and Fat; Woke up and Went to bed.
 - Leave out lines that only repeat what the screen already shows (no
   "No sets yet" above empty fields that obviously take sets).
 

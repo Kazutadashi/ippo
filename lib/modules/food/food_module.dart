@@ -64,10 +64,7 @@ class FoodModule extends IppoModule {
     }
     // The average of the days with food logged: a day not logged is not
     // a day without food.
-    return TileDetail(
-      '${formatAmount(total / loggedDays)} kcal',
-      label: 'Energy',
-    );
+    return TileDetail(formatEnergy(total / loggedDays), label: 'Energy');
   }
 
   @override
@@ -89,7 +86,7 @@ TodayFact _energyFact(Map<String, double> values, int entryCount) {
   ];
   return TodayFact(
     label: 'Energy',
-    value: '${formatAmount(values[energyKey] ?? 0)} kcal',
+    value: formatEnergy(values[energyKey] ?? 0),
     details: details,
     // Without any of them (only quick entries), say how much was logged.
     note: details.isEmpty

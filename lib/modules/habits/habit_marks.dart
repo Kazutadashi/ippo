@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/dates.dart';
+import '../../core/widgets/section_card.dart';
 import 'habit.dart';
 import 'habit_log.dart';
 
@@ -154,7 +155,8 @@ class StreakSquares extends StatelessWidget {
 }
 
 /// Seven dots for the days ending on [day], each as full as the share of
-/// habits done that day, with the weekday's letter below.
+/// habits done that day, with the weekday's letter below and a small
+/// label above that says so.
 class HabitWeekStrip extends StatelessWidget {
   /// Creates the strip.
   const HabitWeekStrip({
@@ -179,27 +181,43 @@ class HabitWeekStrip extends StatelessWidget {
     // The theme's accent: the share done is not any one habit's.
     final color = theme.colorScheme.primary;
     const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    return ExcludeSemantics(
-      child: Row(
-        children: [
-          for (var back = 6; back >= 0; back--)
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _dayDot(color, _shareDone(addDays(day, -back))),
-                  const SizedBox(height: 2),
-                  Text(
-                    letters[addDays(day, -back).weekday - 1],
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+    final muted = theme.colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Says what the dots are, in the same small grey as the labels
+        // beside them ("Habits 77 %").
+        Text(
+          'Habits done each day',
+          style: theme.textTheme.labelSmall?.copyWith(color: muted),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: Spacing.tight),
+        ExcludeSemantics(
+          child: Row(
+            children: [
+              for (var back = 6; back >= 0; back--)
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _dayDot(color, _shareDone(addDays(day, -back))),
+                      const SizedBox(height: 2),
+                      Text(
+                        letters[addDays(day, -back).weekday - 1],
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-        ],
-      ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

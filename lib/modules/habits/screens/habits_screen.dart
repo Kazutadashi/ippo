@@ -104,14 +104,19 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
                   Card(
                     margin: const EdgeInsets.only(top: Spacing.tight),
                     clipBehavior: Clip.antiAlias,
-                    child: _HabitGrid(
-                      today: today(),
-                      appState: appState,
-                      log: log,
-                      habits: habits,
-                      onEditHabit: (habit) => _open(
-                        context,
-                        HabitFormScreen(appState: appState, habit: habit),
+                    // Room above the dates, so they do not touch the
+                    // card's edge.
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: Spacing.small),
+                      child: _HabitGrid(
+                        today: today(),
+                        appState: appState,
+                        log: log,
+                        habits: habits,
+                        onEditHabit: (habit) => _open(
+                          context,
+                          HabitFormScreen(appState: appState, habit: habit),
+                        ),
                       ),
                     ),
                   ),

@@ -23,6 +23,11 @@ class NutrientKind {
   final String unit;
 }
 
+/// Energy for people, in whole kilocalories: `1267 kcal`. A tenth of a
+/// kilocalorie means nothing to anyone, so the screen leaves it out;
+/// the data keeps it.
+String formatEnergy(double kcal) => '${kcal.round()} kcal';
+
 /// The field name for energy, the one nutrient that is always required.
 const String energyKey = 'energy_kcal';
 

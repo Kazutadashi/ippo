@@ -83,6 +83,31 @@ class ExerciseLog {
         .toList();
   }
 
+  /// The last day before [date] (`YYYY-MM-DD`) with sets of [exerciseId],
+  /// and those sets in the order they were logged: the session to
+  /// compare with. Null if there is none.
+  ({String date, List<ExerciseSet> sets})? previousSessionOf(
+    String exerciseId,
+    String date,
+  ) {
+    String? latest;
+    for (final set in sets) {
+      // Dates written as YYYY-MM-DD sort like the days they name.
+      final isEarlier = set.date.compareTo(date) < 0;
+      final isLater = latest == null || set.date.compareTo(latest) > 0;
+      if (set.exerciseId == exerciseId &&
+          !set.isDeleted &&
+          isEarlier &&
+          isLater) {
+        latest = set.date;
+      }
+    }
+    if (latest == null) {
+      return null;
+    }
+    return (date: latest, sets: setsOn(latest, exerciseId));
+  }
+
   /// The most recently logged set of [exerciseId], or null if none.
   ExerciseSet? lastSetOf(String exerciseId) {
     for (final set in sets.reversed) {

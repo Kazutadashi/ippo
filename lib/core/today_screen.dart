@@ -101,9 +101,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     children: [
                       Expanded(
                         child: Text(
-                          // Looking back at another day, the heading
-                          // says so.
-                          showsToday ? greetingFor(now) : 'Looking back',
+                          // On another day, the heading says which way.
+                          showsToday
+                              ? greetingFor(now)
+                              : day.isAfter(today())
+                              ? 'Looking ahead'
+                              : 'Looking back',
                           style: textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
@@ -263,9 +266,13 @@ _Tile _weekTile(AppState appState, DateTime day) {
           // two columns, lined up with the tiles below.
           : TileHalves(
               hasDivider: strip != null && summaries.isNotEmpty,
-              left: Center(child: strip ?? const SizedBox()),
+              // Both halves start with a small label, on one line.
+              left: Align(
+                alignment: Alignment.topLeft,
+                child: strip ?? const SizedBox(),
+              ),
               right: Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.topLeft,
                 child: summaries.isEmpty
                     ? const SizedBox()
                     : LabelledValues(details: summaries, columns: 2),

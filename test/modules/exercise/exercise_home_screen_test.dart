@@ -65,17 +65,37 @@ void main() {
     );
   }
 
-  testWidgets('shows each exercise with today\'s sets', (tester) async {
+  testWidgets('shows today\'s sets in numbered columns', (tester) async {
     await setUpPushUps(tester, [10, 7]);
 
     expect(find.text('Push-up'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, '10 reps'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, '7 reps'), findsOneWidget);
+    expect(find.text('Set 1'), findsOneWidget);
+    expect(find.text('Set 2'), findsOneWidget);
+    expect(find.text('10'), findsOneWidget);
+    expect(find.text('7'), findsWidgets);
     // There is nothing about progressions or statistics.
     expect(find.textContaining('rogression'), findsNothing);
     expect(find.text('History'), findsNothing);
-    // No symbols between the fields.
-    expect(find.text('×'), findsNothing);
+  });
+
+  testWidgets('the last session is shown under the day', (tester) async {
+    await setUpPushUps(tester, []);
+    await tester.runAsync(() async {
+      final log = ExerciseLog.fromEvents(appState.eventLog!.events);
+      await ExerciseActions(appState).recordSets(
+        date: formatDate(addDays(today(), -1)),
+        exercise: log.exercises[pushUpId]!,
+        value: 12,
+        setCount: 2,
+        log: log,
+      );
+    });
+    await tester.pump();
+
+    expect(find.text('Yesterday'), findsOneWidget);
+    expect(find.text('12'), findsNWidgets(2));
+    // Once in the table, once in the day bar at the top.
+    expect(find.text('Today'), findsNWidgets(2));
   });
 
   testWidgets('the reps field starts at the last set', (tester) async {
@@ -87,33 +107,34 @@ void main() {
     expect(repsField.controller!.text, '7');
   });
 
-  testWidgets('quick add logs several sets at once', (tester) async {
+  testWidgets('plus and minus change the reps', (tester) async {
+    await setUpPushUps(tester, [10]);
+
+    await tester.tap(find.byTooltip('More 1'));
+    await tester.tap(find.byTooltip('More 1'));
+    await tester.tap(find.byTooltip('Fewer 1'));
+    await tester.pump();
+
+    final repsField = tester.widget<TextField>(
+      find.widgetWithText(TextField, 'Reps'),
+    );
+    expect(repsField.controller!.text, '11');
+  });
+
+  testWidgets('Add set logs one set with the typed reps', (tester) async {
     await setUpPushUps(tester, []);
 
     await tester.enterText(find.widgetWithText(TextField, 'Reps'), '20');
-    await tester.enterText(find.widgetWithText(TextField, 'Sets'), '2');
     // Saving writes real files, so let it run outside the test clock.
     await tester.runAsync(() async {
-      await tester.tap(find.text('Add'));
+      await tester.tap(find.text('Add set'));
       await Future<void>.delayed(const Duration(milliseconds: 300));
     });
     await tester.pump();
 
-    expect(find.widgetWithText(ActionChip, '20 reps'), findsNWidgets(2));
     final log = ExerciseLog.fromEvents(appState.eventLog!.events);
     final sets = log.setsOn(formatDate(today()), pushUpId);
-    expect(sets.map((set) => set.setNumber), [1, 2]);
-  });
-
-  testWidgets('too many sets at once are refused', (tester) async {
-    await setUpPushUps(tester, []);
-
-    await tester.enterText(find.widgetWithText(TextField, 'Reps'), '20');
-    await tester.enterText(find.widgetWithText(TextField, 'Sets'), '22');
-    await tester.tap(find.text('Add'));
-    await tester.pump();
-
-    expect(find.text('Enter 1 to 10 sets at a time.'), findsOneWidget);
-    expect(find.byType(ActionChip), findsNothing);
+    expect(sets.map((set) => set.value), [20]);
+    expect(find.text('Set 1'), findsOneWidget);
   });
 }

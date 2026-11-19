@@ -41,7 +41,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
         .push(MaterialPageRoute<void>(builder: (context) => screen));
   }
 
-  Future<void> _addSets(Exercise exercise, int value, int setCount) async {
+  Future<void> _addSet(Exercise exercise, int value) async {
     final actions = ExerciseActions(widget.appState);
     await saveOrShowError(
       context,
@@ -49,7 +49,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
         date: formatDate(shownDay),
         exercise: exercise,
         value: value,
-        setCount: setCount,
+        setCount: 1,
         log: _currentLog(),
       ),
     );
@@ -88,7 +88,6 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
           listenable: widget.appState,
           builder: (context, _) {
             final log = _currentLog();
-            final date = formatDate(shownDay);
             return ListView(
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
@@ -110,28 +109,33 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
                     ),
                   ),
                 for (final exercise in log.activeExercises)
-                  ExerciseCard(
-                    // A key per exercise keeps each card's typed numbers
-                    // with the right card when the list changes.
-                    key: ValueKey(exercise.id),
-                    exercise: exercise,
-                    daySets: log.setsOn(date, exercise.id),
-                    isToday: showsToday,
-                    startValue: log.lastSetOf(exercise.id)?.value,
-                    onAddSets: (value, setCount) =>
-                        _addSets(exercise, value, setCount),
-                    onEditSet: (set) => _editSet(exercise, set),
-                    onEdit: () => _open(
-                      ExerciseFormScreen(
-                        appState: widget.appState,
-                        exercise: exercise,
-                      ),
-                    ),
-                  ),
+                  _card(log, exercise),
               ],
             );
           },
         ),
+      ),
+    );
+  }
+
+  /// The card of [exercise] for the day shown.
+  Widget _card(ExerciseLog log, Exercise exercise) {
+    final date = formatDate(shownDay);
+    final previous = log.previousSessionOf(exercise.id, date);
+    return ExerciseCard(
+      // A key per exercise keeps each card's typed numbers with the
+      // right card when the list changes.
+      key: ValueKey(exercise.id),
+      exercise: exercise,
+      day: shownDay,
+      daySets: log.setsOn(date, exercise.id),
+      previousDate: previous == null ? null : parseDate(previous.date),
+      previousSets: previous == null ? const [] : previous.sets,
+      startValue: log.lastSetOf(exercise.id)?.value,
+      onAddSet: (value) => _addSet(exercise, value),
+      onEditSet: (set) => _editSet(exercise, set),
+      onEdit: () => _open(
+        ExerciseFormScreen(appState: widget.appState, exercise: exercise),
       ),
     );
   }

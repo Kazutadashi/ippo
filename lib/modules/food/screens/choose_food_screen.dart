@@ -7,10 +7,10 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
-import '../../../core/number_input.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_diary.dart';
+import '../nutrients.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
 
@@ -170,7 +170,7 @@ class _EnergyPer100 extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${formatAmount(food.nutrientsPer100.energyKcal)} kcal',
+          formatEnergy(food.nutrientsPer100.energyKcal),
           style: textTheme.titleSmall,
         ),
         Text(
