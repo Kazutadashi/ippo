@@ -9,7 +9,9 @@ import '../app_state.dart';
 import '../events/data_usage.dart';
 import '../widgets/section_card.dart';
 
-/// Three values side by side: the event files, the backups, and both.
+/// A small table of sizes: the event files, the backups, and both
+/// together under a line. Names sit at the left and sizes at the right,
+/// so the numbers line up like a sum on paper.
 ///
 /// It measures the folder when it first appears, and again whenever the
 /// data was read again or something new was saved.
@@ -51,15 +53,50 @@ class _DataUsageRowState extends State<DataUsageRow> {
           return const NoteText('Could not measure the data folder.');
         }
         final usage = snapshot.data;
-        String show(int? bytes) => bytes == null ? '…' : formatBytes(bytes);
-        return InfoRow(
-          values: [
-            InfoValue(label: 'Events', value: show(usage?.eventBytes)),
-            InfoValue(label: 'Backups', value: show(usage?.backupBytes)),
-            InfoValue(label: 'Total', value: show(usage?.totalBytes)),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const FieldLabel('Space used'),
+            _SizeLine(label: 'Events', bytes: usage?.eventBytes),
+            _SizeLine(label: 'Backups', bytes: usage?.backupBytes),
+            const Divider(height: 9),
+            _SizeLine(label: 'Total', bytes: usage?.totalBytes, isTotal: true),
           ],
         );
       },
+    );
+  }
+}
+
+/// One line of the table: a name at the left, its size at the right.
+class _SizeLine extends StatelessWidget {
+  const _SizeLine({
+    required this.label,
+    required this.bytes,
+    this.isTotal = false,
+  });
+
+  final String label;
+
+  /// The size, or null while it is being measured.
+  final int? bytes;
+
+  /// Whether this is the sum, shown a little bolder.
+  final bool isTotal;
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = this.bytes;
+    final style = Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(fontWeight: isTotal ? FontWeight.w600 : null);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: style)),
+          Text(bytes == null ? '…' : formatBytes(bytes), style: style),
+        ],
+      ),
     );
   }
 }
