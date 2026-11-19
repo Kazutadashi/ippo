@@ -7,8 +7,8 @@
 /// folder (`lib/core/storage/`) and its Android half,
 /// `android/app/src/main/kotlin/org/ippo/ippo/StorageBridge.kt`.
 ///
-/// A data folder only offers four operations: list files, read a file,
-/// append to a file, and delete a file. There is deliberately no way to
+/// A data folder only offers five operations: list files, read a file,
+/// append to a file, delete a file, and measure how much room files take. There is deliberately no way to
 /// rename or overwrite a file, because Ippo's data is append-only.
 /// Deleting is used for one thing only: "Clear all data" in Settings,
 /// which the user confirms, and which makes a full backup first.
@@ -44,6 +44,16 @@ abstract class DataFolder {
   /// if the file does not exist. Throws [DataFolderException] if it
   /// cannot be deleted.
   Future<void> deleteFile(String filePath);
+
+  /// Returns how many bytes the file at [path] takes, or, for a folder,
+  /// all the files inside it and its sub-folders together. Hidden files
+  /// and folders (whose names start with `.`), such as a sync tool's own,
+  /// are left out, as when reading events.
+  ///
+  /// Returns 0 if nothing is at [path]. Only sizes are read, never what
+  /// is in the files. Settings uses this to show how much room the data
+  /// takes. Throws [DataFolderException] if the sizes cannot be read.
+  Future<int> sizeInBytes(String path);
 }
 
 /// An error while reading or writing the data folder.

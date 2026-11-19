@@ -10,6 +10,7 @@ import '../app_state.dart';
 import '../widgets/section_card.dart';
 import 'appearance_section.dart';
 import 'backup_section.dart';
+import 'data_usage_row.dart';
 import 'devices_section.dart';
 
 /// The settings screen.
@@ -159,6 +160,12 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
           'Your data is saved here as plain text files. Sync this folder '
           'to use Ippo on several devices.',
         ),
+        // How much room the files take, so a full sync quota or phone
+        // is never a mystery.
+        if (hasFolder) ...[
+          const SizedBox(height: 12),
+          DataUsageRow(appState: appState),
+        ],
         const SizedBox(height: 16),
         // On Linux, the user types or pastes the folder's path.
         if (!appState.isAndroid) ...[

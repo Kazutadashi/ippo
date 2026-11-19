@@ -47,6 +47,10 @@ import java.util.concurrent.Executors
  *   creating the file and its parent folders if needed.
  * - `deleteFile(folderUri, path)`: deletes one file (never a folder). Only
  *   "Clear all data" in Settings uses it, after making a full backup.
+ * - `sizeInBytes(folderUri, path)`: how many bytes the file at `path`
+ *   takes, or all files inside the folder at `path` and its sub-folders.
+ *   Hidden files and folders (a sync tool's own) are left out. 0 if
+ *   nothing is there. Settings shows it; it reads no file contents.
  */
 class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHandler {
 
@@ -98,6 +102,9 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
             "deleteFile" -> runInBackground(result) {
                 deleteFile(folderUriArgument(call), pathArgument(call))
                 null
+            }
+            "sizeInBytes" -> runInBackground(result) {
+                sizeInBytes(folderUriArgument(call), pathArgument(call))
             }
             else -> result.notImplemented()
         }
@@ -213,15 +220,44 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
         }
     }
 
-    /** One entry inside a folder. */
-    private data class Child(val id: String, val name: String, val isFolder: Boolean)
+    /**
+     * The bytes taken by the file at [path], or by every file inside the
+     * folder at [path], however deep. Only sizes are read, never contents.
+     */
+    private fun sizeInBytes(folderUri: Uri, path: String): Long {
+        val parts = splitPath(path)
+        val parentId = findDocumentId(folderUri, parts.dropLast(1)) ?: return 0
+        val entry = listChildren(folderUri, parentId)
+            .firstOrNull { child -> child.name == parts.last() } ?: return 0
+        return sizeOf(folderUri, entry)
+    }
+
+    /** The bytes of one file, or of everything inside one folder. */
+    private fun sizeOf(folderUri: Uri, entry: Child): Long {
+        if (!entry.isFolder) {
+            return entry.size
+        }
+        // Hidden entries, such as a sync tool's own folder, are not Ippo's.
+        return listChildren(folderUri, entry.id)
+            .filter { child -> !child.name.startsWith(".") }
+            .sumOf { child -> sizeOf(folderUri, child) }
+    }
+
+    /** One entry inside a folder. [size] is in bytes, 0 for a folder. */
+    private data class Child(
+        val id: String,
+        val name: String,
+        val isFolder: Boolean,
+        val size: Long
+    )
 
     private fun listChildren(folderUri: Uri, parentId: String): List<Child> {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(folderUri, parentId)
         val columns = arrayOf(
             Document.COLUMN_DOCUMENT_ID,
             Document.COLUMN_DISPLAY_NAME,
-            Document.COLUMN_MIME_TYPE
+            Document.COLUMN_MIME_TYPE,
+            Document.COLUMN_SIZE
         )
         val children = mutableListOf<Child>()
         val cursor = resolver.query(childrenUri, columns, null, null, null)
@@ -232,7 +268,9 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
                     Child(
                         id = cursor.getString(0),
                         name = cursor.getString(1),
-                        isFolder = cursor.getString(2) == Document.MIME_TYPE_DIR
+                        isFolder = cursor.getString(2) == Document.MIME_TYPE_DIR,
+                        // Some providers leave the size unknown; count it as 0.
+                        size = if (cursor.isNull(3)) 0 else cursor.getLong(3)
                     )
                 )
             }

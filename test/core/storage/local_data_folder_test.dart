@@ -60,6 +60,20 @@ void main() {
     expect(await dataFolder.listFileNames('events'), isEmpty);
   });
 
+  test('sizes count a file, or every file in a folder and below', () async {
+    await dataFolder.appendToTextFile('events/a.jsonl', '12345');
+    await dataFolder.appendToTextFile('backups/2026-11/a.jsonl', '123');
+    await dataFolder.appendToTextFile('backups/b.jsonl', 'é'); // 2 bytes
+    // A sync tool's hidden files are not counted.
+    await dataFolder.appendToTextFile('events/.sync/state', 'xxxxxxxx');
+    await dataFolder.appendToTextFile('events/.hidden-file', 'xxxxxxxx');
+
+    expect(await dataFolder.sizeInBytes('events/a.jsonl'), 5);
+    expect(await dataFolder.sizeInBytes('events'), 5);
+    expect(await dataFolder.sizeInBytes('backups'), 5);
+    expect(await dataFolder.sizeInBytes('nothing-here'), 0);
+  });
+
   test('reading a missing file throws DataFolderException', () async {
     expect(
       () => dataFolder.readTextFile('events/missing.jsonl'),

@@ -92,6 +92,39 @@ class LocalDataFolder implements DataFolder {
     }
   }
 
+  @override
+  Future<int> sizeInBytes(String path) async {
+    checkRelativePath(path);
+    final fullPath = _fullPath(path);
+    try {
+      switch (FileSystemEntity.typeSync(fullPath, followLinks: false)) {
+        case FileSystemEntityType.file:
+          return File(fullPath).lengthSync();
+        case FileSystemEntityType.directory:
+          // Links are not followed, so nothing outside the folder counts.
+          var total = 0;
+          final entries = Directory(fullPath)
+              .listSync(recursive: true, followLinks: false);
+          for (final entry in entries) {
+            // Hidden files and folders, such as a sync tool's own, are
+            // not Ippo's.
+            final inside = entry.path.substring(fullPath.length + 1);
+            final isHidden = inside
+                .split('/')
+                .any((part) => part.startsWith('.'));
+            if (entry is File && !isHidden) {
+              total += entry.lengthSync();
+            }
+          }
+          return total;
+        default:
+          return 0;
+      }
+    } on FileSystemException catch (error) {
+      throw DataFolderException('Could not measure "$path": ${error.message}');
+    }
+  }
+
   /// Checks a data folder path the user typed.
   ///
   /// Returns null if [path] is an absolute path to an existing folder,

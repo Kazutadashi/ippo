@@ -54,6 +54,13 @@ class AndroidDataFolder implements DataFolder {
     await _call<Object?>('deleteFile', {'path': filePath});
   }
 
+  @override
+  Future<int> sizeInBytes(String path) async {
+    checkRelativePath(path);
+    // Kotlin sends a Long, which arrives as a Dart int.
+    return _call<int>('sizeInBytes', {'path': path});
+  }
+
   /// Calls a Kotlin method and turns its errors into [DataFolderException].
   Future<T> _call<T>(String method, Map<String, String> arguments) async {
     try {
