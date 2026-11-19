@@ -136,5 +136,8 @@ void main() {
     final sets = log.setsOn(formatDate(today()), pushUpId);
     expect(sets.map((set) => set.value), [20]);
     expect(find.text('Set 1'), findsOneWidget);
+    // A mistaken tap is easy to take back.
+    expect(find.text('Set added to Push-up'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
   });
 }

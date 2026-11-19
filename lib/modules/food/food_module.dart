@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
-import '../../core/number_input.dart';
 import 'nutrients.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
@@ -82,7 +81,7 @@ TodayFact _energyFact(Map<String, double> values, int entryCount) {
   final details = [
     for (final name in names.entries)
       if (values.containsKey(name.key))
-        TileDetail('${formatAmount(values[name.key]!)} g', label: name.value),
+        TileDetail(formatGrams(values[name.key]!), label: name.value),
   ];
   return TodayFact(
     label: 'Energy',

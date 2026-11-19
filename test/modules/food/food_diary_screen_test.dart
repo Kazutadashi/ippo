@@ -83,4 +83,52 @@ void main() {
     final appleTop = tester.getTopLeft(find.text('Apple')).dy;
     expect(porridgeTop, lessThan(appleTop));
   });
+
+  testWidgets('swiping a meal left removes it, with an undo', (tester) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final appState = AppState(
+      settingsFile: SettingsFile(settingsFolder.path),
+      isAndroid: false,
+      defaultDeviceName: 'my-desktop',
+    );
+    await tester.runAsync(() async {
+      await appState.load();
+      await appState.chooseLinuxDataFolder(dataFolder.path);
+      await FoodActions(appState).recordQuickEntry(
+        date: formatDate(today()),
+        time: null,
+        name: 'Apple',
+        nutrients: const Nutrients({'energy_kcal': 80}),
+      );
+    });
+    await tester.pumpWidget(
+      MaterialApp(home: FoodDiaryScreen(appState: appState)),
+    );
+
+    // Swipe in small steps, as a finger does.
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Apple')),
+    );
+    for (var step = 0; step < 12; step++) {
+      await gesture.moveBy(const Offset(-50, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 500));
+    // Letting go saves the removal, which writes real files. Each step of
+    // that needs real time (outside the test clock) and then a frame.
+    for (var step = 0; step < 8; step++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pumpAndSettle();
+
+    expect(find.text('Apple'), findsNothing);
+    expect(find.text('Removed Apple'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+  });
 }

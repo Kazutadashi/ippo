@@ -315,7 +315,7 @@ void main() {
     );
 
     expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-      'Energy: 689 kcal | Protein 13.2 g, Fat 6.5 g',
+      'Energy: 689 kcal | Protein 13 g, Fat 6.5 g',
       'Last meal: 3 h 15 min ago | Soup, at 12:15',
     ]);
   });

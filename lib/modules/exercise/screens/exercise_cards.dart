@@ -96,10 +96,11 @@ class ExerciseCard extends StatelessWidget {
 }
 
 /// The width of the column of row names ("Today", "Mon 16 Nov").
-const double _rowNameWidth = 92;
+const double _rowNameWidth = 80;
 
-/// The width of one set's column.
-const double _setWidth = 56;
+/// The width of one set's column: five sets fit beside the row names
+/// on a phone; more scroll sideways.
+const double _setWidth = 50;
 
 /// A small table of sets: a column per set, a row for the day shown and
 /// a grey row for the last session. Tap a number of the day shown to

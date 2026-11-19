@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
@@ -41,18 +42,30 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
         .push(MaterialPageRoute<void>(builder: (context) => screen));
   }
 
+  /// Adds one set, then offers to undo it, in case the tap was a
+  /// mistake.
   Future<void> _addSet(Exercise exercise, int value) async {
     final actions = ExerciseActions(widget.appState);
-    await saveOrShowError(
-      context,
-      () => actions.recordSets(
-        date: formatDate(shownDay),
+    final messenger = ScaffoldMessenger.of(context);
+    final date = formatDate(shownDay);
+    String? setId;
+    final saved = await saveOrShowError(context, () async {
+      final event = await actions.recordSet(
+        date: date,
         exercise: exercise,
+        setNumber: _currentLog().setsOn(date, exercise.id).length + 1,
         value: value,
-        setCount: 1,
-        log: _currentLog(),
-      ),
-    );
+      );
+      setId = event.id;
+    });
+    final addedId = setId;
+    if (saved && addedId != null) {
+      showUndoMessage(
+        messenger,
+        message: 'Set added to ${exercise.name}',
+        onUndo: () => actions.deleteSet(addedId),
+      );
+    }
   }
 
   void _editSet(Exercise exercise, ExerciseSet set) {
@@ -107,6 +120,13 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
                       'Tap "New exercise" to start. Each exercise gets a card '
                       'where you add the day\'s sets and reps.',
                     ),
+                  ),
+                // Says once how to fix a mistake, which is otherwise
+                // hidden.
+                if (log.activeExercises.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: Spacing.small),
+                    child: NoteText('Tap a set to change or remove it.'),
                   ),
                 for (final exercise in log.activeExercises)
                   _card(log, exercise),

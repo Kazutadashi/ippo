@@ -8,9 +8,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
+import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
+import '../food_actions.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
@@ -65,6 +68,25 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
             : FoodEntryFormScreen.edit(appState: widget.appState, entry: entry),
       ),
     );
+  }
+
+  /// Removes [entry] after a swipe, and offers to undo it. Returns
+  /// whether it was removed, so the row only slides away if it was.
+  Future<bool> _removeEntry(FoodEntry entry) async {
+    final actions = FoodActions(widget.appState);
+    final messenger = ScaffoldMessenger.of(context);
+    final removed = await saveOrShowError(
+      context,
+      () => actions.deleteEntry(entry.id),
+    );
+    if (removed) {
+      showUndoMessage(
+        messenger,
+        message: 'Removed ${entry.name}',
+        onUndo: () => actions.restoreEntry(entry.id),
+      );
+    }
+    return removed;
   }
 
   @override
@@ -141,20 +163,37 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                 SectionCard(
                   children: [
                     const CardHeader(icon: Icons.restaurant, title: 'Eaten'),
+                    // Says how to change or remove a meal, which is
+                    // otherwise hidden. At the top, where the buttons
+                    // never cover it.
+                    if (entries.isNotEmpty)
+                      const NoteText(
+                        'Tap a meal to change it, or swipe it left to '
+                        'remove it.',
+                      ),
                     if (entries.isEmpty)
                       const NoteText('Nothing logged on this day.'),
-                    // Tap a row to change or delete it. The energy sits on
-                    // the right, in one column, so it is easy to scan.
+                    // Tap a row to change it, or swipe it away to remove
+                    // it. The energy sits on the right, in one column, so
+                    // it is easy to scan.
                     for (final entry in entries)
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(entry.name),
-                        subtitle: _EntryDetails(entry: entry),
-                        trailing: Text(
-                          formatEnergy(entry.nutrients.energyKcal),
-                          style: Theme.of(context).textTheme.titleSmall,
+                      Dismissible(
+                        key: ValueKey(entry.id),
+                        direction: DismissDirection.endToStart,
+                        background: const _RemoveBackground(),
+                        // Removes the entry first, and lets the row go
+                        // only once that is saved.
+                        confirmDismiss: (_) => _removeEntry(entry),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(entry.name),
+                          subtitle: _EntryDetails(entry: entry),
+                          trailing: Text(
+                            formatEnergy(entry.nutrients.energyKcal),
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          onTap: () => _editEntry(entry),
                         ),
-                        onTap: () => _editEntry(entry),
                       ),
                   ],
                 ),
@@ -163,6 +202,26 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
           },
         ),
       ),
+    );
+  }
+}
+
+/// What shows behind a meal while it is swiped away: a bin on red, the
+/// theme's colour for deleting.
+class _RemoveBackground extends StatelessWidget {
+  const _RemoveBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: Spacing.screen),
+      decoration: BoxDecoration(
+        color: colors.errorContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(Icons.delete_outline, color: colors.onErrorContainer),
     );
   }
 }
