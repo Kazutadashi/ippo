@@ -90,8 +90,8 @@ of day (dawn with a low sun and mist, a blue day with a few birds, dusk
 with the moon rising, night with stars and now and then a shooting
 star), fading into the page. The landscape is a great mountain range seen
 across open country, made up fresh each day from the date: a tall,
-continuous, mostly snowy range (broad massifs with smaller summits,
-shadowed gullies, ribs of rock and haze at its foot), rounded foothills,
+continuous, mostly snowy range (broad massifs with a few summits,
+each with one shaded face, and rock and haze at its foot), rounded foothills,
 a long line of spruce forest, and a few tall spruces close by. So Home looks a
 little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the

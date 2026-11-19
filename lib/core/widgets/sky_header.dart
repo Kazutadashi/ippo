@@ -292,10 +292,9 @@ class _SkyPainter extends CustomPainter {
     );
   }
 
-  /// The great range: a jagged ridge with many summits across the whole
-  /// width, mostly snow. Faces turned from the light are cut by shadowed
-  /// gullies, dark ribs of rock run down from the ridge, the lower slopes
-  /// turn to rock, and haze lies at its foot.
+  /// The great range: a ridge across the whole width with a few clear
+  /// summits, mostly snow. Each mountain's face turned from the light is
+  /// in shadow, the lower slopes turn to rock, and haze lies at its foot.
   void _range(
     Canvas canvas,
     Random random,
@@ -311,41 +310,28 @@ class _SkyPainter extends CustomPainter {
     canvas
       ..save()
       ..clipPath(shape);
-    // Shadowed faces: from each stretch of ridge that falls to the right,
-    // a slanting gully runs down and to the left.
+    // One shaded face per mountain: from each summit down its right
+    // slope to the next valley, bounded on the left by a line slanting
+    // down from the summit.
     final shadow = Paint()..color = palette.shadow;
-    for (var index = 0; index + 1 < ridge.length; index++) {
-      final from = ridge[index];
-      final to = ridge[index + 1];
-      if (to.dy <= from.dy) {
+    for (final (summit, valley) in _faces(ridge)) {
+      final top = ridge[summit];
+      final low = ridge[valley];
+      // A drop too small to see as a mountain gets no face.
+      if (low.dy - top.dy < land * 0.06) {
         continue;
       }
-      final depth = land * (0.18 + random.nextDouble() * 0.30);
-      final run = to.dx - from.dx;
+      // The shadow's edge slants down and to the right from the summit,
+      // so the face widens toward the foot. Even a steep, narrow face
+      // gets some slant, or it would look like a stripe.
+      final run = max(low.dx - top.dx, land * 0.6);
       canvas.drawPath(
         Path()..addPolygon([
-          from,
-          to,
-          Offset(to.dx - run * 0.6, to.dy + depth * 0.8),
-          Offset(from.dx - run * 0.3, from.dy + depth),
+          for (var index = summit; index <= valley; index++) ridge[index],
+          Offset(low.dx + run * 0.2, foot),
+          Offset(top.dx + run * 0.6, foot),
         ], true),
         shadow,
-      );
-    }
-    // Ribs of bare rock running down from the ridge.
-    final rib = Paint()..strokeCap = StrokeCap.round;
-    for (var count = 0; count < 18; count++) {
-      final start = ridge[random.nextInt(ridge.length)];
-      final length = land * (0.08 + random.nextDouble() * 0.25);
-      rib
-        ..strokeWidth = 0.7 + random.nextDouble() * 1.3
-        ..color = palette.rock.withValues(
-          alpha: 0.35 + random.nextDouble() * 0.4,
-        );
-      canvas.drawLine(
-        start + Offset(0, land * 0.03),
-        start + Offset((random.nextDouble() - 0.5) * 8, length),
-        rib,
       );
     }
     // The lower slopes: bare rock, then haze at the foot.
@@ -366,6 +352,30 @@ class _SkyPainter extends CustomPainter {
           ).createShader(lower),
       )
       ..restore();
+  }
+
+  /// Each summit of [ridge] (higher than both neighbours: a smaller y)
+  /// with the valley that follows it, as point indexes.
+  static List<(int, int)> _faces(List<Offset> ridge) {
+    final faces = <(int, int)>[];
+    var index = 1;
+    while (index < ridge.length - 1) {
+      final isSummit =
+          ridge[index].dy <= ridge[index - 1].dy &&
+          ridge[index].dy < ridge[index + 1].dy;
+      if (!isSummit) {
+        index++;
+        continue;
+      }
+      var valley = index + 1;
+      while (valley < ridge.length - 1 &&
+          ridge[valley + 1].dy >= ridge[valley].dy) {
+        valley++;
+      }
+      faces.add((index, valley));
+      index = valley + 1;
+    }
+    return faces;
   }
 
   /// A line of rounded hills along [base], rising up to [height], filled
@@ -525,17 +535,17 @@ class _SkyPainter extends CustomPainter {
     ];
   }
 
-  /// The ridge of a great range: two or three broad massifs, which give
-  /// it its overall shape, with smaller summits and notches along them
-  /// (a jagged [_ridge] on top). Rises up to [height] above [base].
+  /// The ridge of a great range: two to four broad massifs, which give
+  /// it its overall shape, with a few smaller summits along them (a
+  /// little of a jagged [_ridge] on top). Rises up to [height] above [base].
   static List<Offset> _rangeRidge(
     Random random,
     double width,
     double base,
     double height,
   ) {
-    const count = 49;
-    final detail = _ridge(random, width, 0, 1, 0.55, count: count);
+    const count = 25;
+    final detail = _ridge(random, width, 0, 1, 0.5, count: count);
     final massifs = [
       for (var index = 0; index < 2 + random.nextInt(3); index++)
         (
@@ -556,7 +566,7 @@ class _SkyPainter extends CustomPainter {
       }
       // The detail, from 0 (lowest) to 1 (highest), adds the summits.
       final jag = -detail[index].dy;
-      heights.add(shape * 0.75 + jag * 0.25 * (0.4 + shape));
+      heights.add(shape * 0.85 + jag * 0.15 * (0.4 + shape));
     }
     final high = heights.reduce(max);
     return [
