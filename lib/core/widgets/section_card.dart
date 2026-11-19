@@ -179,7 +179,8 @@ class InfoValue extends StatelessWidget {
 /// label above the text, which wraps instead of shrinking.
 ///
 /// With [isSelectable], the text can be selected and copied, which helps
-/// for ids and paths.
+/// for ids and paths. With [isSmallPrint], it is small and grey, for
+/// details such as a long id that few people need to read.
 class InfoText extends StatelessWidget {
   /// Creates the information block.
   const InfoText({
@@ -187,6 +188,7 @@ class InfoText extends StatelessWidget {
     required this.label,
     required this.text,
     this.isSelectable = false,
+    this.isSmallPrint = false,
   });
 
   /// What the text is.
@@ -198,9 +200,17 @@ class InfoText extends StatelessWidget {
   /// Whether the text can be selected and copied.
   final bool isSelectable;
 
+  /// Whether the text is small print.
+  final bool isSmallPrint;
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final style = isSmallPrint
+        ? textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          )
+        : textTheme.bodyMedium;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,9 +222,9 @@ class InfoText extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         if (isSelectable)
-          SelectableText(text, style: textTheme.bodyLarge)
+          SelectableText(text, style: style)
         else
-          Text(text, style: textTheme.bodyLarge),
+          Text(text, style: style),
       ],
     );
   }

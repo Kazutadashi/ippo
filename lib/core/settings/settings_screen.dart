@@ -135,6 +135,7 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
   @override
   Widget build(BuildContext context) {
     final appState = widget.appState;
+    final hasFolder = appState.dataFolderDescription != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -160,13 +161,35 @@ class _DataFolderSectionState extends State<_DataFolderSection> {
           ),
           const SizedBox(height: 12),
         ],
-        FilledButton.icon(
-          onPressed: appState.isAndroid
-              ? appState.chooseAndroidDataFolder
-              : _useTypedPath,
-          icon: const Icon(Icons.folder_open),
-          label: Text(appState.isAndroid ? 'Choose folder' : 'Use this folder'),
-        ),
+        // The main button the first time. Once a folder is in use,
+        // changing it is rare, so the button is quieter.
+        if (hasFolder)
+          FilledButton.tonalIcon(
+            onPressed: appState.isAndroid
+                ? appState.chooseAndroidDataFolder
+                : _useTypedPath,
+            icon: const Icon(Icons.folder_open),
+            label: Text(
+              appState.isAndroid ? 'Change folder' : 'Use this folder instead',
+            ),
+          )
+        else
+          FilledButton.icon(
+            onPressed: appState.isAndroid
+                ? appState.chooseAndroidDataFolder
+                : _useTypedPath,
+            icon: const Icon(Icons.folder_open),
+            label: Text(
+              appState.isAndroid ? 'Choose folder' : 'Use this folder',
+            ),
+          ),
+        if (hasFolder) ...[
+          const SizedBox(height: 8),
+          const NoteText(
+            'Changing the folder moves nothing: the current folder keeps '
+            'all its files.',
+          ),
+        ],
       ],
     );
   }
@@ -193,6 +216,7 @@ class _ThisDeviceSection extends StatelessWidget {
           label: 'Event file',
           text: 'events/${settings.deviceId}.jsonl',
           isSelectable: true,
+          isSmallPrint: true,
         ),
       ],
     );

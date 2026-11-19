@@ -56,6 +56,20 @@ void main() {
     return appState;
   }
 
+  testWidgets('on a wide window, the tabs go down the side', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await startApp(tester);
+
+    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    // Home shows more tiles per row: the first three share one row.
+    final tiles = find.byType(InfoTile);
+    final firstTop = tester.getTopLeft(tiles.at(0)).dy;
+    expect(tester.getTopLeft(tiles.at(2)).dy, firstTop);
+  });
+
   testWidgets('on first run, the app asks for a data folder', (tester) async {
     await startApp(tester, withDataFolder: false);
 

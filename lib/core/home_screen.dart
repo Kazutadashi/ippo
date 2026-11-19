@@ -54,23 +54,60 @@ class _HomeScreenState extends State<HomeScreen> {
         final chooseFolderFirst = _ChooseDataFolderFirst(
           onOpenSettings: _openSettings,
         );
-        return Scaffold(
-          // IndexedStack keeps every tab alive, so each keeps its state.
-          body: IndexedStack(
-            index: _selectedTab,
-            children: [
+        // IndexedStack keeps every tab alive, so each keeps its state.
+        final tabs = IndexedStack(
+          index: _selectedTab,
+          children: [
+            hasDataFolder
+                ? TodayScreen(
+                    appState: widget.appState,
+                    onOpenSettings: _openSettings,
+                  )
+                : chooseFolderFirst,
+            for (final module in allModules)
               hasDataFolder
-                  ? TodayScreen(
-                      appState: widget.appState,
-                      onOpenSettings: _openSettings,
-                    )
+                  ? module.buildScreen(widget.appState)
                   : chooseFolderFirst,
-              for (final module in allModules)
-                hasDataFolder
-                    ? module.buildScreen(widget.appState)
-                    : chooseFolderFirst,
-            ],
-          ),
+          ],
+        );
+        final destinations = [
+          (Icons.home_outlined, 'Home'),
+          for (final module in allModules) (module.icon, module.title),
+        ];
+        // On a wide window (a desktop or a tablet on its side), the tabs
+        // go down the left side, and screens keep a readable width
+        // instead of stretching across the whole window.
+        if (MediaQuery.sizeOf(context).width >= _wideWindow) {
+          return Scaffold(
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _selectedTab,
+                  onDestinationSelected: (index) =>
+                      setState(() => _selectedTab = index),
+                  labelType: NavigationRailLabelType.all,
+                  destinations: [
+                    for (final (icon, label) in destinations)
+                      NavigationRailDestination(
+                        icon: Icon(icon),
+                        label: Text(label),
+                      ),
+                  ],
+                ),
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: _maxWidth),
+                      child: tabs,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return Scaffold(
+          body: tabs,
           bottomNavigationBar: NavigationBar(
             selectedIndex: _selectedTab,
             onDestinationSelected: (index) =>
@@ -93,6 +130,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+/// From this width on (in logical pixels), the tabs move to the side.
+/// It is Material's "expanded" window size.
+const double _wideWindow = 840;
+
+/// The widest a screen gets on a wide window, so lines stay readable.
+const double _maxWidth = 720;
 
 /// Shown while no data folder is chosen, leading to Settings.
 class _ChooseDataFolderFirst extends StatelessWidget {

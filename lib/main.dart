@@ -8,6 +8,7 @@ library;
 
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'core/app_state.dart';
@@ -21,6 +22,9 @@ import 'core/theme.dart';
 Future<void> main() async {
   // Needed before talking to Android (to find the settings folder).
   WidgetsFlutterBinding.ensureInitialized();
+  // Draw behind the system navigation bar, so the app's own colours run
+  // to the bottom edge instead of stopping at a black band.
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   final SettingsFile settingsFile;
   try {
@@ -116,11 +120,39 @@ class _IppoAppState extends State<IppoApp> {
           theme: _lightTheme,
           darkTheme: _darkTheme,
           themeMode: parseThemeMode(widget.appState.settings?.themeMode),
+          // British English: dates read "Wed 18 Nov" everywhere, as the
+          // app writes them, calendars start on Monday, and the clock
+          // picker uses 24 hours. The app's text is English either way.
+          locale: const Locale('en', 'GB'),
+          supportedLocales: const [Locale('en', 'GB')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          // A clear system navigation bar, with icons that suit the
+          // current light or dark theme.
+          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+            value: _systemBarsFor(Theme.of(context).brightness),
+            child: child!,
+          ),
           home: HomeScreen(appState: widget.appState),
         );
       },
     );
   }
+}
+
+/// See-through system bars, with dark icons on a light theme and light
+/// icons on a dark one.
+SystemUiOverlayStyle _systemBarsFor(Brightness brightness) {
+  final iconBrightness = brightness == Brightness.dark
+      ? Brightness.light
+      : Brightness.dark;
+  return SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: iconBrightness,
+    systemNavigationBarContrastEnforced: false,
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: iconBrightness,
+  );
 }
 
 /// Shown instead of the app if it cannot even find its settings folder.
