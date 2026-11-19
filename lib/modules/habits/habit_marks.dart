@@ -7,7 +7,6 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/dates.dart';
-import '../../core/theme.dart';
 import 'habit.dart';
 import 'habit_log.dart';
 
@@ -42,6 +41,9 @@ class HabitDots extends StatelessWidget {
       label: done.isEmpty ? 'None done yet' : 'Done: ${done.join(', ')}',
       child: ExcludeSemantics(
         child: Wrap(
+          // Beside the value, the dots line up with the tile's right
+          // edge, on a second line too if there are many.
+          alignment: WrapAlignment.end,
           spacing: 6,
           runSpacing: 6,
           children: [
@@ -108,20 +110,26 @@ class StreakSquares extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = habit.displayColor(Theme.of(context));
     return ExcludeSemantics(
-      child: Row(
-        children: [
-          for (var back = 6; back >= 0; back--) ...[
-            _square(
-              color,
-              isDone:
-                  log.markOn(habit.id, formatDate(addDays(day, -back))) ==
-                  DayMark.done,
-              // Today strongest, the oldest day faintest.
-              strength: 1 - back * 0.09,
-            ),
-            if (back > 0) const SizedBox(width: 3),
+      // On a narrow screen the squares shrink rather than spill out of
+      // the tile.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var back = 6; back >= 0; back--) ...[
+              _square(
+                color,
+                isDone:
+                    log.markOn(habit.id, formatDate(addDays(day, -back))) ==
+                    DayMark.done,
+                // Today strongest, the oldest day faintest.
+                strength: 1 - back * 0.09,
+              ),
+              if (back > 0) const SizedBox(width: 2),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -132,8 +140,8 @@ class StreakSquares extends StatelessWidget {
     required double strength,
   }) {
     return Container(
-      width: 11,
-      height: 11,
+      width: 10,
+      height: 10,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
         color: isDone ? color.withValues(alpha: strength) : null,
@@ -154,7 +162,6 @@ class HabitWeekStrip extends StatelessWidget {
     required this.habits,
     required this.log,
     required this.day,
-    required this.baseColor,
   });
 
   /// The habits counted.
@@ -166,13 +173,11 @@ class HabitWeekStrip extends StatelessWidget {
   /// The last day shown.
   final DateTime day;
 
-  /// The habits module's colour, before toning.
-  final Color baseColor;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = moduleTone(baseColor, theme.brightness);
+    // The theme's accent: the share done is not any one habit's.
+    final color = theme.colorScheme.primary;
     const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     return ExcludeSemantics(
       child: Row(

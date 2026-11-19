@@ -10,7 +10,6 @@ import '../../core/app_state.dart';
 import '../../core/clock_time.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
-import '../../core/theme.dart';
 import 'screens/sleep_screen.dart';
 import 'nap.dart';
 import 'time_span_bar.dart';
@@ -31,9 +30,6 @@ class SleepModule extends IppoModule {
   @override
   IconData get icon => Icons.bedtime;
 
-  @override
-  Color get color => const Color(0xFF6F7FD6); // lavender blue
-
   /// Two tiles: the sleep before today (with any naps), and how long
   /// you have been awake.
   @override
@@ -52,11 +48,7 @@ class SleepModule extends IppoModule {
           value: formatDuration(sleptBefore),
           // The night as a bar, so early, late, long and short show at
           // a glance.
-          visual: _SleepBar(
-            bedtime: bedtimeBefore,
-            wakeUp: wakeUp,
-            base: color,
-          ),
+          visual: _SleepBar(bedtime: bedtimeBefore, wakeUp: wakeUp),
           note: naps.isEmpty ? null : 'Naps: ${formatDuration(_totalOf(naps))}',
         )
       else
@@ -157,17 +149,12 @@ Duration _totalOf(List<Nap> naps) {
   return total;
 }
 
-/// The night, from bedtime to waking up, in the sleep module's colour.
+/// The night, from bedtime to waking up, in the theme's accent colour.
 class _SleepBar extends StatelessWidget {
-  const _SleepBar({
-    required this.bedtime,
-    required this.wakeUp,
-    required this.base,
-  });
+  const _SleepBar({required this.bedtime, required this.wakeUp});
 
   final SleepMoment bedtime;
   final SleepMoment wakeUp;
-  final Color base;
 
   @override
   Widget build(BuildContext context) {
@@ -178,15 +165,14 @@ class _SleepBar extends StatelessWidget {
       trackHours: TimeSpanBar.nightHours,
       startLabel: bedtime.clock.shown,
       endLabel: wakeUp.clock.shown,
-      color: moduleTone(base, Theme.of(context).brightness),
       description:
           'Bed at ${bedtime.clock.shown}, woke at ${wakeUp.clock.shown}',
     );
   }
 }
 
-/// The day, from waking up to [end] (now, or bedtime), in the sleep
-/// module's colour.
+/// The day, from waking up to [end] (now, or bedtime), in the theme's
+/// accent colour.
 class _DayBar extends StatelessWidget {
   const _DayBar({
     required this.start,
@@ -207,10 +193,6 @@ class _DayBar extends StatelessWidget {
       trackHours: TimeSpanBar.dayHours,
       startLabel: start.shown,
       endLabel: endLabel,
-      color: moduleTone(
-        const SleepModule().color,
-        Theme.of(context).brightness,
-      ),
       description: 'Awake from ${start.shown} to $endLabel',
     );
   }

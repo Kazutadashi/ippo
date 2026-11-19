@@ -28,9 +28,6 @@ class FoodModule extends IppoModule {
   @override
   IconData get icon => Icons.restaurant;
 
-  @override
-  Color get color => const Color(0xFFD69A2D); // warm amber
-
   /// Two tiles: energy eaten today, and the last meal.
   @override
   List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {

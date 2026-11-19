@@ -13,7 +13,6 @@ import '../modules/all_modules.dart';
 import 'app_state.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
-import 'theme.dart';
 import 'widgets/day_bar.dart';
 import 'widgets/follows_today.dart';
 import 'widgets/info_tile.dart';
@@ -57,10 +56,10 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
           _Tile(
             InfoTile(
               icon: module.icon,
-              color: moduleTone(module.color, Theme.of(context).brightness),
               label: fact.label,
               value: fact.value,
-              valueNote: fact.valueNote,
+              labelNote: fact.labelNote,
+              aside: fact.aside,
               details: fact.details,
               note: fact.note,
               visual: fact.visual,

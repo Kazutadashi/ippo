@@ -120,15 +120,20 @@ device has not synced for more than a day.
 - Every tile must earn its place: something a person wants to know at a
   glance. Totals that mix unlike things (all reps of all exercises) do
   not; a best set, a streak or the time since the last meal do.
-- Every tile has the **same three parts at the same places**, so tiles
-  side by side line up: a header (module icon and label, in the
-  module's colour); **one value** (digits large, units small and grey:
-  `ValueText`), with an optional short word beside it (a streak's
-  habit); and a **footer of fixed height** holding exactly one thing.
-  A wide tile may leave out the value (Exercise shows only its best
-  sets). Facts are **never joined into one line** with "·" or commas.
-  The footer is one of: a small picture (below); or
-  - **labelled numbers side by side**, a small grey label above each
+- Every tile is built from the **same rows**, and **each row uses the
+  whole width**: one thing at the left edge and, when there is one,
+  another at the right edge, so nothing bunches at the left and tiles
+  side by side line up. The rows are: a header (the module's icon in
+  the accent colour and the label in grey, with an optional short word
+  at the right, such as a streak's habit); **one value** (digits large,
+  units small and grey: `ValueText`), with an optional small picture
+  at the right (one dot per habit, a streak's last seven days); and a
+  **footer** holding exactly one thing. A wide tile may leave out the
+  value (Exercise shows only its best sets). Facts are **never joined
+  into one line** with "·" or commas.
+  The footer is one of: a picture as wide as the tile (a sleep bar); or
+  - **labelled numbers spread across the width** (the first at the left
+    edge, the last at the right edge), a small grey label above each
     value: *Protein 5 g*, *Carbs 22 g*, *Fat 6 g*; *Bed 23:30*,
     *Woke 07:00*; or
   - **plain lines, one fact per line**, the most identifying first:
@@ -367,12 +372,11 @@ module's icon, so a glance says which tab a tile belongs to.
    with `ColorCircle`s, and are shown **exactly as picked** in light and
    dark mode (`Habit.displayColor`): they belong to the habit, not to the
    theme. Nothing else on the screen takes them.
-7. **Each module has its own colour** (`IppoModule.color`): habits sage,
-   food amber, exercise coral, sleep lavender. It colours the module's
-   tab icon, and on Home its tiles' icon and label, with a soft tint
-   behind them, so each area is recognised before anything is read.
-   `moduleTone` makes it lighter in dark mode and deeper in light mode.
-   It is used nowhere else: buttons and selections keep the accent.
+7. **One colour for the whole app.** Modules have no colours of their
+   own: tab icons, tile icons, bars and badges all use the accent, and
+   tiles sit on the plain card surface. The app stays calm, and the
+   only other colours on screen are the ones users picked for their
+   habits.
 8. **Flat cards.** Cards have no shadow and sit on a slightly different
    surface (`surfaceContainer`), the same in light and dark mode.
 

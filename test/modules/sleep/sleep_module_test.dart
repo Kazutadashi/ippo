@@ -251,6 +251,6 @@ String describeDetail(TileDetail detail) =>
 List<String> describeTiles(List<TodayFact> facts) => [
   for (final fact in facts)
     '${fact.label}: ${fact.value}'
-        '${fact.valueNote == null ? '' : ' ${fact.valueNote}'} | '
+        '${fact.labelNote == null ? '' : ' ${fact.labelNote}'} | '
         '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

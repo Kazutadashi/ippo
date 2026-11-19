@@ -27,9 +27,6 @@ class HabitsModule extends IppoModule {
   @override
   IconData get icon => Icons.check_circle_outline;
 
-  @override
-  Color get color => const Color(0xFF5E9E72); // sage green
-
   /// Two tiles: how many habits are done today, and which are left.
   @override
   List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
@@ -58,7 +55,7 @@ class HabitsModule extends IppoModule {
       TodayFact(
         label: 'Habits',
         value: '$done of ${habits.length}',
-        visual: HabitDots(habits: habits, log: log, date: date),
+        aside: HabitDots(habits: habits, log: log, date: date),
       ),
       _streaksFact(log, habits, day),
     ];
@@ -71,7 +68,7 @@ class HabitsModule extends IppoModule {
     if (habits.isEmpty) {
       return null;
     }
-    return HabitWeekStrip(habits: habits, log: log, day: day, baseColor: color);
+    return HabitWeekStrip(habits: habits, log: log, day: day);
   }
 
   @override
@@ -117,8 +114,8 @@ TodayFact _streaksFact(HabitLog log, List<Habit> habits, DateTime day) {
   return TodayFact(
     label: 'Streaks',
     value: _days(best.days),
-    valueNote: best.habit.name,
-    visual: StreakSquares(habit: best.habit, log: log, day: day),
+    labelNote: best.habit.name,
+    aside: StreakSquares(habit: best.habit, log: log, day: day),
   );
 }
 

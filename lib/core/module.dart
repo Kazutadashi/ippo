@@ -29,12 +29,6 @@ abstract class IppoModule {
   /// The icon shown next to the module's title.
   IconData get icon;
 
-  /// The module's own colour, for its icon in the tab bar and its tiles
-  /// on Home, so each area is easy to tell apart at a glance. It is a
-  /// mid tone; screens show it through `moduleTone` in `theme.dart`,
-  /// which makes it lighter in dark mode and deeper in light mode.
-  Color get color;
-
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
 
@@ -75,7 +69,8 @@ class TodayFact {
   const TodayFact({
     required this.label,
     required this.value,
-    this.valueNote,
+    this.labelNote,
+    this.aside,
     this.details = const [],
     this.note,
     this.isWide = false,
@@ -92,9 +87,13 @@ class TodayFact {
   /// empty for a tile without one.
   final String value;
 
-  /// A short word beside the value, such as the habit a streak belongs
-  /// to.
-  final String? valueNote;
+  /// A short word at the right of the label, such as the habit a
+  /// streak belongs to.
+  final String? labelNote;
+
+  /// A small picture at the right of the value, such as one dot per
+  /// habit. Built by the module, so it can draw its own data.
+  final Widget? aside;
 
   /// Small facts for the footer, for example a food's name and its time.
   final List<TileDetail> details;
@@ -102,8 +101,8 @@ class TodayFact {
   /// A short note instead of details, for example `Not logged yet`.
   final String? note;
 
-  /// A small picture between the value and the details, such as one dot
-  /// per habit. Built by the module, so it can draw its own data.
+  /// A picture under the value, as wide as the tile, such as a night's
+  /// sleep as a bar. Built by the module, so it can draw its own data.
   final Widget? visual;
 
   /// Whether the tile takes a whole row, for details that need the

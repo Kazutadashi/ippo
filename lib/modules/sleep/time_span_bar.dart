@@ -24,7 +24,6 @@ class TimeSpanBar extends StatelessWidget {
     required this.trackHours,
     required this.startLabel,
     required this.endLabel,
-    required this.color,
     required this.description,
   });
 
@@ -58,9 +57,6 @@ class TimeSpanBar extends StatelessWidget {
   /// The text under the end, such as `7:00 am` or `now`.
   final String endLabel;
 
-  /// The module's colour, toned for the theme.
-  final Color color;
-
   /// What a screen reader says, such as "Bed at 11:20 pm, woke at
   /// 7:00 am".
   final String description;
@@ -78,6 +74,7 @@ class TimeSpanBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall;
+    final color = Theme.of(context).colorScheme.primary;
     final from = _position(start);
     final to = _position(end);
     // The three parts in thousandths of the bar; the stretch is never

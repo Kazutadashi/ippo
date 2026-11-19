@@ -28,9 +28,6 @@ class ExerciseModule extends IppoModule {
   @override
   IconData get icon => Icons.fitness_center;
 
-  @override
-  Color get color => const Color(0xFFD9694F); // coral
-
   /// Two tiles: today's sets, and the last set.
   @override
   List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
