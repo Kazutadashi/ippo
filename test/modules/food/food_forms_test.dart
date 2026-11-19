@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/clock_time.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
@@ -133,6 +134,97 @@ void main() {
     expect(find.text('≈ 18 chips'), findsOneWidget);
   });
 
+  testWidgets('a new entry starts with the amount logged last time', (
+    tester,
+  ) async {
+    await setUpApp(tester);
+    late String foodId;
+    await tester.runAsync(() async {
+      final actions = FoodActions(appState);
+      final event = await actions.createFood(
+        name: 'Rolled oats',
+        measuredIn: 'g',
+        nutrientsPer100: const Nutrients({'energy_kcal': 380}),
+      );
+      foodId = event.id;
+      final food = FoodDiary.fromEvents(appState.eventLog!.events)
+          .foods[foodId]!;
+      await actions.recordFoodEntry(
+        date: '2026-11-17',
+        time: '07:30',
+        food: food,
+        amount: 60,
+      );
+    });
+    final food = FoodDiary.of(appState).foods[foodId]!;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FoodEntryFormScreen.add(
+          appState: appState,
+          food: food,
+          date: '2026-11-18',
+          isToday: false,
+        ),
+      ),
+    );
+
+    expect(find.widgetWithText(TextField, '60'), findsOneWidget);
+    // Another day: the time is not known, so it starts empty.
+    expect(find.text('Not set'), findsOneWidget);
+  });
+
+  test('the time a new entry starts with', () {
+    expect(
+      startingEntryTime(entryTime: '12:15', isNew: false, isToday: false),
+      const ClockTime(12, 15),
+    );
+    expect(
+      startingEntryTime(entryTime: null, isNew: true, isToday: false),
+      isNull,
+    );
+    expect(
+      startingEntryTime(entryTime: null, isNew: true, isToday: true),
+      isNotNull,
+    );
+  });
+
+  test('changing an entry writes its time only when it changed', () async {
+    final folder = Directory.systemTemp.createTempSync('ippo_time_');
+    addTearDown(() => folder.deleteSync(recursive: true));
+    final state = AppState(
+      settingsFile: SettingsFile(settingsFolder.path),
+      isAndroid: false,
+      defaultDeviceName: 'my-desktop',
+    );
+    await state.load();
+    await state.chooseLinuxDataFolder(folder.path);
+    final actions = FoodActions(state);
+    await actions.recordQuickEntry(
+      date: '2026-11-18',
+      time: '12:00',
+      name: 'Soup',
+      nutrients: const Nutrients({'energy_kcal': 300}),
+    );
+    var entry = FoodDiary.fromEvents(state.eventLog!.events).entries.single;
+
+    final same = await actions.changeQuickEntry(
+      entry,
+      name: 'Soup',
+      nutrients: entry.nutrients,
+      time: '12:00',
+    );
+    expect((same.data['changes']! as Map).containsKey('time'), isFalse);
+
+    await actions.changeQuickEntry(
+      entry,
+      name: 'Soup',
+      nutrients: entry.nutrients,
+      time: '13:30',
+    );
+    entry = FoodDiary.fromEvents(state.eventLog!.events).entries.single;
+    expect(entry.time, '13:30');
+  });
+
   testWidgets('both forms fit a narrow phone screen', (tester) async {
     await setUpApp(tester);
     tester.view.physicalSize = const Size(360, 740);
@@ -201,7 +293,7 @@ void main() {
     expect(find.text('Per 100 g'), findsOneWidget);
 
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Oats');
-    await tester.enterText(find.widgetWithText(TextField, 'Calories'), '389');
+    await tester.enterText(find.widgetWithText(TextField, 'Energy'), '389');
     await tester.runAsync(() async {
       await tester.tap(find.text('Save'));
       await Future<void>.delayed(const Duration(milliseconds: 300));

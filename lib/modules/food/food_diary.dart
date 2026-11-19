@@ -86,6 +86,18 @@ class FoodDiary {
         .toList();
   }
 
+  /// The most recent entry of the food [foodId] that is not deleted, or
+  /// null if it was never logged. Its amount is a good first guess for
+  /// the next one: people tend to eat the same amount of a food.
+  FoodEntry? lastEntryOf(String foodId) {
+    for (final entry in entries.reversed) {
+      if (entry.foodId == foodId && !entry.isDeleted) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   /// The total nutrients eaten on [date].
   Nutrients totalOn(String date) {
     var total = Nutrients.none;

@@ -6,15 +6,19 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
+import '../../../core/clock_time.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/time_fields.dart';
 import '../food.dart';
 import '../food_actions.dart';
+import '../food_diary.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
+import 'food_form_screen.dart';
 import 'nutrient_summary.dart';
 
 /// The form for an entry made from a food: the amount.
@@ -48,7 +52,7 @@ class FoodEntryFormScreen extends StatefulWidget {
   /// The day to log on (`YYYY-MM-DD`), when adding.
   final String? date;
 
-  /// Whether [date] is today, so the entry gets the current time.
+  /// Whether [date] is today, so the time starts at now.
   final bool isToday;
 
   /// The entry to change, when editing.
@@ -69,6 +73,24 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
     text: _startingAmountText(),
   );
   String? _amountProblem;
+
+  /// When it was eaten: now for a new entry today, "Not set" for another
+  /// day (the time is not known), or the entry's own time.
+  late ClockTime? _time = startingEntryTime(
+    entryTime: widget.entry?.time,
+    isNew: widget.entry == null,
+    isToday: widget.isToday,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    // The guessed amount is selected, so typing replaces it.
+    _amountField.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _amountField.text.length,
+    );
+  }
 
   @override
   void dispose() {
@@ -97,16 +119,32 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
       widget.entry?.amountPerUnit ?? widget.food?.serving?.amountPerUnit;
 
   String _startingAmountText() {
-    final entry = widget.entry;
-    if (entry == null) {
-      return '';
+    if (widget.entry == null) {
+      return _guessedAmountText();
     }
+    final entry = widget.entry!;
     final pieces = entry.unitCount;
     if (_inPieces && pieces != null) {
       return formatAmount(pieces);
     }
     final amount = entry.amount;
     return amount == null ? '' : formatAmount(amount);
+  }
+
+  /// A first guess for a new entry, in the unit the form starts in: the
+  /// amount logged last time, or else one serving.
+  String _guessedAmountText() {
+    final food = widget.food!;
+    final last = FoodDiary.of(widget.appState).lastEntryOf(food.id);
+    final grams = last?.amount ?? food.serving?.amount;
+    if (grams == null) {
+      return '';
+    }
+    final perPiece = _amountPerPiece;
+    if (_inPieces && perPiece != null) {
+      return formatAmount(last?.unitCount ?? grams / perPiece);
+    }
+    return formatAmount(grams);
   }
 
   /// The typed amount turned into grams (or ml), or null if nothing
@@ -175,7 +213,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
       if (food != null) {
         return actions.recordFoodEntry(
           date: widget.date!,
-          time: widget.isToday ? formatTimeOfDay(DateTime.now()) : null,
+          time: _time?.toString(),
           food: food,
           amount: grams,
           unitCount: pieces,
@@ -186,11 +224,21 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         entry!,
         newAmount: grams,
         unitCount: pieces,
+        time: _time?.toString(),
       );
     });
     if (saved && mounted) {
       Navigator.of(context).pop(true);
     }
+  }
+
+  void _editFood() {
+    Navigator.of(context).push(
+      MaterialPageRoute<String>(
+        builder: (context) =>
+            FoodFormScreen.edit(appState: widget.appState, food: widget.food!),
+      ),
+    );
   }
 
   Future<void> _delete() async {
@@ -266,11 +314,51 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             NoteText(conversion),
           ],
           const SizedBox(height: 16),
+          TimeField(
+            label: 'Eaten at',
+            time: _time,
+            onChanged: (time) => setState(() => _time = time),
+          ),
+          const SizedBox(height: 16),
           NutrientInfoRow(nutrients: _nutrientsFor(grams)),
           if (widget.entry != null)
             DeleteButton(label: 'Delete this entry', onPressed: _delete),
+          // Changing the food itself (its name or label values) starts
+          // here, where the food is already open.
+          if (widget.food != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _editFood,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit this food'),
+              ),
+            ),
         ],
       ),
     );
   }
+}
+
+/// The time a food entry form starts with: the entry's own time when
+/// changing one, now for a new entry today, and "Not set" (null) for a
+/// new entry on another day, whose time is not known.
+ClockTime? startingEntryTime({
+  required String? entryTime,
+  required bool isNew,
+  required bool isToday,
+}) {
+  if (!isNew) {
+    return entryTime == null || !isValidTimeOfDay(entryTime)
+        ? null
+        : ClockTime(
+            int.parse(entryTime.substring(0, 2)),
+            int.parse(entryTime.substring(3, 5)),
+          );
+  }
+  if (!isToday) {
+    return null;
+  }
+  final now = DateTime.now();
+  return ClockTime(now.hour, now.minute);
 }

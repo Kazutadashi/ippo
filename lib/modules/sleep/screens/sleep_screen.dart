@@ -20,7 +20,7 @@ import '../sleep_log.dart';
 import '../sleep_moment.dart';
 import '../sleep_times.dart';
 import 'nap_form_screen.dart';
-import 'sleep_widgets.dart';
+import '../../../core/widgets/time_fields.dart';
 
 /// The wake-up time suggested until the first wake-up is logged.
 const ClockTime _firstWakeGuess = ClockTime(7, 0);
@@ -204,16 +204,33 @@ class _DayEntryState extends State<_DayEntry> {
   /// Where the bedtime pickers start: the usual bedtime, after midnight
   /// if it is earlier on the clock than waking up.
   DateTime get _bedSuggestion {
-    final wokeUp = _wokeUp;
-    return bedtimeMoment(
-      widget.day,
-      widget.bedGuess,
-      wokeUp == null ? null : ClockTime(wokeUp.hour, wokeUp.minute),
-    );
+    return bedtimeMoment(widget.day, widget.bedGuess, _wokeClock);
   }
 
   bool get _hasSomethingSaved =>
       widget.wakeUp != null || widget.bedtime != null;
+
+  /// The wake-up clock time, for working out the bedtime's date.
+  ClockTime? get _wokeClock {
+    final wokeUp = _wokeUp;
+    return wokeUp == null ? null : ClockTime(wokeUp.hour, wokeUp.minute);
+  }
+
+  /// Whether the fields hold something that is not saved yet. Then the
+  /// button says Save; otherwise it says Saved, which doubles as the
+  /// sign that saving worked.
+  bool get _hasChanges {
+    bool differs(SleepMoment? saved, DateTime? value) =>
+        value != null && (saved == null || localDateTimeOf(saved.at) != value);
+    return differs(widget.wakeUp, _wokeUp) ||
+        differs(widget.bedtime, _wentToBed);
+  }
+
+  /// Whether the wake-up shown is only the usual time, not saved and not
+  /// changed by the user.
+  bool get _wakeIsSuggestion =>
+      widget.wakeUp == null &&
+      _wokeUp == wakeUpMoment(widget.day, widget.wakeGuess);
 
   Future<void> _save() async {
     final problem = checkDayTimes(_wokeUp, _wentToBed);
@@ -286,7 +303,9 @@ class _DayEntryState extends State<_DayEntry> {
               child: DateTimeField(
                 label: MomentKind.wokeUp.label,
                 value: _wokeUp,
+                isSuggestion: _wakeIsSuggestion,
                 suggestion: wakeUpMoment(widget.day, widget.wakeGuess),
+                momentFor: (time) => wakeUpMoment(widget.day, time),
                 onChanged: (moment) => setState(() {
                   _wokeUp = moment;
                   _problem = null;
@@ -299,6 +318,8 @@ class _DayEntryState extends State<_DayEntry> {
                 label: MomentKind.wentToBed.label,
                 value: _wentToBed,
                 suggestion: _bedSuggestion,
+                momentFor: (time) =>
+                    bedtimeMoment(widget.day, time, _wokeClock),
                 onChanged: (moment) => setState(() {
                   _wentToBed = moment;
                   _problem = null;
@@ -312,7 +333,14 @@ class _DayEntryState extends State<_DayEntry> {
           ProblemText(_problem!),
         ],
         const SizedBox(height: 16),
-        FilledButton(onPressed: _save, child: const Text('Save')),
+        if (_hasChanges)
+          FilledButton(onPressed: _save, child: const Text('Save'))
+        else
+          FilledButton.icon(
+            onPressed: null,
+            icon: const Icon(Icons.check),
+            label: const Text('Saved'),
+          ),
         if (_hasSomethingSaved)
           DeleteButton(label: 'Clear this day', onPressed: _clear),
       ],

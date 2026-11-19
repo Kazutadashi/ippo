@@ -130,10 +130,13 @@ class FoodActions {
   ///
   /// As when recording, [newAmount] is in grams; [unitCount] keeps the
   /// number of pieces if the amount was typed that way (null clears it).
+  /// [time] is when it was eaten (`HH:MM`), or null if not known; it is
+  /// only written when it changed.
   Future<Event> changeFoodEntryAmount(
     FoodEntry entry, {
     required double newAmount,
     double? unitCount,
+    required String? time,
   }) {
     final oldAmount = entry.amount;
     final newNutrients = oldAmount == null || oldAmount == 0
@@ -147,19 +150,26 @@ class FoodActions {
         'amount': jsonNumber(roundToTenth(newAmount)),
         'unit_count': keepsUnits ? jsonNumber(roundToTenth(unitCount)) : null,
         'nutrients': newNutrients.toJson(),
+        if (time != entry.time) 'time': time,
       },
     });
   }
 
-  /// Changes the name and nutrients of a quick entry.
+  /// Changes the name, nutrients and time (`HH:MM`, or null if not
+  /// known) of a quick entry. The time is only written when it changed.
   Future<Event> changeQuickEntry(
     FoodEntry entry, {
     required String name,
     required Nutrients nutrients,
+    required String? time,
   }) {
     return _write('food_entry_changed', {
       'target_id': entry.id,
-      'changes': {'name': name.trim(), 'nutrients': nutrients.toJson()},
+      'changes': {
+        'name': name.trim(),
+        'nutrients': nutrients.toJson(),
+        if (time != entry.time) 'time': time,
+      },
     });
   }
 

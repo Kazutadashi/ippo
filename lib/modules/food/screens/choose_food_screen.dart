@@ -62,10 +62,12 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
     );
   }
 
-  Future<void> _newFood() async {
+  /// Opens "New food", with [name] already typed, then logs the new food.
+  Future<void> _newFood({String name = ''}) async {
     final newFoodId = await Navigator.of(context).push(
       MaterialPageRoute<String>(
-        builder: (context) => FoodFormScreen.add(appState: widget.appState),
+        builder: (context) =>
+            FoodFormScreen.add(appState: widget.appState, initialName: name),
       ),
     );
     if (newFoodId == null || !mounted) {
@@ -78,15 +80,6 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
     }
   }
 
-  void _editFood(Food food) {
-    Navigator.of(context).push(
-      MaterialPageRoute<String>(
-        builder: (context) =>
-            FoodFormScreen.edit(appState: widget.appState, food: food),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,7 +88,7 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
       // button, as on the other screens.
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'new-food',
-        onPressed: _newFood,
+        onPressed: () => _newFood(),
         icon: const Icon(Icons.add),
         label: const Text('New food'),
       ),
@@ -120,24 +113,30 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
                   TextField(
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.search),
-                      labelText: 'Search your foods',
+                      hintText: 'Search your foods',
                     ),
                     onChanged: (text) => setState(() => _search = text),
                   ),
                   const SizedBox(height: 8),
-                  if (foods.isEmpty)
-                    const NoteText('No foods found. Tap New food to add one.'),
+                  if (foods.isEmpty && _search.trim().isEmpty)
+                    const NoteText('No foods yet. Tap New food to add one.'),
+                  // Nothing found: offer to make it, with the name typed.
+                  if (foods.isEmpty && _search.trim().isNotEmpty)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.add),
+                      title: Text('Create "${_search.trim()}"'),
+                      onTap: () => _newFood(name: _search.trim()),
+                    ),
+                  // Tap a food to log it. The food itself can be changed
+                  // from the next screen.
                   for (final food in foods)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(food.name),
-                      subtitle: Text(_describeFood(food)),
+                      subtitle: _servingText(food),
+                      trailing: _EnergyPer100(food: food),
                       onTap: () => _logFood(food),
-                      trailing: IconButton(
-                        tooltip: 'Edit food',
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => _editFood(food),
-                      ),
                     ),
                 ],
               ),
@@ -149,14 +148,38 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   }
 }
 
-/// Describes a food for the list: energy per 100 g, and the serving size
-/// if known, for example `536 kcal per 100 g · 9 chips (28 g)`.
-String _describeFood(Food food) {
-  final energy =
-      '${formatAmount(food.nutrientsPer100.energyKcal)} kcal per 100 '
-      '${food.measuredIn}';
+/// The serving size, for example `9 chips (28 g)`, or null if the food
+/// has none.
+Widget? _servingText(Food food) {
   final serving = food.serving;
-  return serving == null
-      ? energy
-      : '$energy · ${serving.describe(food.measuredIn)}';
+  return serving == null ? null : Text(serving.describe(food.measuredIn));
+}
+
+/// A food's energy per 100 g (or ml), on the right of its row: the
+/// number above, what it is per below, so the column is easy to scan.
+class _EnergyPer100 extends StatelessWidget {
+  const _EnergyPer100({required this.food});
+
+  final Food food;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${formatAmount(food.nutrientsPer100.energyKcal)} kcal',
+          style: textTheme.titleSmall,
+        ),
+        Text(
+          'per 100 ${food.measuredIn}',
+          style: textTheme.labelSmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
 }

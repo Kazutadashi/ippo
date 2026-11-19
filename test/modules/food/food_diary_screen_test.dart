@@ -74,8 +74,10 @@ void main() {
     expect(find.text('Add food'), findsOneWidget);
     expect(find.text('Add'), findsNothing);
     expect(find.text('Breakfast'), findsNothing);
-    expect(find.text('Quick entry · 300 kcal'), findsOneWidget);
-    expect(find.text('Quick entry · 80 kcal'), findsOneWidget);
+    // Each row: the name, "Quick entry" below it, its energy on the right.
+    expect(find.text('Quick entry'), findsNWidgets(2));
+    expect(find.text('300 kcal'), findsOneWidget);
+    expect(find.text('80 kcal'), findsOneWidget);
     // In the order they were logged.
     final porridgeTop = tester.getTopLeft(find.text('Porridge')).dy;
     final appleTop = tester.getTopLeft(find.text('Apple')).dy;

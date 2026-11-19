@@ -13,7 +13,7 @@ import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../nap.dart';
 import '../sleep_times.dart';
-import 'sleep_widgets.dart';
+import '../../../core/widgets/time_fields.dart';
 
 /// The form for one nap: its start and end times.
 class NapFormScreen extends StatefulWidget {

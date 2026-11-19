@@ -203,7 +203,7 @@ void main() {
     );
 
     final entry = currentDiary().entriesOn(day).single;
-    await actions.changeFoodEntryAmount(entry, newAmount: 50);
+    await actions.changeFoodEntryAmount(entry, newAmount: 50, time: entry.time);
 
     final changed = (await diaryFromDisk()).entriesOn(day).single;
     expect(changed.amount, 50);
@@ -378,7 +378,11 @@ void main() {
       );
       final entry = currentDiary().entriesOn(day).single;
 
-      await actions.changeFoodEntryAmount(entry, newAmount: 40);
+      await actions.changeFoodEntryAmount(
+        entry,
+        newAmount: 40,
+        time: entry.time,
+      );
 
       final changed = (await diaryFromDisk()).entriesOn(day).single;
       expect(changed.amount, 40);

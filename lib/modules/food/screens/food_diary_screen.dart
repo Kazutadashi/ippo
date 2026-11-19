@@ -83,8 +83,14 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // The quieter of the two: one accent-filled button is
+            // enough, and Add food is the usual way.
             FloatingActionButton.extended(
               heroTag: 'quick-food',
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
+              foregroundColor: Theme.of(context).colorScheme.primary,
               onPressed: _addQuickFood,
               icon: const Icon(Icons.bolt),
               label: const Text('Quick food'),
@@ -136,15 +142,16 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                     const CardHeader(icon: Icons.restaurant, title: 'Eaten'),
                     if (entries.isEmpty)
                       const NoteText('Nothing logged on this day.'),
+                    // Tap a row to change or delete it. The energy sits on
+                    // the right, in one column, so it is easy to scan.
                     for (final entry in entries)
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(entry.name),
-                        subtitle: Text(_describeEntry(entry)),
-                        trailing: IconButton(
-                          tooltip: 'Edit entry',
-                          icon: const Icon(Icons.edit_outlined),
-                          onPressed: () => _editEntry(entry),
+                        subtitle: _EntryDetails(entry: entry),
+                        trailing: Text(
+                          '${formatAmount(entry.nutrients.energyKcal)} kcal',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
                         onTap: () => _editEntry(entry),
                       ),
@@ -159,16 +166,25 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
   }
 }
 
-/// Describes an entry, for example `07:30 · 150 g · 280 kcal`,
-/// `07:30 · 9 chips (28 g) · 150 kcal` or `Quick entry · 850 kcal`. The
-/// time is left out when it is not known.
-String _describeEntry(FoodEntry entry) {
-  final parts = [
-    if (entry.time != null) entry.time!,
-    _describeAmount(entry),
-    '${formatAmount(entry.nutrients.energyKcal)} kcal',
-  ];
-  return parts.join(' · ');
+/// An entry's time and amount, side by side: "07:30   9 chips (28 g)".
+/// The time is left out when it is not known.
+class _EntryDetails extends StatelessWidget {
+  const _EntryDetails({required this.entry});
+
+  final FoodEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = entry.time;
+    return Row(
+      children: [
+        if (time != null) ...[Text(time), const SizedBox(width: 12)],
+        Flexible(
+          child: Text(_describeAmount(entry), overflow: TextOverflow.ellipsis),
+        ),
+      ],
+    );
+  }
 }
 
 /// The amount eaten, in pieces and grams if typed in pieces.

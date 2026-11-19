@@ -21,48 +21,30 @@ import '../food_serving.dart';
 import '../nutrients.dart';
 import '../nutrition_label.dart';
 import 'label_paste_dialog.dart';
-
-/// The nutrients shown straight away: they are on every label and are
-/// what most people track.
-const List<String> _mainNutrientKeys = [
-  'proteins_g',
-  'carbohydrates_g',
-  'fat_g',
-];
-
-/// Short names for the nutrient fields, which sit side by side.
-const Map<String, String> _shortNames = {
-  'proteins_g': 'Protein',
-  'carbohydrates_g': 'Carbs',
-  'fat_g': 'Fat',
-  'sugars_g': 'Sugars',
-  'saturated_fat_g': 'Saturated fat',
-  'fiber_g': 'Fiber',
-  'salt_g': 'Salt',
-};
-
-/// The nutrients behind "More nutrients".
-const List<String> _moreNutrientKeys = [
-  'sugars_g',
-  'saturated_fat_g',
-  'fiber_g',
-  'salt_g',
-];
+import 'nutrition_fields.dart';
 
 /// The form for a food. When adding, closes with the new food's id.
 class FoodFormScreen extends StatefulWidget {
-  /// Creates the form for a new food.
-  const FoodFormScreen.add({super.key, required this.appState}) : food = null;
+  /// Creates the form for a new food, with [initialName] already typed
+  /// (for example what was searched for).
+  const FoodFormScreen.add({
+    super.key,
+    required this.appState,
+    this.initialName = '',
+  }) : food = null;
 
   /// Creates the form for changing [food].
   const FoodFormScreen.edit({
     super.key,
     required this.appState,
     required Food this.food,
-  });
+  }) : initialName = '';
 
   /// The app-wide state.
   final AppState appState;
+
+  /// The name a new food starts with.
+  final String initialName;
 
   /// The food to change, when editing.
   final Food? food;
@@ -73,7 +55,7 @@ class FoodFormScreen extends StatefulWidget {
 
 class _FoodFormScreenState extends State<FoodFormScreen> {
   late final TextEditingController _nameField = TextEditingController(
-    text: widget.food?.name ?? '',
+    text: widget.food?.name ?? widget.initialName,
   );
 
   /// The serving as typed, such as "9 chips".
@@ -90,7 +72,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     text: _numberText(_startingValue(energyKey)),
   );
   late final Map<String, TextEditingController> _nutrientFields = {
-    for (final key in [..._mainNutrientKeys, ..._moreNutrientKeys])
+    for (final key in [...mainNutrientKeys, ...moreNutrientKeys])
       key: TextEditingController(text: _numberText(_startingValue(key))),
   };
 
@@ -102,7 +84,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
   bool _isPer100 = false;
 
   /// Whether the less common nutrients are shown.
-  late bool _isShowingMore = _moreNutrientKeys.any(
+  late bool _isShowingMore = moreNutrientKeys.any(
     (key) => _nutrientFields[key]!.text.isNotEmpty,
   );
 
@@ -207,7 +189,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
           filled++;
         }
       }
-      _isShowingMore = _moreNutrientKeys.any(
+      _isShowingMore = moreNutrientKeys.any(
         (key) => reading.nutrients.containsKey(key),
       );
       _clearProblems();
@@ -260,7 +242,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     final energy = parseAmount(_energyField.text);
     if (energy == null) {
       _energyProblem = _energyField.text.trim().isEmpty
-          ? 'Please enter the calories.'
+          ? 'Please enter the energy.'
           : 'Please enter a number.';
     } else {
       values[energyKey] = energy;
@@ -341,34 +323,9 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     );
   }
 
-  /// A number field for one nutrient. "Next" on the keyboard moves on.
-  Widget _numberField(
-    TextEditingController controller,
-    String label,
-    String unit, {
-    String? problem,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label,
-        suffixText: unit,
-        errorText: problem,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.food != null;
-    Widget nutrientField(String key) => _numberField(
-      _nutrientFields[key]!,
-      _shortNames[key]!,
-      'g',
-      problem: _nutrientProblems[key],
-    );
 
     return Scaffold(
       appBar: AppBar(
@@ -383,7 +340,8 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
-          OutlinedButton.icon(
+          // Tonal, so it reads as a button, never as an empty field.
+          FilledButton.tonalIcon(
             onPressed: _pasteLabel,
             icon: const Icon(Icons.content_paste),
             label: const Text('Paste nutrition label'),
@@ -485,72 +443,12 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              _numberField(
-                _energyField,
-                'Calories',
-                'kcal',
-                problem: _energyProblem,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: nutrientField('proteins_g')),
-                  const SizedBox(width: 12),
-                  Expanded(child: nutrientField('carbohydrates_g')),
-                  const SizedBox(width: 12),
-                  Expanded(child: nutrientField('fat_g')),
-                ],
-              ),
-              // Opens and closes smoothly, so it is clear what changed.
-              AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                alignment: Alignment.topCenter,
-                child: _isShowingMore
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: nutrientField('sugars_g')),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: nutrientField('saturated_fat_g'),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: nutrientField('fiber_g')),
-                                const SizedBox(width: 12),
-                                Expanded(child: nutrientField('salt_g')),
-                              ],
-                            ),
-                          ],
-                        ),
-                      )
-                    : const SizedBox(width: double.infinity),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 48),
-                  ),
-                  onPressed: () =>
-                      setState(() => _isShowingMore = !_isShowingMore),
-                  icon: Icon(
-                    _isShowingMore ? Icons.expand_less : Icons.expand_more,
-                  ),
-                  label: Text(
-                    _isShowingMore ? 'Fewer nutrients' : 'More nutrients',
-                  ),
-                ),
+              NutritionFields(
+                fields: {energyKey: _energyField, ..._nutrientFields},
+                problems: {energyKey: _energyProblem, ..._nutrientProblems},
+                isShowingMore: _isShowingMore,
+                onShowMoreChanged: (show) =>
+                    setState(() => _isShowingMore = show),
               ),
             ],
           ),

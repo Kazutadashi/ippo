@@ -7,24 +7,20 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
-import '../../../core/dates.dart';
+import '../../../core/clock_time.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/time_fields.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
+import 'food_entry_form_screen.dart';
+import 'nutrition_fields.dart';
 
 /// The nutrients a quick entry asks for. Energy is required.
-const List<String> _quickEntryNutrientKeys = [
-  energyKey,
-  'proteins_g',
-  'carbohydrates_g',
-  'fat_g',
-];
-
 /// The form for a quick entry. Closes with `true` when something was
 /// saved or deleted.
 class QuickEntryFormScreen extends StatefulWidget {
@@ -50,7 +46,7 @@ class QuickEntryFormScreen extends StatefulWidget {
   /// The day to log on (`YYYY-MM-DD`), when adding.
   final String? date;
 
-  /// Whether [date] is today, so the entry gets the current time.
+  /// Whether [date] is today, so the time starts at now.
   final bool isToday;
 
   /// The entry to change, when editing.
@@ -65,7 +61,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
     text: widget.entry?.name ?? '',
   );
   late final Map<String, TextEditingController> _nutrientFields = {
-    for (final key in _quickEntryNutrientKeys)
+    for (final key in allNutrientFieldKeys)
       key: TextEditingController(
         text: widget.entry?.nutrients.values[key] == null
             ? ''
@@ -74,6 +70,19 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
   };
   String? _nameProblem;
   String? _energyProblem;
+  final Map<String, String?> _nutrientProblems = {};
+
+  /// When it was eaten (see [startingEntryTime]).
+  late ClockTime? _time = startingEntryTime(
+    entryTime: widget.entry?.time,
+    isNew: widget.entry == null,
+    isToday: widget.isToday,
+  );
+
+  /// Whether the less common nutrients are shown: when any is filled in.
+  late bool _isShowingMore = moreNutrientKeys.any(
+    (key) => _nutrientFields[key]!.text.isNotEmpty,
+  );
 
   @override
   void dispose() {
@@ -84,19 +93,30 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
     super.dispose();
   }
 
-  /// Reads the typed nutrients. Empty optional fields are left out.
-  /// Returns null (and shows why) if energy is missing or invalid.
+  /// Reads the typed nutrients. Empty fields are left out: they are not
+  /// known, which is different from zero. Returns null (and shows why)
+  /// if energy is missing, or something typed is not a number.
   Nutrients? _readNutrients() {
     final values = <String, double>{};
-    for (final key in _quickEntryNutrientKeys) {
-      final text = _nutrientFields[key]!.text;
+    _nutrientProblems.clear();
+    for (final key in allNutrientFieldKeys) {
+      final text = _nutrientFields[key]!.text.trim();
+      if (text.isEmpty) {
+        continue;
+      }
       final value = parseAmount(text);
-      if (value != null) {
+      if (value == null) {
+        _nutrientProblems[key] = 'Not a number';
+      } else {
         values[key] = value;
       }
     }
-    if (!values.containsKey(energyKey)) {
-      setState(() => _energyProblem = 'Please enter the calories.');
+    if (!values.containsKey(energyKey) &&
+        _nutrientProblems[energyKey] == null) {
+      _energyProblem = 'Please enter the energy.';
+    }
+    setState(() {});
+    if (_energyProblem != null || _nutrientProblems.isNotEmpty) {
       return null;
     }
     return Nutrients(values);
@@ -119,7 +139,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
       if (entry == null) {
         return actions.recordQuickEntry(
           date: widget.date!,
-          time: widget.isToday ? formatTimeOfDay(DateTime.now()) : null,
+          time: _time?.toString(),
           name: _nameField.text,
           nutrients: nutrients,
         );
@@ -128,6 +148,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         entry,
         name: _nameField.text,
         nutrients: nutrients,
+        time: _time?.toString(),
       );
     });
     if (saved && mounted) {
@@ -156,7 +177,6 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final kindsByKey = {for (final kind in allNutrientKinds) kind.key: kind};
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -167,34 +187,50 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         title: const Text('Quick food'),
         actions: [AppBarSaveButton(onPressed: _save)],
       ),
+      // The same cards and fields as "New food", so both read the same.
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
-          TextField(
-            controller: _nameField,
-            autofocus: widget.entry == null,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              labelText: 'What did you eat?',
-              errorText: _nameProblem,
-            ),
-          ),
-          for (final key in _quickEntryNutrientKeys)
-            _spaced(
+          SectionCard(
+            children: [
+              const CardHeader(icon: Icons.restaurant, title: 'Food'),
+              const SizedBox(height: 8),
               TextField(
-                controller: _nutrientFields[key],
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                controller: _nameField,
+                autofocus: widget.entry == null,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
-                  labelText: key == energyKey
-                      ? 'Energy'
-                      : '${kindsByKey[key]!.label} (optional)',
-                  suffixText: kindsByKey[key]!.unit,
-                  errorText: key == energyKey ? _energyProblem : null,
+                  labelText: 'What did you eat?',
+                  hintText: 'Restaurant lunch',
+                  errorText: _nameProblem,
                 ),
               ),
-            ),
+              const SizedBox(height: 12),
+              TimeField(
+                label: 'Eaten at',
+                time: _time,
+                onChanged: (time) => setState(() => _time = time),
+              ),
+            ],
+          ),
+          SectionCard(
+            children: [
+              const CardHeader(
+                icon: Icons.local_fire_department,
+                title: 'Nutrition',
+              ),
+              const NoteText('For the whole portion. Only energy is needed.'),
+              const SizedBox(height: 16),
+              NutritionFields(
+                fields: _nutrientFields,
+                problems: {energyKey: _energyProblem, ..._nutrientProblems},
+                isShowingMore: _isShowingMore,
+                onShowMoreChanged: (show) =>
+                    setState(() => _isShowingMore = show),
+              ),
+            ],
+          ),
           if (widget.entry != null)
             DeleteButton(label: 'Delete this entry', onPressed: _delete),
         ],
@@ -202,8 +238,3 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
     );
   }
 }
-
-/// Puts a little space above a form field, so outlined fields do not
-/// touch.
-Widget _spaced(Widget field) =>
-    Padding(padding: const EdgeInsets.only(top: 12), child: field);
