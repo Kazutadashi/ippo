@@ -40,6 +40,6 @@ need it.
 
 | What | From | Licence | Where |
 | --- | --- | --- | --- |
-| The character 歩 on the launcher icon | The brush font Yuji Boku, by the Yuji Project Authors (Kinuta Font Factory); only this one letter's outline, not the font | SIL Open Font License 1.1 (allows use in artwork) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml`, and the `ic_launcher.png` files made from it |
+| The character 歩 on the launcher icon | The brush font Yuji Boku, by the Yuji Project Authors (Kinuta Font Factory); only this one letter's outline, not the font | SIL Open Font License 1.1 (allows use in artwork) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml` and `ic_launcher_monochrome.xml`, and the `ic_launcher.png` files made from it |
 
 The mountains behind it are drawn by hand for Ippo.

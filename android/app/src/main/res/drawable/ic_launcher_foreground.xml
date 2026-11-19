@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- The character 歩 ("step", as in 一歩, "one step") on Ippo's launcher
-     icon, above the mountains of ic_launcher_background.xml.
+     icon, in a see-through grey over the mountains of
+     ic_launcher_background.xml.
 
      The outline is the 歩 of the brush font Yuji Boku, by the Yuji
      Project Authors (Kinuta Font Factory), under the SIL Open Font
@@ -9,23 +10,26 @@
      The font is not included in the app; only this one outline is. A
      stroke in the same colour makes the brush marks a little thicker.
 
-     The outline is drawn on the font's 1000-unit grid with y pointing up,
-     so the group flips it (scaleY is negative), shrinks it to 2.6 % and
-     places it high in the sky, clear of the mountains, inside the area every launcher shape shows.
-     This layer is also the one-colour icon for Android's themed icons. -->
+     The character is drawn solid, and the whole layer is made see-through
+     at once (android:alpha), so the outline and the stroke never show as
+     a darker rim where they overlap. It is drawn on the font's 1000-unit
+     grid with y pointing up, so the group flips it (scaleY is negative),
+     shrinks it to 4 % and centres it in the area every launcher shape
+     shows. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportHeight="108"
+    android:alpha="0.62">
     <group
-        android:scaleX="0.026"
-        android:scaleY="-0.026"
-        android:translateX="40.311"
-        android:translateY="46.153">
+        android:scaleX="0.04"
+        android:scaleY="-0.04"
+        android:translateX="32.940"
+        android:translateY="66.081">
         <path
-            android:fillColor="#FFF3EEDF"
-            android:strokeColor="#FFF3EEDF"
+            android:fillColor="#FFE6E8EA"
+            android:strokeColor="#FFE6E8EA"
             android:strokeWidth="28"
             android:strokeLineJoin="round"
             android:pathData="M920 497Q920 495 921 490Q922 485 922.0 481.5Q922 478 917 476Q880 469 845 458Q811 466 766.5

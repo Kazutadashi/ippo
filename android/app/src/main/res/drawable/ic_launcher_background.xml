@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The back of Ippo's launcher icon: a small mountain range at night. A
-     dark sky with a few stars, far peaks with snow on top, and two darker
-     ridges in front. Drawn by hand for Ippo, inside the middle area every
-     launcher shape shows. The character 歩 is in front, in
-     ic_launcher_foreground.xml. -->
+<!-- The back of Ippo's launcher icon: a mountain range at night, drawn
+     flat like a modern travel poster. A navy sky, a large pale moon, and
+     peaks each split into a lit face and a shaded one. Drawn by hand for
+     Ippo, inside the middle area every launcher shape shows. The
+     character 歩 is in front, in ic_launcher_foreground.xml. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
@@ -20,31 +20,38 @@
                 android:startY="0"
                 android:endX="0"
                 android:endY="108">
-                <item android:offset="0" android:color="#FF0B1A2A" />
-                <item android:offset="1" android:color="#FF1B3A4A" />
+                <item android:offset="0" android:color="#FF1B2A41" />
+                <item android:offset="1" android:color="#FF324A5F" />
             </gradient>
         </aapt:attr>
     </path>
-    <!-- A few faint stars. -->
+    <!-- The moon. -->
     <path
-        android:fillColor="#B3F2EEE2"
-        android:pathData="M25.5,26 a0.5,0.5 0 1,0 1.0,0 a0.5,0.5 0 1,0 -1.0,0 M32.65,21 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M79.5,24 a0.5,0.5 0 1,0 1.0,0 a0.5,0.5 0 1,0 -1.0,0 M85.65,33 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M73.65,20 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M23.65,44 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M87.6,46 a0.4,0.4 0 1,0 0.8,0 a0.4,0.4 0 1,0 -0.8,0" />
-    <!-- The mountains sit low, so the character has open sky above them. -->
-    <group android:translateY="7">
-        <!-- The far peaks. -->
-        <path
-            android:fillColor="#FF33566A"
-            android:pathData="M14,78 L28,64 L36,70 L48,58 L58,68 L68,61 L80,72 L94,66 L94,108 L14,108 Z" />
-        <!-- Snow on their tops. -->
-        <path
-            android:fillColor="#FFDCE6EA"
-            android:pathData="M48,58 L52.2,62 L50,61.6 L48,63 L46,61.4 L44.3,61.6 Z M28,64 L31.2,67.2 L29.4,66.8 L28,68 L26.6,66.8 L25.2,67 Z M68,61 L71.6,64.1 L69.7,63.8 L68,65 L66.4,63.8 L64.6,64.1 Z" />
-        <!-- A middle ridge, then the nearest one, darkest. -->
-        <path
-            android:fillColor="#FF22414F"
-            android:pathData="M14,84 L30,74 L42,80 L56,72 L72,82 L84,76 L94,80 L94,108 L14,108 Z" />
-        <path
-            android:fillColor="#FF15303B"
-            android:pathData="M14,90 L34,82 L50,88 L66,83 L94,89 L94,108 L14,108 Z" />
-    </group>
+        android:fillColor="#D9E8D8B0"
+        android:pathData="M57,38 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
+    <!-- The tall peak on the left: its lit face, then its shaded face. -->
+    <path
+        android:fillColor="#FF5C7C8A"
+        android:pathData="M10,92 L40,46 L40,92 Z" />
+    <path
+        android:fillColor="#FF3F5F6E"
+        android:pathData="M40,46 L72,92 L40,92 Z" />
+    <!-- The peak on the right, in front of it. -->
+    <path
+        android:fillColor="#FF7B97A0"
+        android:pathData="M40,92 L68,56 L68,92 Z" />
+    <path
+        android:fillColor="#FF557480"
+        android:pathData="M68,56 L98,92 L68,92 Z" />
+    <!-- Two low hills in the front. -->
+    <path
+        android:fillColor="#FF2C4653"
+        android:pathData="M10,92 L26,70 L42,92 Z" />
+    <path
+        android:fillColor="#FF22394A"
+        android:pathData="M52,92 L80,74 L100,92 Z" />
+    <!-- The ground below the peaks, so nothing shows through. -->
+    <path
+        android:fillColor="#FF22394A"
+        android:pathData="M0,92 L108,92 L108,108 L0,108 Z" />
 </vector>
