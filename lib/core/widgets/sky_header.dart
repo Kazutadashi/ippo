@@ -268,7 +268,7 @@ class _SkyPainter extends CustomPainter {
     }
 
     // The range: tall, jagged and continuous across the whole view.
-    _range(canvas, random, w, y, land);
+    _range(canvas, random, w, y, land, lightCentre.dx);
 
     // Rounded foothills in front of its foot, two layers.
     _hills(canvas, random, w, h, y(0.66), land * 0.20, palette.hills);
@@ -304,18 +304,20 @@ class _SkyPainter extends CustomPainter {
   /// summits. The mountains are bare rock, with snow only on the tops,
   /// above a ragged snowline, so the tallest peaks carry the most. Each
   /// mountain's face turned from the light is in shadow (darker rock,
-  /// grey-blue snow), and haze lies at its foot.
+  /// grey-blue snow), and haze lies at its foot. [lightX] is where the
+  /// sun or moon is across the view.
   void _range(
     Canvas canvas,
     Random random,
     double w,
     double Function(double) y,
     double land,
+    double lightX,
   ) {
     final ridge = _rangeRidge(random, w, y(0.66), land * 0.56);
     final foot = y(0.80);
     final shape = _pathBelow(ridge, foot);
-    final faces = _shadedFaces(ridge, foot, land);
+    final faces = _shadedFaces(ridge, foot, land, lightX);
     canvas
       ..drawPath(shape, Paint()..color = palette.rock)
       ..save()
@@ -365,29 +367,54 @@ class _SkyPainter extends CustomPainter {
       ..restore();
   }
 
-  /// The face of each mountain turned from the light: from its summit
-  /// down its right slope to the next valley, with an edge that slants
-  /// down from the summit, so the face widens toward the [foot]. Even a
-  /// steep, narrow face gets some slant, or it would look like a stripe;
-  /// a drop too small to read as a mountain gets no face.
-  static List<Path> _shadedFaces(List<Offset> ridge, double foot, double land) {
-    return [
-      for (final (summit, valley) in _faces(ridge))
-        if (ridge[valley].dy - ridge[summit].dy >= land * 0.06)
-          Path()..addPolygon([
-            for (var index = summit; index <= valley; index++) ridge[index],
-            Offset(
-              ridge[valley].dx +
-                  max(ridge[valley].dx - ridge[summit].dx, land * 0.6) * 0.2,
-              foot,
-            ),
-            Offset(
-              ridge[summit].dx +
-                  max(ridge[valley].dx - ridge[summit].dx, land * 0.6) * 0.6,
-              foot,
-            ),
-          ], true),
-    ];
+  /// The face of each mountain turned from the light, which is at
+  /// [lightX]: a mountain left of the light is in shadow on its left
+  /// slope, one right of it on its right slope. A face runs from the
+  /// summit down that slope to the valley, with an edge that slants down
+  /// from the summit, so the face widens toward the [foot]. Even a steep,
+  /// narrow face gets some slant, or it would look like a stripe; a drop
+  /// too small to read as a mountain gets no face. Only the shading
+  /// depends on the light: the mountains stay the same.
+  static List<Path> _shadedFaces(
+    List<Offset> ridge,
+    double foot,
+    double land,
+    double lightX,
+  ) {
+    final faces = <Path>[];
+    for (final (summit, rightValley) in _faces(ridge)) {
+      final peak = ridge[summit];
+      final shadeLeft = peak.dx < lightX;
+      // The valley on the shaded side, one point at a time down the
+      // slope until it rises again.
+      var valley = summit;
+      if (shadeLeft) {
+        while (valley > 0 && ridge[valley - 1].dy >= ridge[valley].dy) {
+          valley--;
+        }
+      } else {
+        valley = rightValley;
+      }
+      if (ridge[valley].dy - peak.dy < land * 0.06) {
+        continue;
+      }
+      // Which way the face's slanted edge goes: right of the summit for
+      // a right face, left of it for a left one.
+      final direction = shadeLeft ? -1.0 : 1.0;
+      final span = max((ridge[valley].dx - peak.dx).abs(), land * 0.6);
+      // The slope from the summit down to that valley.
+      final slope = shadeLeft
+          ? [for (var index = summit; index >= valley; index--) ridge[index]]
+          : [for (var index = summit; index <= valley; index++) ridge[index]];
+      faces.add(
+        Path()..addPolygon([
+          ...slope,
+          Offset(ridge[valley].dx + direction * span * 0.2, foot),
+          Offset(peak.dx + direction * span * 0.6, foot),
+        ], true),
+      );
+    }
+    return faces;
   }
 
   /// Each summit of [ridge] (higher than both neighbours: a smaller y)

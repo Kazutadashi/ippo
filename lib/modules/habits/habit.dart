@@ -71,9 +71,16 @@ class Habit {
   /// The colour to draw the habit in, on a screen with [theme].
   ///
   /// Without a colour of its own, a habit uses the accent colour. A
-  /// picked colour is shown exactly as picked, in light and dark mode
-  /// alike: it belongs to the habit, not to the theme.
-  Color displayColor(ThemeData theme) => color ?? theme.colorScheme.primary;
+  /// picked colour keeps its hue in light and dark mode alike, made just
+  /// light or dark enough to read on the background: a yellow habit is
+  /// a deeper yellow in light mode.
+  Color displayColor(ThemeData theme) {
+    final color = this.color;
+    if (color == null) {
+      return theme.colorScheme.primary;
+    }
+    return readableOn(color, theme.colorScheme.surfaceContainer);
+  }
 
   /// Whether the habit is hidden without being deleted.
   final bool isArchived;

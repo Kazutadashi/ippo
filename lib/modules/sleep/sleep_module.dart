@@ -28,7 +28,7 @@ class SleepModule extends IppoModule {
   String get title => 'Sleep';
 
   @override
-  IconData get icon => Icons.bedtime;
+  IconData get icon => Icons.king_bed_outlined;
 
   /// The sleep the night before [day], drawn as a bar over the usual
   /// night; then how long you have been awake (or naps), and the 7-day

@@ -324,6 +324,11 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(clockStyle: clockStyle),
   );
 
+  /// Turns the true black dark mode on or off.
+  Future<void> setTrueBlack(bool isOn) => _changeDisplaySetting(
+    (settings) => settings.copyWith(usesTrueBlack: isOn),
+  );
+
   /// Applies [change] to the settings, saves them, and tells listening
   /// screens. A failure is shown through [errorMessage].
   Future<void> _changeDisplaySetting(

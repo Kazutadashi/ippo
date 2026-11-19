@@ -21,6 +21,7 @@ class AppSettings {
     required this.themeMode,
     required this.accentColor,
     required this.clockStyle,
+    this.usesTrueBlack = false,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -59,6 +60,7 @@ class AppSettings {
       themeMode: _textOrNull(json['theme_mode']),
       accentColor: _textOrNull(json['accent_color']),
       clockStyle: _textOrNull(json['clock_style']),
+      usesTrueBlack: json['true_black'] == true,
     );
   }
 
@@ -85,6 +87,10 @@ class AppSettings {
   /// for the default (24 hours).
   final String? clockStyle;
 
+  /// Whether dark mode uses a true black background, which saves power
+  /// on OLED screens and has the strongest contrast.
+  final bool usesTrueBlack;
+
   /// Whether times are shown on a 12-hour clock.
   bool get uses12HourClock => clockStyle == '12h';
 
@@ -95,6 +101,7 @@ class AppSettings {
     String? themeMode,
     String? accentColor,
     String? clockStyle,
+    bool? usesTrueBlack,
   }) {
     return AppSettings(
       deviceId: deviceId,
@@ -103,6 +110,7 @@ class AppSettings {
       themeMode: themeMode ?? this.themeMode,
       accentColor: accentColor ?? this.accentColor,
       clockStyle: clockStyle ?? this.clockStyle,
+      usesTrueBlack: usesTrueBlack ?? this.usesTrueBlack,
     );
   }
 
@@ -114,6 +122,7 @@ class AppSettings {
     'theme_mode': themeMode,
     'accent_color': accentColor,
     'clock_style': clockStyle,
+    'true_black': usesTrueBlack,
   };
 }
 

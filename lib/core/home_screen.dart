@@ -71,8 +71,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
         final destinations = [
-          (Icons.home_outlined, 'Home'),
-          for (final module in allModules) (module.icon, module.title),
+          (const Icon(Icons.home_outlined), 'Home'),
+          for (final module in allModules) (module.buildIcon(), module.title),
         ];
         // On a wide window (a desktop or a tablet on its side), the tabs
         // go down the left side, and screens keep a readable width
@@ -88,10 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   labelType: NavigationRailLabelType.all,
                   destinations: [
                     for (final (icon, label) in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(icon),
-                        label: Text(label),
-                      ),
+                      NavigationRailDestination(icon: icon, label: Text(label)),
                   ],
                 ),
                 Expanded(
@@ -120,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               for (final module in allModules)
                 NavigationDestination(
-                  icon: Icon(module.icon),
+                  icon: module.buildIcon(),
                   label: module.title,
                 ),
             ],

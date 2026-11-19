@@ -64,8 +64,8 @@ class HomeTileCard extends StatelessWidget {
     this.lines = const [],
   });
 
-  /// The module's icon.
-  final IconData icon;
+  /// The module's icon, such as `module.buildIcon()`.
+  final Widget icon;
 
   /// The module's title, such as `Food`.
   final String title;
@@ -118,7 +118,10 @@ class HomeTileCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 14, color: colors.primary),
+                  IconTheme(
+                    data: IconThemeData(size: 14, color: colors.primary),
+                    child: icon,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(

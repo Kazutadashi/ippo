@@ -65,13 +65,17 @@ class CardHeader extends StatelessWidget {
   /// Creates the heading.
   const CardHeader({
     super.key,
-    required this.icon,
+    this.icon,
+    this.iconWidget,
     required this.title,
     this.action,
-  });
+  }) : assert(icon != null || iconWidget != null);
 
   /// The icon before the title.
-  final IconData icon;
+  final IconData? icon;
+
+  /// A drawn icon instead of [icon], such as a module's own.
+  final Widget? iconWidget;
 
   /// The title.
   final String title;
@@ -87,7 +91,13 @@ class CardHeader extends StatelessWidget {
       height: 36,
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+          IconTheme(
+            data: IconThemeData(
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: iconWidget ?? Icon(icon),
+          ),
           const SizedBox(width: Spacing.medium),
           Expanded(
             child: Text(

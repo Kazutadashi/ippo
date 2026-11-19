@@ -4,6 +4,7 @@
 library;
 
 import '../../core/app_state.dart';
+import '../../core/dates.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'food.dart';
@@ -128,4 +129,26 @@ class FoodDiary {
     });
     return activeFoods;
   }
+}
+
+/// The entry eaten last, by its time, or null if none has a time.
+/// Times are compared as moments, so 01:05 (after midnight) comes after
+/// 23:30 on the same day.
+FoodEntry? latestTimedEntry(List<FoodEntry> entries) {
+  FoodEntry? latest;
+  DateTime? latestMoment;
+  // Any fixed day works for comparing; only the order matters.
+  final anyDay = DateTime(2000);
+  for (final entry in entries) {
+    final time = entry.time;
+    final moment = time == null ? null : momentOnDay(anyDay, time);
+    if (moment == null) {
+      continue;
+    }
+    if (latestMoment == null || !moment.isBefore(latestMoment)) {
+      latest = entry;
+      latestMoment = moment;
+    }
+  }
+  return latest;
 }

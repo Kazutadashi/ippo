@@ -241,7 +241,7 @@ Widget _tileFor(
 ) {
   final tile = module.homeTile(appState, day, now);
   return HomeTileCard(
-    icon: module.icon,
+    icon: module.buildIcon(),
     title: module.title,
     value: tile.value,
     valueNote: tile.valueNote,

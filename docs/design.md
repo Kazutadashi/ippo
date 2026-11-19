@@ -343,8 +343,8 @@ by themselves unless the user picked another day.
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |
 | Quick food | `bolt` |
-| Exercise | `fitness_center` |
-| Sleep, a night | `bedtime` |
+| Exercise | `DumbbellIcon`, drawn: a level dumbbell with thick plates (`IppoModule.buildIcon`) |
+| Sleep, a night | `king_bed_outlined` |
 | A nap | `airline_seat_flat` |
 | Settings | `settings_outlined` (the gear on Home) |
 | Add, new | `add` |
@@ -378,15 +378,19 @@ module's icon, so a glance says which tab a tile belongs to.
    own colour, used only for its name and its ✓ marks, so habits are
    easy to tell apart. Without one it uses the accent colour. Such
    colours come from the same list as the accent colours, are picked
-   with `ColorCircle`s, and are shown **exactly as picked** in light and
-   dark mode (`Habit.displayColor`): they belong to the habit, not to the
-   theme. Nothing else on the screen takes them.
-7. **One colour for the whole app.** Modules have no colours of their
+   with `ColorCircle`s, and keep their hue in light and dark mode, made
+   only as much lighter or darker as it takes to read on the background
+   (`Habit.displayColor`, `readableOn`): a yellow habit is a deeper
+   yellow in light mode. Nothing else on the screen takes them.
+8. **Pure white text in dark mode**, for the clearest contrast; grey
+   text stays grey. **True black** is an option in Settings for OLED
+   screens: the background is black, cards the darkest greys.
+9. **One colour for the whole app.** Modules have no colours of their
    own: tab icons, tile icons, bars and badges all use the accent, and
    tiles sit on the plain card surface. The app stays calm, and the
    only other colours on screen are the ones users picked for their
    habits.
-8. **Flat cards.** Cards have no shadow and sit on a slightly different
+10. **Flat cards.** Cards have no shadow and sit on a slightly different
    surface (`surfaceContainer`), the same in light and dark mode.
 
 

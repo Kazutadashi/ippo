@@ -95,7 +95,8 @@ class _IppoAppState extends State<IppoApp> {
     final system = widget.appState.systemAccentColor;
     final accent = chooseAccentColor(saved, system);
     final matchSystem = usesSystemAccent(saved, system);
-    final key = '${accent.toARGB32()} $matchSystem';
+    final trueBlack = widget.appState.settings?.usesTrueBlack ?? false;
+    final key = '${accent.toARGB32()} $matchSystem $trueBlack';
     if (key == _themeKey) {
       return;
     }
@@ -105,7 +106,12 @@ class _IppoAppState extends State<IppoApp> {
       Brightness.light,
       matchSystem: matchSystem,
     );
-    _darkTheme = buildTheme(accent, Brightness.dark, matchSystem: matchSystem);
+    _darkTheme = buildTheme(
+      accent,
+      Brightness.dark,
+      matchSystem: matchSystem,
+      trueBlack: trueBlack,
+    );
   }
 
   @override

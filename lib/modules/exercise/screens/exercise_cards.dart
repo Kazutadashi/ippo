@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/number_input.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/dumbbell_icon.dart';
 import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_set.dart';
@@ -68,7 +69,7 @@ class ExerciseCard extends StatelessWidget {
     return SectionCard(
       children: [
         CardHeader(
-          icon: Icons.fitness_center,
+          iconWidget: const DumbbellIcon(),
           title: exercise.name,
           action: HeaderEditButton(onPressed: onEdit),
         ),

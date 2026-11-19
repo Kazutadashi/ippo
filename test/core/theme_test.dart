@@ -151,4 +151,30 @@ void main() {
       expect(appState.errorMessage, isNull);
     });
   });
+
+  test('a habit colour is shifted just enough to read on any background', () {
+    const amber = Color(0xFFFFB300);
+    const white = Color(0xFFFFFFFF);
+    const nearBlack = Color(0xFF141414);
+    // Too pale on white: made darker, keeping its hue.
+    final onLight = readableOn(amber, white);
+    expect(contrastRatio(onLight, white), greaterThanOrEqualTo(3));
+    expect(
+      HSLColor.fromColor(onLight).hue,
+      closeTo(HSLColor.fromColor(amber).hue, 1),
+    );
+    // Already readable on black: unchanged.
+    expect(readableOn(amber, nearBlack), amber);
+  });
+
+  test('dark mode has white text, and true black when chosen', () {
+    final dark = buildTheme(const Color(0xFF00897B), Brightness.dark);
+    expect(dark.colorScheme.onSurface, Colors.white);
+    final black = buildTheme(
+      const Color(0xFF00897B),
+      Brightness.dark,
+      trueBlack: true,
+    );
+    expect(black.colorScheme.surface, Colors.black);
+  });
 }

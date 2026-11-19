@@ -31,6 +31,11 @@ abstract class IppoModule {
   /// The icon shown next to the module's title.
   IconData get icon;
 
+  /// The module's icon as a widget, for the tab bar, its Home tile and
+  /// its cards. It is [icon] unless a module draws its own; either way it
+  /// takes its size and colour from the surrounding `IconTheme`.
+  Widget buildIcon() => Icon(icon);
+
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
 

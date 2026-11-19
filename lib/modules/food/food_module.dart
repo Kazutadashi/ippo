@@ -57,7 +57,7 @@ class FoodModule extends IppoModule {
     ];
     final isToday = day == currentDay(now);
     final lastMealLine = _lastMealLine(
-      _latestTimedEntry(entries),
+      latestTimedEntry(entries),
       day,
       now,
       isToday,
@@ -133,26 +133,4 @@ String? _lastMealLine(
     return 'Last meal at ${showSavedTime(time)}';
   }
   return 'Last meal ${formatTimeAgo(elapsed)}';
-}
-
-/// The entry eaten last, by its time, or null if none has a time.
-/// Times are compared as moments, so 01:05 (after midnight) comes after
-/// 23:30 on the same day.
-FoodEntry? _latestTimedEntry(List<FoodEntry> entries) {
-  FoodEntry? latest;
-  DateTime? latestMoment;
-  // Any fixed day works for comparing; only the order matters.
-  final anyDay = DateTime(2000);
-  for (final entry in entries) {
-    final time = entry.time;
-    final moment = time == null ? null : momentOnDay(anyDay, time);
-    if (moment == null) {
-      continue;
-    }
-    if (latestMoment == null || !moment.isBefore(latestMoment)) {
-      latest = entry;
-      latestMoment = moment;
-    }
-  }
-  return latest;
 }

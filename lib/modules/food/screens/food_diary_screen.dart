@@ -89,6 +89,37 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
     return removed;
   }
 
+  /// One meal's row: tap it to change it, or swipe it left to remove
+  /// it. The food's name stands out; its time and amount are smaller and
+  /// grey under it; its energy sits on the right, in one column, so it is
+  /// easy to scan.
+  Widget _entryRow(FoodEntry entry) {
+    final textTheme = Theme.of(context).textTheme;
+    return Dismissible(
+      key: ValueKey(entry.id),
+      direction: DismissDirection.endToStart,
+      background: const _RemoveBackground(),
+      // Removes the entry first, and lets the row go only once that is
+      // saved.
+      confirmDismiss: (_) => _removeEntry(entry),
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(entry.name, style: textTheme.titleMedium),
+        subtitle: DefaultTextStyle.merge(
+          style: textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          child: _EntryDetails(entry: entry),
+        ),
+        trailing: Text(
+          formatEnergy(entry.nutrients.energyKcal),
+          style: textTheme.titleSmall,
+        ),
+        onTap: () => _editEntry(entry),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,6 +169,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
             final diary = FoodDiary.of(widget.appState);
             final date = formatDate(shownDay);
             final entries = diary.entriesOn(date);
+            final lastMeal = latestTimedEntry(entries);
             return ListView(
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
@@ -158,6 +190,15 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                     ),
                     const SizedBox(height: 8),
                     NutrientInfoRow(nutrients: diary.totalOn(date)),
+                    // When the last meal was, as on Home.
+                    if (lastMeal != null) ...[
+                      const Divider(height: Spacing.screen),
+                      _LastMealLine(
+                        entry: lastMeal,
+                        day: shownDay,
+                        isToday: showsToday,
+                      ),
+                    ],
                   ],
                 ),
                 SectionCard(
@@ -176,25 +217,11 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                     // Tap a row to change it, or swipe it away to remove
                     // it. The energy sits on the right, in one column, so
                     // it is easy to scan.
-                    for (final entry in entries)
-                      Dismissible(
-                        key: ValueKey(entry.id),
-                        direction: DismissDirection.endToStart,
-                        background: const _RemoveBackground(),
-                        // Removes the entry first, and lets the row go
-                        // only once that is saved.
-                        confirmDismiss: (_) => _removeEntry(entry),
-                        child: ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(entry.name),
-                          subtitle: _EntryDetails(entry: entry),
-                          trailing: Text(
-                            formatEnergy(entry.nutrients.energyKcal),
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          onTap: () => _editEntry(entry),
-                        ),
-                      ),
+                    for (var index = 0; index < entries.length; index++) ...[
+                      // A thin line between meals, so each stands apart.
+                      if (index > 0) const Divider(height: 1),
+                      _entryRow(entries[index]),
+                    ],
                   ],
                 ),
               ],
@@ -202,6 +229,54 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
           },
         ),
       ),
+    );
+  }
+}
+
+/// The last meal's time, and on the day itself how long ago that was:
+/// "Last meal" on the left, "7:15 pm" and "8 h ago" on the right.
+class _LastMealLine extends StatelessWidget {
+  const _LastMealLine({
+    required this.entry,
+    required this.day,
+    required this.isToday,
+  });
+
+  final FoodEntry entry;
+  final DateTime day;
+  final bool isToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final time = entry.time!;
+    final eatenAt = momentOnDay(day, time);
+    final elapsed = eatenAt == null ? null : DateTime.now().difference(eatenAt);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text('Last meal', style: textTheme.bodyMedium?.copyWith(color: muted)),
+        const SizedBox(width: Spacing.small),
+        Expanded(
+          child: Text(
+            entry.name,
+            style: textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: Spacing.small),
+        Text(showSavedTime(time), style: textTheme.titleSmall),
+        if (isToday && elapsed != null && !elapsed.isNegative) ...[
+          const SizedBox(width: Spacing.small),
+          Text(
+            formatTimeAgo(elapsed),
+            style: textTheme.bodySmall?.copyWith(color: muted),
+          ),
+        ],
+      ],
     );
   }
 }

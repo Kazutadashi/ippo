@@ -111,10 +111,16 @@ ThemeMode parseThemeMode(String? name) {
 ///
 /// With [matchSystem], the colours are worked out the way Android works
 /// out its own ("tonal spot"), so they match the rest of the phone.
+///
+/// In dark mode, text is pure white rather than the theme's tinted
+/// off-white, for the clearest contrast. With [trueBlack], the dark
+/// background is true black too (which saves power on OLED screens),
+/// and cards are the darkest greys that still show their edges.
 ThemeData buildTheme(
   Color accent,
   Brightness brightness, {
   bool matchSystem = false,
+  bool trueBlack = false,
 }) {
   final generated = ColorScheme.fromSeed(
     seedColor: accent,
@@ -130,7 +136,18 @@ ThemeData buildTheme(
     main.withValues(alpha: 0.25),
     generated.surface,
   );
+  final isDark = brightness == Brightness.dark;
   final colorScheme = generated.copyWith(
+    // Main text pure white in dark mode; grey text stays grey.
+    onSurface: isDark ? Colors.white : null,
+    surface: isDark && trueBlack ? Colors.black : null,
+    surfaceContainerLowest: isDark && trueBlack ? Colors.black : null,
+    surfaceContainerLow: isDark && trueBlack ? const Color(0xFF0B0B0B) : null,
+    surfaceContainer: isDark && trueBlack ? const Color(0xFF141414) : null,
+    surfaceContainerHigh: isDark && trueBlack ? const Color(0xFF1C1C1C) : null,
+    surfaceContainerHighest: isDark && trueBlack
+        ? const Color(0xFF242424)
+        : null,
     primaryContainer: main,
     onPrimaryContainer: onMain,
     secondary: main,
@@ -203,4 +220,38 @@ TextTheme _withTabularDigits(TextTheme textTheme) {
     labelMedium: tabular(textTheme.labelMedium),
     labelSmall: tabular(textTheme.labelSmall),
   );
+}
+
+/// The contrast that marks and large text need against their background
+/// (WCAG's level for graphics and large text).
+const double readableContrast = 3;
+
+/// [color], made only as much lighter or darker as it takes to stand out
+/// against [background] by at least [readableContrast]. Its hue stays,
+/// so a habit's colour is still its own: on a light card a yellow
+/// becomes a deeper yellow, on a dark card a navy becomes a brighter
+/// blue. A colour that already stands out is returned as it is.
+Color readableOn(Color color, Color background) {
+  final isDarkBackground = background.computeLuminance() < 0.5;
+  var hsl = HSLColor.fromColor(color);
+  // Small steps towards white on dark, towards black on light; at most
+  // twenty, which covers the whole range of lightness.
+  for (var step = 0; step < 20; step++) {
+    if (contrastRatio(hsl.toColor(), background) >= readableContrast) {
+      break;
+    }
+    final lightness = hsl.lightness + (isDarkBackground ? 0.05 : -0.05);
+    hsl = hsl.withLightness(lightness.clamp(0.0, 1.0));
+  }
+  return hsl.toColor();
+}
+
+/// How much two colours differ in brightness, from 1 (the same) to 21
+/// (black on white), as WCAG defines it.
+double contrastRatio(Color first, Color second) {
+  final a = first.computeLuminance();
+  final b = second.computeLuminance();
+  final lighter = a > b ? a : b;
+  final darker = a > b ? b : a;
+  return (lighter + 0.05) / (darker + 0.05);
 }

@@ -10,6 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../../core/widgets/dumbbell_icon.dart';
 import 'exercise.dart';
 import 'exercise_log.dart';
 import 'screens/exercise_home_screen.dart';
@@ -27,6 +28,11 @@ class ExerciseModule extends IppoModule {
 
   @override
   IconData get icon => Icons.fitness_center;
+
+  /// A dumbbell with thick plates, drawn by hand: Material's has thin
+  /// ones and stands at an angle.
+  @override
+  Widget buildIcon() => const DumbbellIcon();
 
   /// How many exercises were done on [day], with one mark each saying
   /// whether it beat its last session; then how many did, and how many

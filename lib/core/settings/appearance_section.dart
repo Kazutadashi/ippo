@@ -79,6 +79,14 @@ class AppearanceSection extends StatelessWidget {
           onSelectionChanged: (choice) =>
               appState.setThemeMode(choice.single.name),
         ),
+        // For OLED screens: true black instead of dark grey.
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('True black in dark mode'),
+          subtitle: const Text('For OLED screens: saves power'),
+          value: settings?.usesTrueBlack ?? false,
+          onChanged: appState.setTrueBlack,
+        ),
         const SizedBox(height: 20),
         const FieldLabel('Clock'),
         SegmentedButton<bool>(
