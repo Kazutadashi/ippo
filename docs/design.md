@@ -88,12 +88,11 @@ greeting, and times since become clock times).
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
 of day (dawn with a low sun and mist, a blue day with a few birds, dusk
 with the moon rising, night with stars and now and then a shooting
-star), fading into the page. The landscape is a valley made up fresh
-each day from the date: snowy peaks far off in the middle (each with a
-lit face, a shaded face and snow, like the icon), framed by two giant
-granite walls (flat-topped or domed, with sheer faces and streaked
-rock), a waterfall dropping from one of them, and pines and mist on the
-valley floor. So Home looks a
+star), fading into the page. The landscape is a great mountain range seen
+across open country, made up fresh each day from the date: a tall,
+continuous, mostly snowy range (broad massifs with smaller summits,
+shadowed gullies, ribs of rock and haze at its foot), rounded foothills,
+a long line of spruce forest, and a few tall spruces close by. So Home looks a
 little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.
