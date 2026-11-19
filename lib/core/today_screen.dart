@@ -194,7 +194,9 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     LoggingCalendar(
                       day: day,
                       loggedAreas: loggedAreas,
-                      areaCount: allModules.length,
+                      areaNames: [
+                        for (final module in allModules) module.title,
+                      ],
                     ),
                   ],
                 ],
@@ -261,7 +263,8 @@ Widget _tileFor(
     value: tile.value,
     valueNote: tile.valueNote,
     mark: tile.mark,
-    lines: tile.lines,
+    note: tile.note,
+    rows: tile.rows,
   );
 }
 

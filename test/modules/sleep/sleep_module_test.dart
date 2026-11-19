@@ -182,7 +182,7 @@ void main() {
       final tile = module.homeTile(appState, currentDay(morning), morning);
       expect(
         describeTile(tile),
-        '7 h 30 min slept | Awake 2 h 45 min, 7-day avg 8 h',
+        '7 h 30 min slept | Awake for 2 h 45 min, Nightly avg (7 days) 8 h',
       );
       // The night is drawn as a bar.
       expect(tile.mark, isNotNull);
@@ -204,7 +204,7 @@ void main() {
         describeTile(
           module.homeTile(appState, currentDay(lateNight), lateNight),
         ),
-        '8 h slept | Awake 18 h',
+        '8 h slept | Awake for 18 h',
       );
     });
 
@@ -262,7 +262,8 @@ void main() {
   });
 }
 
-/// Writes a home tile as `value note | lines`, for comparing.
+/// Writes a home tile as `value note | its note, then each row as
+/// "label value"`, for comparing.
 String describeTile(HomeTile tile) =>
     '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
-    '${tile.lines.join(', ')}';
+    '${[if (tile.note != null) tile.note!, for (final row in tile.rows) '${row.label} ${row.value}'].join(', ')}';

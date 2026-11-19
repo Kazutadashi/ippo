@@ -29,7 +29,8 @@ class HabitsModule extends IppoModule {
   IconData get icon => Icons.check_circle_outline;
 
   /// How many habits are done on [day], with one dot per habit; then the
-  /// longest streak and the 7-day average.
+  /// best streak of any habit, and how many were done a day on average
+  /// over the week before.
   @override
   HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = HabitLog.of(appState);
@@ -37,7 +38,7 @@ class HabitsModule extends IppoModule {
     if (habits.isEmpty) {
       return const HomeTile(
         value: HomeTile.unknownValue,
-        lines: ['No habits yet'],
+        note: 'No habits yet',
       );
     }
     final date = formatDate(day);
@@ -47,11 +48,15 @@ class HabitsModule extends IppoModule {
       value: '${_doneOn(log, habits, date)} of ${habits.length}',
       valueNote: 'done',
       mark: HabitDots(habits: habits, log: log, date: date),
-      lines: [
-        // A streak counts from two days on; one day is not a run yet.
-        if (streak.days >= 2) '${streak.habit.name}: ${streak.days} days',
+      rows: [
+        // The longest run of days in a row of any habit; one day is not a
+        // run yet.
+        if (streak.days >= 2) TileRow('Best streak', '${streak.days} days'),
         if (average != null)
-          '7-day avg ${formatAmount(average)} of ${habits.length}',
+          TileRow(
+            'Daily avg (7 days)',
+            '${formatAmount(average)} of ${habits.length}',
+          ),
       ],
     );
   }

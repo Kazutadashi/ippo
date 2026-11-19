@@ -165,7 +165,7 @@ void main() {
       // The week before: 2 done on the 16th and 1 on the 15th.
       expect(
         describeTile(module.homeTile(appState, currentDay(now), now)),
-        '1 of 3 done | Read: 3 days, 7-day avg 1.5 of 3',
+        '1 of 3 done | Best streak 3 days, Daily avg (7 days) 1.5 of 3',
       );
       final row = module.weekRows(appState, currentDay(now)).single;
       expect(row.label, 'Habits (%)');
@@ -228,11 +228,12 @@ void main() {
     await tester.pump();
 
     expect(currentLog().markOn(habitId, formatDate(now)), DayMark.done);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byType(BoldCheck), findsOneWidget);
   });
 }
 
-/// Writes a home tile as `value note | lines`, for comparing.
+/// Writes a home tile as `value note | its note, then each row as
+/// "label value"`, for comparing.
 String describeTile(HomeTile tile) =>
     '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
-    '${tile.lines.join(', ')}';
+    '${[if (tile.note != null) tile.note!, for (final row in tile.rows) '${row.label} ${row.value}'].join(', ')}';

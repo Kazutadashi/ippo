@@ -25,8 +25,6 @@ class TimeSpanBar extends StatelessWidget {
     required this.startLabel,
     required this.endLabel,
     required this.description,
-    this.usualStart,
-    this.usualEnd,
   });
 
   /// The night that sleep usually falls in: 20:00 to noon.
@@ -63,14 +61,6 @@ class TimeSpanBar extends StatelessWidget {
   /// 7:00 am".
   final String description;
 
-  /// Where the usual stretch begins, such as the average bedtime of the
-  /// last week, or null for none. The usual stretch is drawn faintly
-  /// behind the filled part, so an early or late night shows at once.
-  final ClockTime? usualStart;
-
-  /// Where the usual stretch ends.
-  final ClockTime? usualEnd;
-
   /// Where [time] falls on the bar, from 0 to 1. Times before the bar's
   /// start count as the next day; times outside it stay at its ends.
   double _position(ClockTime time) {
@@ -85,8 +75,6 @@ class TimeSpanBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall;
     final color = Theme.of(context).colorScheme.primary;
-    final usualStart = this.usualStart;
-    final usualEnd = this.usualEnd;
     return Semantics(
       label: description,
       child: ExcludeSemantics(
@@ -104,19 +92,7 @@ class TimeSpanBar extends StatelessWidget {
                 color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(3),
               ),
-              // The usual stretch, faint, under this one, solid.
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (usualStart != null && usualEnd != null)
-                    _stretch(
-                      usualStart,
-                      usualEnd,
-                      color.withValues(alpha: 0.35),
-                    ),
-                  _stretch(start, end, color),
-                ],
-              ),
+              child: _stretch(start, end, color),
             ),
             const SizedBox(height: 3),
             Row(

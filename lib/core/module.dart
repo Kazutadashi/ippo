@@ -13,7 +13,7 @@ import 'app_state.dart';
 import 'dates.dart';
 import 'widgets/info_tile.dart';
 
-export 'widgets/info_tile.dart' show LabelledValues, TileDetail;
+export 'widgets/info_tile.dart' show LabelledValues, TileDetail, TileRow;
 
 /// A module: one area of the app, such as the food diary.
 abstract class IppoModule {
@@ -68,17 +68,19 @@ abstract class IppoModule {
 
 /// A module's tile on Home. Every tile has the same parts in the same
 /// places, so tiles side by side line up: the module's icon and title
-/// (from the module), then [value], then [mark], then [lines].
+/// (from the module), then [value], then [mark], then [rows].
 ///
 /// For example, Food: "1007 kcal" "so far", Protein / Carbs / Fat as the
-/// mark, then "Last meal 8 h ago" and "7-day avg 1326 kcal".
+/// mark, then the rows "Left today 993 kcal" and "Daily avg (7 days)
+/// 1326 kcal".
 class HomeTile {
   /// Creates a tile's content.
   const HomeTile({
     required this.value,
     this.valueNote,
     this.mark,
-    this.lines = const [],
+    this.note,
+    this.rows = const [],
   });
 
   /// The text shown for a value that is not known yet.
@@ -96,11 +98,15 @@ class HomeTile {
   /// last night as a bar. Built by the module, so it can draw its data.
   final Widget? mark;
 
-  /// Up to two short grey lines under the mark: one fact, such as
-  /// `Last meal 8 h ago`, and then the comparison with the usual, always
-  /// written out, such as `7-day avg 1326 kcal`. Or a note such as
-  /// `Not logged yet`.
-  final List<String> lines;
+  /// A short note in the mark's place when there is nothing to draw,
+  /// saying exactly what is missing, such as `Bedtime not logged`.
+  final String? note;
+
+  /// Up to two rows of a label and a number, the numbers lined up at the
+  /// right edge: one fact about today, then the usual, such as "Daily
+  /// avg (7 days)". Labels say plainly what the number is, so anyone can
+  /// read the tile without asking.
+  final List<TileRow> rows;
 }
 
 /// A module's row in Home's week grid: one short value per day.

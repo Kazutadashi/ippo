@@ -3,15 +3,13 @@
 /// The exercise module: exercises and the sets done each day.
 library;
 
-import 'dart:math';
-
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../../core/number_input.dart';
 import '../../core/widgets/dumbbell_icon.dart';
-import 'exercise.dart';
 import 'exercise_log.dart';
 import 'screens/exercise_home_screen.dart';
 
@@ -34,41 +32,45 @@ class ExerciseModule extends IppoModule {
   @override
   Widget buildIcon() => const DumbbellIcon();
 
-  /// How many exercises were done on [day], with one mark each saying
-  /// whether it beat its last session; then how many did (or when the
-  /// last workout was), and the day's steps.
+  /// The steps walked on [day], the number most worth a glance; a badge
+  /// saying whether there was a workout ("4 exercises today" or "Rest
+  /// day"); then the daily average of steps and how many of the week's
+  /// days had a workout.
   @override
   HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = ExerciseLog.of(appState);
-    final exercises = log.activeExercises;
     final date = formatDate(day);
     final steps = log.stepsOn(date);
-    final stepsLine = steps == null ? null : '${steps.steps} steps';
-    if (exercises.isEmpty) {
-      return HomeTile(
-        value: HomeTile.unknownValue,
-        lines: ['No exercises yet', if (stepsLine != null) stepsLine],
-      );
-    }
-    final progress = [
-      for (final exercise in exercises) _progressOf(log, exercise, date),
-    ];
-    final done = progress.where((one) => one != _Progress.notDone).length;
-    final beat = progress.where((one) => one == _Progress.better).length;
+    final isToday = day == currentDay(now);
+    final done = log.activeExercises
+        .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
+        .length;
     final trainedDays = daysBefore(day)
         .where((before) => _trainedOn(log, formatDate(before)))
         .length;
+    final averageSteps = _averageSteps(log, day);
     return HomeTile(
-      value: '$done of ${exercises.length}',
-      valueNote: 'done',
-      mark: _ProgressMarks(exercises: exercises, progress: progress),
-      lines: [
+      value: steps == null
+          ? HomeTile.unknownValue
+          : formatThousands(steps.steps),
+      valueNote: 'steps',
+      mark: _WorkoutBadge(
+        text: done == 0
+            ? 'Rest day'
+            : '$done ${done == 1 ? 'exercise' : 'exercises'}'
+                  '${isToday ? ' today' : ''}',
+        isRest: done == 0,
+      ),
+      rows: [
         if (done == 0)
-          _sinceLastWorkout(log, day, isToday: day == currentDay(now))
+          TileRow('Last workout', _lastWorkout(log, day, isToday: isToday))
         else
-          '$beat beat last time',
-        // The day's steps when logged; otherwise the week's workouts.
-        stepsLine ?? 'Trained $trainedDays of the last 7 days',
+          TileRow(
+            'Workouts (7 days)',
+            trainedDays == 1 ? '1 day' : '$trainedDays days',
+          ),
+        if (averageSteps != null)
+          TileRow('Daily avg (7 days)', formatThousands(averageSteps)),
       ],
     );
   }
@@ -118,14 +120,9 @@ class ExerciseModule extends IppoModule {
       ExerciseHomeScreen(appState: appState);
 }
 
-/// A note for a day without sets: when the last workout before it was,
-/// such as "Last workout 2 days ago" (or "… before", looking back at an
-/// earlier day), or that there is none yet.
-String _sinceLastWorkout(
-  ExerciseLog log,
-  DateTime day, {
-  required bool isToday,
-}) {
+/// When the last workout before [day] was: "yesterday" (or "the day
+/// before" looking back), "3 days ago", or "none yet".
+String _lastWorkout(ExerciseLog log, DateTime day, {required bool isToday}) {
   DateTime? last;
   for (final set in log.sets) {
     final setDay = parseDate(set.date);
@@ -137,13 +134,28 @@ String _sinceLastWorkout(
     }
   }
   if (last == null) {
-    return 'No sets logged yet';
+    return 'none yet';
   }
   final days = day.difference(last).inDays;
   if (days == 1) {
-    return isToday ? 'Last workout yesterday' : 'Last workout the day before';
+    return isToday ? 'yesterday' : 'the day before';
   }
-  return 'Last workout $days days ${isToday ? 'ago' : 'before'}';
+  return '$days days ${isToday ? 'ago' : 'before'}';
+}
+
+/// The average steps a day over the week before [day], counting only
+/// days with steps logged; null without any.
+int? _averageSteps(ExerciseLog log, DateTime day) {
+  var total = 0;
+  var days = 0;
+  for (final before in daysBefore(day)) {
+    final count = log.stepsOn(formatDate(before));
+    if (count != null) {
+      total += count.steps;
+      days++;
+    }
+  }
+  return days == 0 ? null : (total / days).round();
 }
 
 /// How many exercises have sets on [date], or null for none.
@@ -163,106 +175,40 @@ bool _trainedOn(ExerciseLog log, String date) => log.activeExercises.any(
   (exercise) => log.setsOn(date, exercise.id).isNotEmpty,
 );
 
-/// How an exercise went on a day, compared with its last session.
-enum _Progress {
-  /// Its best set beat the last session's best.
-  better,
+/// A small rounded badge with the dumbbell: "4 exercises today" in the
+/// accent colour, or "Rest day" in grey.
+class _WorkoutBadge extends StatelessWidget {
+  const _WorkoutBadge({required this.text, required this.isRest});
 
-  /// The same best as last time.
-  same,
-
-  /// A lower best than last time.
-  less,
-
-  /// Done for the first time: nothing to compare with.
-  first,
-
-  /// Not done that day.
-  notDone,
-}
-
-/// How [exercise] went on [date], by its best set against the best set
-/// of the session before.
-_Progress _progressOf(ExerciseLog log, Exercise exercise, String date) {
-  final sets = log.setsOn(date, exercise.id);
-  if (sets.isEmpty) {
-    return _Progress.notDone;
-  }
-  final previous = log.previousSessionOf(exercise.id, date);
-  if (previous == null || previous.sets.isEmpty) {
-    return _Progress.first;
-  }
-  final best = sets.map((set) => set.value).reduce(max);
-  final bestBefore = previous.sets.map((set) => set.value).reduce(max);
-  if (best > bestBefore) {
-    return _Progress.better;
-  }
-  return best == bestBefore ? _Progress.same : _Progress.less;
-}
-
-/// One mark per exercise, in the order of the Exercise tab: an arrow up
-/// when it beat last time, a dash when it matched it, an arrow down when
-/// it fell short, a dot when done for the first time, and a faint ring
-/// when not done yet. Calm on purpose: a lower day is grey, never red.
-class _ProgressMarks extends StatelessWidget {
-  const _ProgressMarks({required this.exercises, required this.progress});
-
-  final List<Exercise> exercises;
-  final List<_Progress> progress;
+  final String text;
+  final bool isRest;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    const words = {
-      _Progress.better: 'better than last time',
-      _Progress.same: 'same as last time',
-      _Progress.less: 'less than last time',
-      _Progress.first: 'done',
-      _Progress.notDone: 'not done',
-    };
-    return Semantics(
-      label: [
-        for (var index = 0; index < exercises.length; index++)
-          '${exercises[index].name}: ${words[progress[index]]}',
-      ].join(', '),
-      child: ExcludeSemantics(
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
-          children: [for (final one in progress) _mark(one, colors)],
-        ),
+    final tone = isRest ? colors.onSurfaceVariant : colors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
       ),
-    );
-  }
-
-  Widget _mark(_Progress progress, ColorScheme colors) {
-    final accent = colors.primary;
-    final muted = colors.onSurfaceVariant;
-    return SizedBox(
-      width: 18,
-      height: 18,
-      child: switch (progress) {
-        _Progress.better => Icon(Icons.arrow_upward, size: 18, color: accent),
-        _Progress.same => Icon(Icons.remove, size: 18, color: muted),
-        _Progress.less => Icon(Icons.arrow_downward, size: 18, color: muted),
-        _Progress.first => Center(
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-          ),
-        ),
-        _Progress.notDone => Center(
-          child: Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: accent.withValues(alpha: 0.4)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DumbbellIcon(size: 16, color: tone),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: tone),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-        ),
-      },
+        ],
+      ),
     );
   }
 }

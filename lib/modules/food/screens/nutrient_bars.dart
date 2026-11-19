@@ -29,14 +29,14 @@ class NutrientAmount {
   /// The unit, such as `g`.
   String get unit => nutrientKindOf(key)?.unit ?? '';
 
-  /// How far along the bar is, from 0 to 1 (full past the reference).
+  /// How much of the daily amount this is: 1 is all of it, more is over.
   double get share {
     final amount = this.amount;
     final reference = this.reference;
     if (amount == null || reference == null || reference <= 0) {
       return 0;
     }
-    return (amount / reference).clamp(0.0, 1.0);
+    return amount / reference;
   }
 }
 
@@ -47,11 +47,13 @@ String formatNutrientAmount(double amount, String unit) {
 }
 
 /// A thin bar as full as [share], in the accent colour on a pale track.
+/// Past 1 (more than the daily amount) it is full and red, the theme's
+/// colour for problems, so going over shows at a glance.
 class ShareBar extends StatelessWidget {
   /// Creates the bar.
   const ShareBar({super.key, required this.share, this.height = 4});
 
-  /// How full, from 0 to 1.
+  /// How full: 0 empty, 1 full; more than 1 is over.
   final double share;
 
   /// How thick.
@@ -59,7 +61,9 @@ class ShareBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
+    final colors = Theme.of(context).colorScheme;
+    final isOver = share > 1;
+    final color = isOver ? colors.error : colors.primary;
     final filled = (share.clamp(0.0, 1.0) * 1000).round();
     return Container(
       height: height,

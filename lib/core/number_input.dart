@@ -37,3 +37,14 @@ double roundToTenth(double number) => (number * 10).round() / 10;
 num jsonNumber(double value) {
   return value == value.roundToDouble() ? value.round() : value;
 }
+
+/// Writes a whole number with commas between thousands, as people read
+/// it: `6390` becomes `6,390`.
+String formatThousands(int number) {
+  final digits = number.abs().toString();
+  final groups = <String>[];
+  for (var end = digits.length; end > 0; end -= 3) {
+    groups.insert(0, digits.substring(end - 3 < 0 ? 0 : end - 3, end));
+  }
+  return '${number < 0 ? '-' : ''}${groups.join(',')}';
+}

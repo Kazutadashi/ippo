@@ -33,7 +33,7 @@ class LoggingCalendar extends StatelessWidget {
     super.key,
     required this.day,
     required this.loggedAreas,
-    required this.areaCount,
+    required this.areaNames,
   });
 
   /// The last day shown.
@@ -43,8 +43,11 @@ class LoggingCalendar extends StatelessWidget {
   /// (habits, food, ...) have data.
   final Map<String, int> loggedAreas;
 
+  /// The areas, such as Habits and Food, named in the explanation.
+  final List<String> areaNames;
+
   /// How many areas there are, for a full square.
-  final int areaCount;
+  int get areaCount => areaNames.length;
 
   @override
   Widget build(BuildContext context) {
@@ -90,8 +93,17 @@ class LoggingCalendar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text('$logged of the last ${weeks * 7}', style: small),
+                    Text('$logged of ${weeks * 7} days', style: small),
                   ],
+                ),
+                const SizedBox(height: Spacing.tight),
+                // Says what the squares are, for someone seeing them for
+                // the first time.
+                Text(
+                  'Each square is one day. The more of '
+                  '${_listOf(areaNames)} you logged that day, the darker '
+                  'it is.',
+                  style: small,
                 ),
                 const SizedBox(height: Spacing.small),
                 Semantics(
@@ -158,8 +170,16 @@ class LoggingCalendar extends StatelessWidget {
   /// One day's square: empty after [day], pale for nothing logged, and
   /// darker the more areas have data. The day shown has a ring.
   Widget _dayOf(DateTime date, ColorScheme colors) {
+    // A day still to come: an empty outline, so every day has a square.
     if (date.isAfter(day)) {
-      return const SizedBox.square(dimension: _square);
+      return Container(
+        width: _square,
+        height: _square,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(2),
+          border: Border.all(color: colors.surfaceContainerHighest),
+        ),
+      );
     }
     final count = loggedAreas[formatDate(date)] ?? 0;
     return Container(
@@ -185,13 +205,13 @@ class LoggingCalendar extends StatelessWidget {
     return colors.primary.withValues(alpha: 0.25 + 0.75 * share);
   }
 
-  /// "Less" and "More" with the shades between, so the colours explain
+  /// "None" and "All 4" with the shades between, so the colours explain
   /// themselves.
   Widget _legend(ColorScheme colors, TextStyle? style) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text('Nothing', style: style),
+        Text('None', style: style),
         const SizedBox(width: Spacing.tight),
         for (var count = 0; count <= areaCount; count++)
           Padding(
@@ -206,8 +226,17 @@ class LoggingCalendar extends StatelessWidget {
             ),
           ),
         const SizedBox(width: Spacing.tight),
-        Text('Everything', style: style),
+        Text('All $areaCount', style: style),
       ],
     );
   }
+}
+
+/// Names joined for a sentence: "habits, food, exercise and sleep".
+String _listOf(List<String> names) {
+  final lower = [for (final name in names) name.toLowerCase()];
+  if (lower.length < 2) {
+    return lower.join();
+  }
+  return '${lower.sublist(0, lower.length - 1).join(', ')} and ${lower.last}';
 }

@@ -262,53 +262,52 @@ void main() {
     const module = ExerciseModule();
     final now = DateTime.parse('${day1}T20:00:00');
     final tile = module.homeTile(appState, currentDay(now), now);
-    expect(tile.lines, ['No exercises yet', '6500 steps']);
+    expect(tile.value, '6,500');
+    expect(tile.valueNote, 'steps');
     final row = module.weekRows(appState, currentDay(now)).single;
     expect(row.label, 'Steps (k)');
     expect(row.cells.last, '6.5');
   });
 
-  test('home tile: exercises done, what beat last time, the week', () async {
+  test('home tile: steps, the workout, and the week', () async {
     const module = ExerciseModule();
     final now = DateTime(2026, 11, 18, 20);
     final day = currentDay(now);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '– | No exercises yet',
+      '– steps | Last workout none yet',
     );
 
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
     final plank = await createExercise('Plank', MeasuredIn.seconds);
-    final squat = await createExercise('Squat', MeasuredIn.reps);
     await addSets(pushUp, '2026-11-16', 15, 1);
-    await addSets(plank, '2026-11-16', 40, 1);
-    await addSets(squat, '2026-11-16', 30, 1);
+    await actions.saveSteps(date: '2026-11-16', steps: 8000, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '0 of 3 done | Last workout 2 days ago, Trained 1 of the last 7 days',
+      '– steps | Last workout 2 days ago, Daily avg (7 days) 8,000',
     );
 
     await addSets(pushUp, '2026-11-18', 20, 1);
-    await addSets(pushUp, '2026-11-18', 18, 1);
     await addSets(plank, '2026-11-18', 41, 1);
-    await addSets(squat, '2026-11-18', 28, 1);
+    await actions.saveSteps(date: '2026-11-18', steps: 10500, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '3 of 3 done | 2 beat last time, Trained 1 of the last 7 days',
+      '10,500 steps | Workouts (7 days) 1 day, Daily avg (7 days) 8,000',
     );
-    expect(module.weekRows(appState, day).single.cells, [
+    expect(module.weekRows(appState, day).first.cells, [
       null,
       null,
       null,
       null,
-      '3',
+      '1',
       null,
-      '3',
+      '2',
     ]);
   });
 }
 
-/// Writes a home tile as `value note | lines`, for comparing.
+/// Writes a home tile as `value note | its note, then each row as
+/// "label value"`, for comparing.
 String describeTile(HomeTile tile) =>
     '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
-    '${tile.lines.join(', ')}';
+    '${[if (tile.note != null) tile.note!, for (final row in tile.rows) '${row.label} ${row.value}'].join(', ')}';

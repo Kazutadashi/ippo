@@ -23,6 +23,23 @@ class TileDetail {
   final String? badge;
 }
 
+/// One row under a tile's mark: a label at the left and its number at
+/// the right edge, such as "Daily avg (7 days)" and "1326 kcal".
+class TileRow {
+  /// Creates a row.
+  const TileRow(this.label, this.value, {this.isWarning = false});
+
+  /// What the number is.
+  final String label;
+
+  /// The number with its unit.
+  final String value;
+
+  /// Whether the number is a warning, such as calories over the limit:
+  /// it is then shown in the theme's error colour.
+  final bool isWarning;
+}
+
 /// The value shown when nothing is known yet.
 const String unknownTileValue = '–';
 
@@ -49,10 +66,11 @@ const double _markRowHeight = 42;
 /// 2. the value: today's, large ("1007 kcal"), with an optional word
 ///    after it that says what it is ("so far");
 /// 3. the mark: one small picture, such as a dot per habit, in a row of
-///    fixed height;
-/// 4. the lines: one or two short grey lines, such as "Last meal 8 h
-///    ago", with the comparison to the usual always last ("7-day avg
-///    1326 kcal").
+///    fixed height, or a short note in its place when there is nothing
+///    to draw;
+/// 4. the rows: one or two rows of a grey label and a number, with the
+///    numbers lined up at the right edge, the usual always last ("Daily
+///    avg (7 days)  1326 kcal").
 class HomeTileCard extends StatelessWidget {
   /// Creates the tile.
   const HomeTileCard({
@@ -62,7 +80,8 @@ class HomeTileCard extends StatelessWidget {
     required this.value,
     this.valueNote,
     this.mark,
-    this.lines = const [],
+    this.note,
+    this.rows = const [],
   });
 
   /// The module's icon, such as `module.buildIcon()`.
@@ -80,28 +99,30 @@ class HomeTileCard extends StatelessWidget {
   /// One small picture.
   final Widget? mark;
 
-  /// One or two short grey lines.
-  final List<String> lines;
+  /// A note in the mark's place, when there is no mark.
+  final String? note;
+
+  /// One or two rows of a label and a number.
+  final List<TileRow> rows;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
     final muted = colors.onSurfaceVariant;
-    // Without a mark (nothing logged yet), the first line takes its
-    // place, so an empty tile has no hole and the last line still lines
-    // up with the tile beside it.
-    final lineStyle = textTheme.bodySmall?.copyWith(color: muted);
-    final firstLineAsMark = this.mark == null && lines.isNotEmpty;
-    final mark = firstLineAsMark
-        ? Text(
-            lines.first,
-            style: lineStyle,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          )
-        : this.mark;
-    final shownLines = (firstLineAsMark ? lines.skip(1) : lines).take(2);
+    // Without a mark (nothing logged yet), the note takes its place, so
+    // an empty tile has no hole.
+    final note = this.note;
+    final mark =
+        this.mark ??
+        (note == null
+            ? null
+            : Text(
+                note,
+                style: textTheme.bodySmall?.copyWith(color: muted),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ));
     // Screen readers read the whole tile as one item: "Food, 1007 kcal
     // so far, …, 7-day avg 1326 kcal".
     return MergeSemantics(
@@ -151,16 +172,42 @@ class HomeTileCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Spacing.tight),
-              for (final line in shownLines)
-                Text(
-                  line,
-                  style: lineStyle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              for (final row in rows.take(2)) _row(row, textTheme, colors),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// One row: the label in grey at the left, the number at the right
+  /// edge, so numbers line up down the tile and across a row of tiles.
+  Widget _row(TileRow row, TextTheme textTheme, ColorScheme colors) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Expanded(
+            child: Text(
+              row.label,
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: Spacing.small),
+          Text(
+            row.value,
+            style: textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: row.isWarning ? colors.error : colors.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -193,7 +240,9 @@ class HomeTileCard extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         children: [
           valueText,
-          if (note != null && value != unknownTileValue) ...[
+          // The note says what the value is, even before it is known
+          // ("– steps").
+          if (note != null) ...[
             const SizedBox(width: 6),
             Text(note, style: small),
           ],

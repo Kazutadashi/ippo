@@ -31,21 +31,24 @@ class FoodModule extends IppoModule {
   @override
   IconData get icon => Icons.restaurant;
 
-  /// The energy eaten on [day] ("so far" today), with protein, carbs
-  /// and fat as the mark; then the last meal and the 7-day average.
+  /// The energy eaten on [day] ("so far" today, or "of" the limit), with
+  /// protein, carbs and fat as the mark, each against its daily amount;
+  /// then how much is left (or when the last meal was, without a
+  /// limit), and the daily average over the week before.
   @override
   HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final diary = FoodDiary.of(appState);
     final date = formatDate(day);
     final entries = diary.entriesOn(date);
     final average = _averageEnergy(diary, day);
-    final averageLine = average == null
+    final averageRow = average == null
         ? null
-        : '7-day avg ${formatEnergy(average)}';
+        : TileRow('Daily avg (7 days)', formatEnergy(average));
     if (entries.isEmpty) {
       return HomeTile(
         value: HomeTile.unknownValue,
-        lines: ['Nothing logged yet', if (averageLine != null) averageLine],
+        note: 'Nothing logged yet',
+        rows: [if (averageRow != null) averageRow],
       );
     }
     final values = diary.totalOn(date).values;
@@ -60,19 +63,23 @@ class FoodModule extends IppoModule {
     };
     final hasMacros = names.keys.any(values.containsKey);
     final isToday = day == currentDay(now);
-    final lastMealLine = _lastMealLine(
-      latestTimedEntry(entries),
-      day,
-      now,
-      isToday,
-    );
     // With a limit, how much is left matters more than the last meal
-    // (which the Food page shows).
-    final firstLine = target == null
-        ? lastMealLine
-        : energy <= target
-        ? '${formatEnergy(target - energy)} left'
-        : '${formatEnergy(energy - target)} over';
+    // (which the Food page shows). Over the limit is in red.
+    final TileRow? firstRow;
+    if (target == null) {
+      firstRow = _lastMealRow(latestTimedEntry(entries), day, now, isToday);
+    } else if (energy <= target) {
+      firstRow = TileRow(
+        isToday ? 'Left today' : 'Under the limit',
+        formatEnergy(target - energy),
+      );
+    } else {
+      firstRow = TileRow(
+        'Over the limit',
+        formatEnergy(energy - target),
+        isWarning: true,
+      );
+    }
     return HomeTile(
       value: formatEnergy(energy),
       // Against the limit when there is one; otherwise "so far": today is
@@ -97,9 +104,9 @@ class FoodModule extends IppoModule {
               ],
             )
           : null,
-      lines: [
-        if (firstLine != null) firstLine,
-        if (averageLine != null) averageLine,
+      rows: [
+        if (firstRow != null) firstRow,
+        if (averageRow != null) averageRow,
       ],
     );
   }
@@ -161,9 +168,9 @@ double? _averageEnergy(FoodDiary diary, DateTime day) {
   return loggedDays == 0 ? null : total / loggedDays;
 }
 
-/// "Last meal 8 h ago" today, or "Last meal at 7:15 pm" on another day;
+/// "Last meal" with "8 h ago" today, or "7:15 pm" on another day;
 /// null without an entry that has a time.
-String? _lastMealLine(
+TileRow? _lastMealRow(
   FoodEntry? lastMeal,
   DateTime day,
   DateTime now,
@@ -176,7 +183,7 @@ String? _lastMealLine(
   }
   final elapsed = now.difference(eatenAt);
   if (!isToday || elapsed.isNegative) {
-    return 'Last meal at ${showSavedTime(time)}';
+    return TileRow('Last meal', showSavedTime(time));
   }
-  return 'Last meal ${formatTimeAgo(elapsed)}';
+  return TileRow('Last meal', formatTimeAgo(elapsed));
 }
