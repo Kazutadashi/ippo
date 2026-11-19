@@ -36,10 +36,8 @@ The scripts in `python/examples/` also use `matplotlib`, the standard
 Python charting library, to draw charts. The package itself does not
 need it.
 
-## Artwork from other projects
+## Artwork
 
-| What | From | Licence | Where |
-| --- | --- | --- | --- |
-| The character 歩 on the launcher icon | The brush font Yuji Boku, by the Yuji Project Authors (Kinuta Font Factory); only this one letter's outline, not the font | SIL Open Font License 1.1 (allows use in artwork) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml` and `ic_launcher_monochrome.xml`, and the `ic_launcher.png` files made from it |
-
-The mountains behind it are drawn by hand for Ippo.
+The launcher icon (a mountain range in front of the moon) is drawn by
+hand for Ippo, in `android/app/src/main/res/drawable/`. It uses no
+artwork or fonts from other projects.
