@@ -86,7 +86,7 @@ day bar, which looks back at earlier days ("Looking back" replaces the
 greeting, and times since become clock times).
 
 Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
-18 November"), then a grid of `InfoTile`s, two per row (one per row
+18 Nov") beside the day bar, then a grid of `InfoTile`s, two per row (one per row
 with large text, up to four on a wide window), each row as tall as its
 tallest tile. Two notes appear only when needed: for someone who has
 logged nothing yet ("Log things in the tabs below."), and when another
