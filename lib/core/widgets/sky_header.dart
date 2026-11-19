@@ -251,7 +251,7 @@ class _SkyPainter extends CustomPainter {
     // of the gear, so it never sits behind either.
     final lightCentre = Offset(
       w * (0.58 + random.nextDouble() * 0.2),
-      y(palette.isSun ? 0.12 : 0.08),
+      y(palette.isSun ? 0.02 : -0.06),
     );
     final radius = land * 0.13;
     _stars(canvas, size, Random(seed + 1), lightCentre, radius * 1.8);
@@ -293,8 +293,10 @@ class _SkyPainter extends CustomPainter {
   }
 
   /// The great range: a ridge across the whole width with a few clear
-  /// summits, mostly snow. Each mountain's face turned from the light is
-  /// in shadow, the lower slopes turn to rock, and haze lies at its foot.
+  /// summits. The mountains are bare rock, with snow only on the tops,
+  /// above a ragged snowline, so the tallest peaks carry the most. Each
+  /// mountain's face turned from the light is in shadow (darker rock,
+  /// grey-blue snow), and haze lies at its foot.
   void _range(
     Canvas canvas,
     Random random,
@@ -302,40 +304,43 @@ class _SkyPainter extends CustomPainter {
     double Function(double) y,
     double land,
   ) {
-    final ridge = _rangeRidge(random, w, y(0.62), land * 0.66);
+    final ridge = _rangeRidge(random, w, y(0.66), land * 0.56);
     final foot = y(0.80);
     final shape = _pathBelow(ridge, foot);
-    canvas.drawPath(shape, Paint()..color = palette.snow);
-
+    final faces = _shadedFaces(ridge, foot, land);
     canvas
+      ..drawPath(shape, Paint()..color = palette.rock)
       ..save()
       ..clipPath(shape);
-    // One shaded face per mountain: from each summit down its right
-    // slope to the next valley, bounded on the left by a line slanting
-    // down from the summit.
-    final shadow = Paint()..color = palette.shadow;
-    for (final (summit, valley) in _faces(ridge)) {
-      final top = ridge[summit];
-      final low = ridge[valley];
-      // A drop too small to see as a mountain gets no face.
-      if (low.dy - top.dy < land * 0.06) {
-        continue;
-      }
-      // The shadow's edge slants down and to the right from the summit,
-      // so the face widens toward the foot. Even a steep, narrow face
-      // gets some slant, or it would look like a stripe.
-      final run = max(low.dx - top.dx, land * 0.6);
-      canvas.drawPath(
-        Path()..addPolygon([
-          for (var index = summit; index <= valley; index++) ridge[index],
-          Offset(low.dx + run * 0.2, foot),
-          Offset(top.dx + run * 0.6, foot),
-        ], true),
-        shadow,
-      );
+    final darkRock = Paint()
+      ..color = Color.lerp(palette.rock, Colors.black, 0.3)!;
+    for (final face in faces) {
+      canvas.drawPath(face, darkRock);
     }
-    // The lower slopes: bare rock, then haze at the foot.
-    final lower = Rect.fromLTRB(0, y(0.25), w, foot);
+
+    // The snow: above a snowline a little below the highest summit, with
+    // a ragged lower edge.
+    final highest = ridge.map((point) => point.dy).reduce(min);
+    final snowline = highest + (foot - highest) * 0.32;
+    final snowArea = Path()
+      ..moveTo(0, 0)
+      ..lineTo(w, 0);
+    for (var x = w; x >= 0; x -= 6) {
+      snowArea.lineTo(x, snowline + (random.nextDouble() - 0.4) * land * 0.07);
+    }
+    snowArea.close();
+    canvas
+      ..save()
+      ..clipPath(snowArea)
+      ..drawPath(shape, Paint()..color = palette.snow);
+    final snowShadow = Paint()..color = palette.shadow;
+    for (final face in faces) {
+      canvas.drawPath(face, snowShadow);
+    }
+    canvas.restore();
+
+    // Haze at the foot, far away.
+    final lower = Rect.fromLTRB(0, y(0.45), w, foot);
     canvas
       ..drawRect(
         lower,
@@ -344,14 +349,37 @@ class _SkyPainter extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              palette.rock.withValues(alpha: 0),
-              palette.rock.withValues(alpha: 0.55),
-              palette.haze.withValues(alpha: 0.85),
+              palette.haze.withValues(alpha: 0),
+              palette.haze.withValues(alpha: 0.8),
             ],
-            stops: const [0, 0.6, 1],
           ).createShader(lower),
       )
       ..restore();
+  }
+
+  /// The face of each mountain turned from the light: from its summit
+  /// down its right slope to the next valley, with an edge that slants
+  /// down from the summit, so the face widens toward the [foot]. Even a
+  /// steep, narrow face gets some slant, or it would look like a stripe;
+  /// a drop too small to read as a mountain gets no face.
+  static List<Path> _shadedFaces(List<Offset> ridge, double foot, double land) {
+    return [
+      for (final (summit, valley) in _faces(ridge))
+        if (ridge[valley].dy - ridge[summit].dy >= land * 0.06)
+          Path()..addPolygon([
+            for (var index = summit; index <= valley; index++) ridge[index],
+            Offset(
+              ridge[valley].dx +
+                  max(ridge[valley].dx - ridge[summit].dx, land * 0.6) * 0.2,
+              foot,
+            ),
+            Offset(
+              ridge[summit].dx +
+                  max(ridge[valley].dx - ridge[summit].dx, land * 0.6) * 0.6,
+              foot,
+            ),
+          ], true),
+    ];
   }
 
   /// Each summit of [ridge] (higher than both neighbours: a smaller y)
