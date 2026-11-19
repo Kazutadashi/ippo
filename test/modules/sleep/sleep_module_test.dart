@@ -187,8 +187,8 @@ void main() {
       // The night is drawn as a bar.
       expect(tile.mark, isNotNull);
       final row = module.weekRow(appState, currentDay(morning))!;
-      expect(row.shape, WeekMarkShape.bar);
-      expect(row.values.last, closeTo(0.75, 0.001));
+      expect(row.label, 'Sleep (h)');
+      expect(row.cells.last, '7.5');
     });
 
     test('at 01:00, the day before is still today', () async {

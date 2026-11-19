@@ -273,7 +273,15 @@ void main() {
       describeTile(module.homeTile(appState, day, now)),
       '3 of 3 done | 2 beat last time, Trained 1 of the last 7 days',
     );
-    expect(module.weekRow(appState, day)!.values, [0, 0, 0, 0, 1, 0, 1]);
+    expect(module.weekRow(appState, day)!.cells, [
+      null,
+      null,
+      null,
+      null,
+      '3',
+      null,
+      '3',
+    ]);
   });
 }
 

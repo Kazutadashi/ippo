@@ -56,7 +56,8 @@ class HabitsModule extends IppoModule {
     );
   }
 
-  /// The share of habits done on each of the seven days.
+  /// The percentage of habits done on each of the seven days; a day
+  /// with nothing marked shows as empty.
   @override
   WeekRow? weekRow(AppState appState, DateTime day) {
     final log = HabitLog.of(appState);
@@ -64,16 +65,29 @@ class HabitsModule extends IppoModule {
     if (habits.isEmpty) {
       return null;
     }
-    final shares = [
-      for (final column in weekEndingOn(day))
-        _doneOn(log, habits, formatDate(column)) / habits.length,
-    ];
-    final percent = (100 * shares.reduce((a, b) => a + b) / 7).round();
+    final cells = <String?>[];
+    for (final column in weekEndingOn(day)) {
+      final date = formatDate(column);
+      final anyMarked = habits.any(
+        (habit) => log.markOn(habit.id, date) != DayMark.none,
+      );
+      final percent = (100 * _doneOn(log, habits, date) / habits.length)
+          .round();
+      cells.add(anyMarked ? '$percent' : null);
+    }
     return WeekRow(
-      values: shares,
-      description: 'Habits done each day, $percent % over the week',
+      label: 'Habits (%)',
+      cells: cells,
+      description: 'Percentage of habits done each day',
     );
   }
+
+  /// Days with any habit marked, done or not.
+  @override
+  Set<String> datesLogged(AppState appState) => {
+    for (final entry in HabitLog.of(appState).entries)
+      if (!entry.isDeleted) entry.date,
+  };
 
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);

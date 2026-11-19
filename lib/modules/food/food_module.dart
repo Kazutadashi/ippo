@@ -76,7 +76,7 @@ class FoodModule extends IppoModule {
     );
   }
 
-  /// A full dot on each of the seven days with food logged.
+  /// The energy eaten on each of the seven days, in kilocalories.
   @override
   WeekRow? weekRow(AppState appState, DateTime day) {
     final diary = FoodDiary.of(appState);
@@ -84,16 +84,26 @@ class FoodModule extends IppoModule {
     if (diary.entries.isEmpty) {
       return null;
     }
-    final logged = [
+    final cells = [
       for (final column in weekEndingOn(day))
-        diary.entriesOn(formatDate(column)).isNotEmpty ? 1.0 : 0.0,
+        if (diary.entriesOn(formatDate(column)).isEmpty)
+          null
+        else
+          '${diary.totalOn(formatDate(column)).energyKcal.round()}',
     ];
-    final days = logged.where((value) => value > 0).length;
     return WeekRow(
-      values: logged,
-      description: 'Food logged on $days of 7 days',
+      label: 'Food (kcal)',
+      cells: cells,
+      description: 'Energy eaten each day, in kilocalories',
     );
   }
+
+  /// Days with any food logged.
+  @override
+  Set<String> datesLogged(AppState appState) => {
+    for (final entry in FoodDiary.of(appState).entries)
+      if (!entry.isDeleted) entry.date,
+  };
 
   @override
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);

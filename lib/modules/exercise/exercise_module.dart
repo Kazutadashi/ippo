@@ -70,20 +70,34 @@ class ExerciseModule extends IppoModule {
     );
   }
 
-  /// A full dot on each of the seven days with a workout.
+  /// How many exercises were done on each of the seven days.
   @override
   WeekRow? weekRow(AppState appState, DateTime day) {
     final log = ExerciseLog.of(appState);
     if (log.activeExercises.isEmpty) {
       return null;
     }
-    final trained = [
-      for (final column in weekEndingOn(day))
-        _trainedOn(log, formatDate(column)) ? 1.0 : 0.0,
-    ];
-    final days = trained.where((value) => value > 0).length;
-    return WeekRow(values: trained, description: 'Trained on $days of 7 days');
+    final cells = <String?>[];
+    for (final column in weekEndingOn(day)) {
+      final date = formatDate(column);
+      final done = log.activeExercises
+          .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
+          .length;
+      cells.add(done == 0 ? null : '$done');
+    }
+    return WeekRow(
+      label: 'Exercises',
+      cells: cells,
+      description: 'Exercises done each day',
+    );
   }
+
+  /// Days with any set logged.
+  @override
+  Set<String> datesLogged(AppState appState) => {
+    for (final set in ExerciseLog.of(appState).sets)
+      if (!set.isDeleted) set.date,
+  };
 
   @override
   Widget buildScreen(AppState appState) =>

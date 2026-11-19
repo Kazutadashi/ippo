@@ -16,6 +16,7 @@ import 'dates.dart';
 import 'events/event_log.dart';
 import 'widgets/day_bar.dart';
 import 'widgets/follows_today.dart';
+import 'widgets/logging_calendar.dart';
 import 'widgets/info_tile.dart';
 import 'widgets/section_card.dart';
 import 'widgets/sky_header.dart';
@@ -60,6 +61,13 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
       final row = module.weekRow(appState, day);
       if (row != null) {
         weekRows.add((title: module.title, icon: module.icon, row: row));
+      }
+    }
+    // How many areas have data on each day, for the logging calendar.
+    final loggedAreas = <String, int>{};
+    for (final module in allModules) {
+      for (final date in module.datesLogged(appState)) {
+        loggedAreas[date] = (loggedAreas[date] ?? 0) + 1;
       }
     }
     final eventLog = appState.eventLog;
@@ -182,6 +190,15 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     const SizedBox(height: tileGap),
                   ],
                   _TileGrid(tiles: tiles),
+                  // The last months: which days have gaps in the data.
+                  if (loggedAreas.isNotEmpty) ...[
+                    const SizedBox(height: tileGap),
+                    LoggingCalendar(
+                      day: day,
+                      loggedAreas: loggedAreas,
+                      areaCount: allModules.length,
+                    ),
+                  ],
                 ],
               ),
             ),

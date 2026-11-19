@@ -168,8 +168,8 @@ void main() {
         '1 of 3 done | Read: 3 days, 7-day avg 1.5 of 3',
       );
       final row = module.weekRow(appState, currentDay(now))!;
-      expect(row.values.length, 7);
-      expect(row.values.last, closeTo(1 / 3, 0.001));
+      expect(row.label, 'Habits (%)');
+      expect(row.cells, [null, null, null, null, '33', '67', '33']);
     });
   });
 

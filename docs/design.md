@@ -114,12 +114,16 @@ always written out next to it ("7-day avg 1326 kcal"), never left for
 the reader to guess.
 
 - **The week grid** ("Last 7 days", `WeekGrid`): the days across the
-  top, today's in the accent colour, and one row per module, named on
-  the left ("Habits", "Food", "Exercise", "Sleep"), with one mark per
-  day (`IppoModule.weekRow`). No numbers: the names say what the marks
-  mean. A dot is as full as its value (habits done, trained or not,
-  food logged or not); a bar is as tall as its amount (hours slept).
-  A module without any data yet has no row.
+  top, today's in the accent colour, and one row per module, named with
+  its unit on the left ("Habits (%)", "Food (kcal)", "Exercises",
+  "Sleep (h)"), with one short value per day, like a small table
+  (`IppoModule.weekRow`). A day without data shows a quiet dash. A
+  module without any data yet has no row.
+- **The logging calendar** ("Days logged", `LoggingCalendar`), at the
+  bottom: one square per day for as many weeks as fit, like a
+  contribution graph, darker the more areas were logged that day
+  (`IppoModule.datesLogged`). The data is the point of Ippo, so this
+  shows at a glance which days have gaps to fill in.
 - **One tile per module** (`IppoModule.homeTile`, drawn by
   `HomeTileCard`). Every tile has the same four parts, in the same
   places, so tiles side by side line up:

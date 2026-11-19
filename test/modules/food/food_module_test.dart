@@ -329,7 +329,8 @@ void main() {
     // Protein, carbs and fat are the mark.
     expect(tile.mark, isA<LabelledValues>());
     final row = module.weekRow(appState, currentDay(now))!;
-    expect(row.values, [0, 0, 0, 0, 1, 0, 1]);
+    expect(row.label, 'Food (kcal)');
+    expect(row.cells, [null, null, null, null, '900', null, '689']);
   });
 
   group('serving sizes and pieces', () {

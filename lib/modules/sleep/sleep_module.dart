@@ -82,8 +82,8 @@ class SleepModule extends IppoModule {
     );
   }
 
-  /// A bar for each of the seven nights, as tall as the sleep (a full
-  /// bar is ten hours).
+  /// The hours slept the night before each of the seven days, to a
+  /// tenth: `7.5`.
   @override
   WeekRow? weekRow(AppState appState, DateTime day) {
     final log = SleepLog.of(appState);
@@ -94,17 +94,26 @@ class SleepModule extends IppoModule {
     if (hours.every((minutes) => minutes == null)) {
       return null;
     }
-    final average = _averageSleep(log, addDays(day, 1));
     return WeekRow(
-      values: [
+      label: 'Sleep (h)',
+      cells: [
         for (final minutes in hours)
-          minutes == null ? null : (minutes / 60 / 10).clamp(0.0, 1.0),
+          minutes == null ? null : (minutes / 60).toStringAsFixed(1),
       ],
-      shape: WeekMarkShape.bar,
-      description: average == null
-          ? 'Sleep each night'
-          : 'Sleep each night, ${formatDuration(average)} on average',
+      description: 'Hours slept each night',
     );
+  }
+
+  /// Days with a wake-up, a bedtime or a nap logged.
+  @override
+  Set<String> datesLogged(AppState appState) {
+    final log = SleepLog.of(appState);
+    return {
+      for (final moment in log.moments)
+        if (!moment.isDeleted) moment.date,
+      for (final nap in log.naps)
+        if (!nap.isDeleted) nap.date,
+    };
   }
 
   @override

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Home's week grid: a row per module, a column per day, one mark each.
+/// Home's week grid: a row per module, a column per day, one value each.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -17,13 +17,10 @@ const double _nameWidth = 84;
 /// The height of one row of marks.
 const double _rowHeight = 22;
 
-/// The size of a dot, and the greatest height of a bar.
-const double _markSize = 12;
-
 /// The last seven days at a glance: the days across the top (today's
 /// picked out in the accent colour), and under them one row per module,
-/// named on the left, with one mark per day. No numbers: the tiles below
-/// have them. The names say what each row of marks means.
+/// named with its unit on the left ("Sleep (h)"), with one value per
+/// day, like a small table.
 class WeekGrid extends StatelessWidget {
   /// Creates the grid for the seven days ending on [day].
   const WeekGrid({super.key, required this.day, required this.rows});
@@ -100,9 +97,13 @@ class WeekGrid extends StatelessWidget {
     );
   }
 
-  /// One module's row: its name, then a mark per day.
+  /// One module's row: its name with its unit, then a value per day,
+  /// the day shown in the accent colour, and a quiet dash for a day
+  /// without data.
   Widget _row(BuildContext context, WeekGridRow row) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final cells = row.row.cells.take(7).toList();
     return Semantics(
       label: row.row.description,
       excludeSemantics: true,
@@ -113,18 +114,19 @@ class WeekGrid extends StatelessWidget {
             SizedBox(
               width: _nameWidth,
               child: Text(
-                row.title,
+                row.row.label,
                 style: theme.textTheme.bodySmall,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            for (final value in row.row.values.take(7))
+            for (var index = 0; index < cells.length; index++)
               Expanded(
-                child: Center(
-                  child: row.row.shape == WeekMarkShape.dot
-                      ? _Dot(value: value)
-                      : _Bar(value: value),
+                child: _cell(
+                  context,
+                  cells[index],
+                  isDayShown: index == cells.length - 1,
+                  colors: colors,
                 ),
               ),
           ],
@@ -132,62 +134,27 @@ class WeekGrid extends StatelessWidget {
       ),
     );
   }
-}
 
-/// A circle as full as [value]: a ring for 0 or no data, a pale fill
-/// growing stronger towards 1, which is solid.
-class _Dot extends StatelessWidget {
-  const _Dot({required this.value});
-
-  final double? value;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    final share = (value ?? 0).clamp(0.0, 1.0);
-    return Container(
-      width: _markSize,
-      height: _markSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: share == 0 ? null : color.withValues(alpha: 0.3 + 0.7 * share),
-        border: share == 0
-            ? Border.all(color: color.withValues(alpha: 0.5), width: 1.5)
-            : null,
-      ),
-    );
-  }
-}
-
-/// A small upright bar as tall as [value], standing on a common base
-/// line; a short dash for a day without data.
-class _Bar extends StatelessWidget {
-  const _Bar({required this.value});
-
-  final double? value;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    final value = this.value;
-    return SizedBox(
-      height: _rowHeight - 4,
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: value == null
-            ? Container(
-                width: 6,
-                height: 2,
-                color: color.withValues(alpha: 0.4),
+  /// One day's value, shrunk to fit its narrow column if it must.
+  Widget _cell(
+    BuildContext context,
+    String? value, {
+    required bool isDayShown,
+    required ColorScheme colors,
+  }) {
+    final style = Theme.of(context).textTheme.labelMedium;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        value ?? '–',
+        style: value == null
+            ? style?.copyWith(color: colors.onSurfaceVariant)
+            : isDayShown
+            ? style?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.bold,
               )
-            : Container(
-                width: 6,
-                height: 3 + (_rowHeight - 7) * value.clamp(0.0, 1.0),
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+            : style,
       ),
     );
   }

@@ -52,9 +52,13 @@ abstract class IppoModule {
   /// "–" as the value until something is, so Home never jumps.
   HomeTile homeTile(AppState appState, DateTime day, DateTime now);
 
-  /// The module's row in Home's week grid: one mark for each of the
+  /// The module's row in Home's week grid: one value for each of the
   /// seven days ending on [day], oldest first. Null for no row.
   WeekRow? weekRow(AppState appState, DateTime day) => null;
+
+  /// Every day (`YYYY-MM-DD`) with anything logged in this module, for
+  /// Home's logging calendar, which shows days with gaps in the data.
+  Set<String> datesLogged(AppState appState) => const {};
 }
 
 /// A module's tile on Home. Every tile has the same parts in the same
@@ -94,35 +98,25 @@ class HomeTile {
   final List<String> lines;
 }
 
-/// How a module's marks in the week grid are drawn.
-enum WeekMarkShape {
-  /// A circle, as full as the value: empty for 0, solid for 1. For yes
-  /// and no (trained or not), or a share (habits done).
-  dot,
-
-  /// A small upright bar, as tall as the value: for an amount, such as
-  /// hours slept.
-  bar,
-}
-
-/// A module's row in Home's week grid.
+/// A module's row in Home's week grid: one short value per day.
 class WeekRow {
   /// Creates the row.
   const WeekRow({
-    required this.values,
-    this.shape = WeekMarkShape.dot,
+    required this.label,
+    required this.cells,
     required this.description,
   });
 
-  /// Seven values from 0 to 1, oldest day first, the day shown last; null
-  /// for a day without data.
-  final List<double?> values;
+  /// The row's name with its unit, such as `Sleep (h)` or `Food (kcal)`,
+  /// so the numbers need no unit of their own.
+  final String label;
 
-  /// How the values are drawn.
-  final WeekMarkShape shape;
+  /// Seven short values, oldest day first, the day shown last, such as
+  /// `7.5` or `1840`; null for a day without data.
+  final List<String?> cells;
 
-  /// What a screen reader says for the row, such as "Habits done each
-  /// day: 77 % on average".
+  /// What a screen reader says for the row, such as "Sleep each night,
+  /// 7 h 40 min on average".
   final String description;
 }
 
