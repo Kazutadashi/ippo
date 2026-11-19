@@ -107,9 +107,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                           style: textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
-                            shadows: const [
-                              Shadow(color: Colors.black38, blurRadius: 6),
-                            ],
+                            shadows: _onLandscape,
                           ),
                         ),
                       ),
@@ -132,11 +130,25 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                         child: Text(
                           describeToday(day),
                           style: textTheme.titleSmall?.copyWith(
-                            color: colors.onSurface,
+                            color: Colors.white,
+                            shadows: _onLandscape,
                           ),
                         ),
                       ),
-                      DayBar(day: day, onChanged: showDay),
+                      // White on the landscape, like the greeting, in
+                      // light mode too: the ground there is always dark
+                      // enough. A day other than today gets a see-through
+                      // white pill.
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: colors.copyWith(
+                            onSurface: Colors.white,
+                            onSurfaceVariant: Colors.white,
+                            secondaryContainer: Colors.white24,
+                          ),
+                        ),
+                        child: DayBar(day: day, onChanged: showDay),
+                      ),
                     ],
                   ),
                 ),
@@ -162,6 +174,10 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     const SizedBox(height: Spacing.small),
                     NoteText(staleDevice),
                   ],
+                  // Room between a note above and the tiles.
+                  if (staleDevice != null ||
+                      (eventLog != null && eventLog.events.isEmpty))
+                    const SizedBox(height: tileGap),
                   _TileGrid(tiles: tiles),
                 ],
               ),
@@ -172,6 +188,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     );
   }
 }
+
+/// A soft shadow under white text on the landscape, so it stays
+/// readable on light snow or a pale sky.
+const List<Shadow> _onLandscape = [
+  Shadow(color: Colors.black38, blurRadius: 6),
+];
 
 /// How long another device can be quiet before Home mentions it.
 const Duration _staleAfter = Duration(days: 1);
@@ -237,21 +259,16 @@ _Tile _weekTile(AppState appState, DateTime day) {
       note: hasNothing ? 'Nothing logged in these days.' : null,
       visual: hasNothing
           ? null
-          // IntrinsicHeight makes the row as tall as its taller side, so
-          // the line between the two sides runs their full height.
-          : IntrinsicHeight(
-              child: Row(
-                children: [
-                  if (strip != null) Expanded(flex: 5, child: strip),
-                  // A thin line keeps the days apart from the numbers.
-                  if (strip != null && summaries.isNotEmpty)
-                    const VerticalDivider(width: Spacing.screen),
-                  if (summaries.isNotEmpty)
-                    Expanded(
-                      flex: 6,
-                      child: LabelledValues(details: summaries),
-                    ),
-                ],
+          // The days in the left half and the numbers in the right, in
+          // two columns, lined up with the tiles below.
+          : TileHalves(
+              hasDivider: strip != null && summaries.isNotEmpty,
+              left: Center(child: strip ?? const SizedBox()),
+              right: Align(
+                alignment: Alignment.centerLeft,
+                child: summaries.isEmpty
+                    ? const SizedBox()
+                    : LabelledValues(details: summaries, columns: 2),
               ),
             ),
       isWide: true,
@@ -298,7 +315,7 @@ class _TileGrid extends StatelessWidget {
           children: [
             for (var index = 0; index < rows.length; index++)
               Padding(
-                padding: EdgeInsets.only(top: index == 0 ? 0 : Spacing.small),
+                padding: EdgeInsets.only(top: index == 0 ? 0 : tileGap),
                 child: _row(rows[index], rows[index].first.isWide ? 1 : perRow),
               ),
           ],
@@ -315,7 +332,7 @@ class _TileGrid extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var column = 0; column < columns; column++) ...[
-            if (column > 0) const SizedBox(width: Spacing.small),
+            if (column > 0) const SizedBox(width: tileGap),
             Expanded(
               child: column < row.length ? row[column].tile : const SizedBox(),
             ),

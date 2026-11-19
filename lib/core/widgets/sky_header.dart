@@ -190,9 +190,13 @@ class SkyHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A whole number of screen pixels tall: a last row only partly
+    // covered would show a thin line of the layers under the fade.
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final wholeHeight = (height * pixelRatio).round() / pixelRatio;
     return ExcludeSemantics(
       child: SizedBox(
-        height: height,
+        height: wholeHeight,
         width: double.infinity,
         child: CustomPaint(
           painter: _SkyPainter(
@@ -280,7 +284,10 @@ class _SkyPainter extends CustomPainter {
     _nearTrees(canvas, Random(seed + 6), w, h, land);
 
     // Fade into the page, so the cards below start on plain ground.
-    final fade = Rect.fromLTRB(0, y(0.74), w, h);
+    // It reaches the plain page colour a little before the bottom and
+    // runs one pixel past it, so no sliver of dark ground shows at the
+    // edge when the height falls between two screen pixels.
+    final fade = Rect.fromLTRB(0, y(0.74), w, h + 1);
     canvas.drawRect(
       fade,
       Paint()
@@ -288,6 +295,7 @@ class _SkyPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [background.withValues(alpha: 0), background],
+          stops: const [0, 0.92],
         ).createShader(fade),
     );
   }

@@ -30,12 +30,28 @@ class TileDetail {
 /// The value shown when nothing is known yet.
 const String unknownTileValue = '–';
 
+/// The room between a tile's edge and its content.
+const double tilePadding = 12;
+
+/// The gap between two tiles on Home, across and down.
+const double tileGap = 8;
+
+/// The gap between the two halves of a wide tile. It is the gap between
+/// two half tiles plus their inner padding, so a wide tile's right half
+/// starts exactly where the right-hand tile's content starts.
+const double halfTileGap = tileGap + 2 * tilePadding;
+
+/// The least height of the value row, before text scaling: room for a
+/// large value, or two rows of habit dots beside it.
+const double _valueSlotHeight = 30;
+
 /// A tile of information for the home screen. Plain information: it
 /// never does anything when tapped.
 ///
-/// Every tile is built from the same rows, and each row uses the
-/// tile's whole width, with one thing at the left edge and, when there
-/// is one, another at the right edge:
+/// Every tile is built from the same three slots. The label and the
+/// value slots have the same height in every tile, so labels, values
+/// and the tops of footers form straight lines across Home. An empty tile keeps the same slots, with "–" as its
+/// value and its note where the footer goes:
 ///
 /// 1. the header: the module's icon and the tile's label on the left,
 ///    and an optional short [labelNote] on the right ("Read");
@@ -44,8 +60,9 @@ const String unknownTileValue = '–';
 ///    per habit; an empty value leaves this row out;
 /// 3. a footer, right under the value, holding one thing: a picture
 ///    that takes the whole width ([visual]), a [note], labelled numbers
-///    spread across the width ("Protein / 5 g"), or up to two plain
-///    lines ("Honey", then "at 14:43").
+///    in equal columns ("Protein / 5 g"), or up to two plain lines
+///    ("Honey", then "at 14:43"). A wide tile puts labelled numbers in
+///    two halves that line up with the half tiles below it.
 ///
 /// Colours come from the theme, so every tile looks like part of one
 /// app. Facts are never joined into one line with "·" or commas.
@@ -102,14 +119,21 @@ class InfoTile extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final muted = colors.onSurfaceVariant;
     final footer = _footer(textTheme, muted);
+    final scaler = MediaQuery.textScalerOf(context);
     final labelNote = this.labelNote;
+    final labelText = Text(
+      label,
+      style: textTheme.labelMedium?.copyWith(color: muted),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
     // Screen readers read the whole tile as one item: "Last meal,
     // 3 h ago, Honey, at 14:43".
     return MergeSemantics(
       child: Card(
         margin: EdgeInsets.zero,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+          padding: const EdgeInsets.fromLTRB(tilePadding, 8, tilePadding, 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -117,18 +141,16 @@ class InfoTile extends StatelessWidget {
                 children: [
                   Icon(icon, size: 14, color: colors.primary),
                   const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: textTheme.labelMedium?.copyWith(color: muted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                  // With a note beside it, the label (a short word such
+                  // as "Streaks") keeps its width and the note gets the
+                  // rest; alone, it takes the whole row.
+                  if (labelNote == null)
+                    Expanded(child: labelText)
+                  else
+                    labelText,
                   if (labelNote != null) ...[
-                    const SizedBox(width: Spacing.tight),
-                    // Half the header, so the label still shows; the
-                    // note ends at the right edge.
+                    const SizedBox(width: Spacing.small),
+                    // The note ends at the right edge.
                     Expanded(
                       child: Text(
                         labelNote,
@@ -145,9 +167,24 @@ class InfoTile extends StatelessWidget {
               ),
               if (value.isNotEmpty) ...[
                 const SizedBox(height: 2),
-                _valueRow(textTheme, muted),
+                // The value slot: always as tall, with the value in its
+                // middle, so values line up across a row.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: scaler.scale(_valueSlotHeight),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _valueRow(textTheme, muted),
+                  ),
+                ),
               ],
-              if (footer != null) ...[const SizedBox(height: 6), footer],
+              if (footer != null) ...[
+                const SizedBox(height: 4),
+                // The footer starts right under the value slot, so footers
+                // start on one line across a row.
+                footer,
+              ],
             ],
           ),
         ),
@@ -224,7 +261,9 @@ class InfoTile extends StatelessWidget {
       return null;
     }
     if (details.every((detail) => detail.label != null)) {
-      return LabelledValues(details: details);
+      return isWide
+          ? WideLabelledValues(details: details)
+          : LabelledValues(details: details);
     }
     // Plain lines: the first is the thing itself, in normal text; the
     // second says when or how much, in grey.
@@ -246,13 +285,96 @@ class InfoTile extends StatelessWidget {
   }
 }
 
-/// Labelled numbers spread across the whole width: a small grey label
-/// above each value, as on the Food screen's Total card. The first sits
-/// at the left edge, the last at the right edge, and any others evenly
-/// between, so the row is balanced rather than bunched at the left.
+/// Labelled numbers in equal columns, every one aligned left, with a
+/// small grey label above each value, as on the Food screen's Total
+/// card. With more details than [columns], they continue on a second
+/// row, in the same columns.
 class LabelledValues extends StatelessWidget {
   /// Creates the columns for [details] (each with a label), at most four.
-  const LabelledValues({super.key, required this.details});
+  /// [columns] defaults to one per detail.
+  const LabelledValues({super.key, required this.details, this.columns});
+
+  /// The values and their labels.
+  final List<TileDetail> details;
+
+  /// How many columns a row has.
+  final int? columns;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = details.take(4).toList();
+    final perRow = columns ?? shown.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var start = 0; start < shown.length; start += perRow) ...[
+          if (start > 0) const SizedBox(height: Spacing.tight),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var column = 0; column < perRow; column++) ...[
+                if (column > 0) const SizedBox(width: Spacing.small),
+                Expanded(
+                  child: start + column < shown.length
+                      ? _LabelledValue(detail: shown[start + column])
+                      : const SizedBox(),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// A wide tile's two halves, which line up with the two half tiles
+/// below it: [left] starts at the left tile's content, [right] at the
+/// right tile's. With [hasDivider], a thin line runs between them.
+class TileHalves extends StatelessWidget {
+  /// Creates the halves.
+  const TileHalves({
+    super.key,
+    required this.left,
+    required this.right,
+    this.hasDivider = false,
+  });
+
+  /// The left half.
+  final Widget left;
+
+  /// The right half.
+  final Widget right;
+
+  /// Whether a thin line separates the halves.
+  final bool hasDivider;
+
+  @override
+  Widget build(BuildContext context) {
+    // IntrinsicHeight makes the row as tall as its taller half, so the
+    // line runs their full height.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: left),
+          hasDivider
+              ? const VerticalDivider(width: halfTileGap)
+              : const SizedBox(width: halfTileGap),
+          Expanded(child: right),
+        ],
+      ),
+    );
+  }
+}
+
+/// Labelled numbers for a wide tile, split over its two [TileHalves]:
+/// one in each half for up to two, else two columns in each half, so
+/// every number lines up with the tiles below.
+class WideLabelledValues extends StatelessWidget {
+  /// Creates the values for [details] (each with a label), at most four.
+  const WideLabelledValues({super.key, required this.details});
 
   /// The values and their labels.
   final List<TileDetail> details;
@@ -260,35 +382,29 @@ class LabelledValues extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shown = details.take(4).toList();
-    return Row(
-      mainAxisAlignment: shown.length == 1
-          ? MainAxisAlignment.start
-          : MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var index = 0; index < shown.length; index++)
-          Flexible(
-            child: _LabelledValue(
-              detail: shown[index],
-              // Each column lines up with its own edge of the row.
-              alignment: shown.length == 1 || index == 0
-                  ? CrossAxisAlignment.start
-                  : index == shown.length - 1
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.center,
-            ),
-          ),
-      ],
+    final perHalf = shown.length <= 2 ? 1 : 2;
+    final left = shown.take(perHalf).toList();
+    final right = shown.skip(perHalf).toList();
+    return TileHalves(
+      left: Align(
+        alignment: Alignment.topLeft,
+        child: LabelledValues(details: left, columns: perHalf),
+      ),
+      right: Align(
+        alignment: Alignment.topLeft,
+        child: right.isEmpty
+            ? const SizedBox()
+            : LabelledValues(details: right, columns: perHalf),
+      ),
     );
   }
 }
 
 /// One small grey label with its value under it.
 class _LabelledValue extends StatelessWidget {
-  const _LabelledValue({required this.detail, required this.alignment});
+  const _LabelledValue({required this.detail});
 
   final TileDetail detail;
-  final CrossAxisAlignment alignment;
 
   @override
   Widget build(BuildContext context) {
@@ -296,7 +412,7 @@ class _LabelledValue extends StatelessWidget {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final badge = detail.badge;
     return Column(
-      crossAxisAlignment: alignment,
+      crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
@@ -309,6 +425,7 @@ class _LabelledValue extends StatelessWidget {
         // column) rather than cutting it off.
         FittedBox(
           fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -185,6 +185,7 @@ class HabitWeekStrip extends StatelessWidget {
           for (var back = 6; back >= 0; back--)
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _dayDot(color, _shareDone(addDays(day, -back))),
                   const SizedBox(height: 2),
