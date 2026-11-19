@@ -33,10 +33,6 @@ class TileDetail {
 /// The value shown when nothing is known yet.
 const String unknownTileValue = '–';
 
-/// The height of a tile's footer, before the user's text size: room for
-/// two short lines, or one small picture.
-const double _footerHeight = 30;
-
 /// A tile of information for the home screen. Plain information: it
 /// never does anything when tapped.
 ///
@@ -47,9 +43,11 @@ const double _footerHeight = 30;
 /// 2. the value, digits large and units small ("260 kcal"), with an
 ///    optional short [valueNote] beside it ("Read"); an empty value
 ///    leaves this line out;
-/// 3. a footer of fixed height holding one thing: a small picture
-///    ([visual]), a [note], labelled numbers side by side ("Protein /
-///    5 g"), or up to two plain lines ("Honey", then "at 14:43").
+/// 3. a footer, right under the value, holding one thing: a small
+///    picture ([visual]), a [note], labelled numbers side by side
+///    ("Protein / 5 g"), or up to two plain lines ("Honey", then
+///    "at 14:43"). It takes only the room it needs; Home pairs tiles
+///    with the same kind of footer, so the two in a row still match.
 ///
 /// Facts are never joined into one line with "·" or commas.
 class InfoTile extends StatelessWidget {
@@ -97,8 +95,7 @@ class InfoTile extends StatelessWidget {
   /// night's sleep as a bar.
   final Widget? visual;
 
-  /// Whether the tile takes a whole row. A wide tile's footer grows to
-  /// fit what it holds.
+  /// Whether the tile takes a whole row.
   final bool isWide;
 
   @override
@@ -107,7 +104,6 @@ class InfoTile extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final muted = colors.onSurfaceVariant;
     final tint = color;
-    final footerHeight = MediaQuery.textScalerOf(context).scale(_footerHeight);
     final footer = _footer(textTheme, muted);
     // Screen readers read the whole tile as one item: "Last meal,
     // 3 h ago, Honey, at 14:43".
@@ -123,7 +119,7 @@ class InfoTile extends StatelessWidget {
                 colors.surfaceContainer,
               ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -142,18 +138,9 @@ class InfoTile extends StatelessWidget {
                   ),
                 ],
               ),
-              if (value.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                _valueLine(textTheme, muted),
-              ],
-              const SizedBox(height: 6),
-              if (isWide)
-                footer
-              else
-                SizedBox(
-                  height: footerHeight,
-                  child: Align(alignment: Alignment.centerLeft, child: footer),
-                ),
+              if (value.isNotEmpty) _valueLine(textTheme, muted),
+              const SizedBox(height: 4),
+              footer,
             ],
           ),
         ),
@@ -175,12 +162,15 @@ class InfoTile extends StatelessWidget {
             ? ExcludeSemantics(
                 child: Text(
                   value,
-                  style: textTheme.titleLarge?.copyWith(color: muted),
+                  style: textTheme.titleLarge?.copyWith(
+                    color: muted,
+                    height: 1.15,
+                  ),
                 ),
               )
             : ValueText(
                 value,
-                style: textTheme.titleLarge,
+                style: textTheme.titleLarge?.copyWith(height: 1.15),
                 unitStyle: textTheme.labelMedium?.copyWith(color: muted),
               ),
       ),

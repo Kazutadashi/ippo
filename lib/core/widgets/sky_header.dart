@@ -2,6 +2,10 @@
 
 /// The landscape at the top of the home screen: mountains under a sky
 /// that follows the time of day, like the app's icon.
+///
+/// The mountains are made up fresh for each day (the date is the seed of
+/// a random number generator), so Home looks a little different every
+/// day, and the same all through one day.
 library;
 
 import 'dart:math';
@@ -43,36 +47,37 @@ class _Palette {
   const _Palette({
     required this.sky,
     required this.far,
-    required this.lit,
+    required this.mid,
     required this.shade,
-    required this.litBack,
-    required this.shadeBack,
     required this.snow,
     required this.near,
+    required this.trees,
     required this.light,
     required this.isSun,
     required this.starCount,
+    required this.mist,
   });
 
   /// The sky from top to horizon.
   final List<Color> sky;
 
-  /// The far range, hazy.
+  /// The far range, hazy with distance.
   final Color far;
 
-  /// The front peak's lit and shaded faces.
-  final Color lit;
+  /// The middle range's sunlit faces.
+  final Color mid;
+
+  /// Its faces turned away from the light.
   final Color shade;
 
-  /// The peak behind it, a little fainter.
-  final Color litBack;
-  final Color shadeBack;
-
-  /// The snow on the tallest peaks.
+  /// The snow on its tops.
   final Color snow;
 
-  /// The nearest ridge, darkest.
+  /// The near ridge, darkest.
   final Color near;
+
+  /// The pines along the near ridge.
+  final Color trees;
 
   /// The sun or moon.
   final Color light;
@@ -82,66 +87,69 @@ class _Palette {
 
   /// How many stars show.
   final int starCount;
+
+  /// Whether low mist lies in the valleys.
+  final bool mist;
 }
 
 const Map<SkyPhase, _Palette> _palettes = {
   SkyPhase.dawn: _Palette(
     sky: [Color(0xFF3C5A86), Color(0xFF8FA7C9), Color(0xFFF0BE94)],
     far: Color(0xFF9DAFC6),
-    lit: Color(0xFF8AA6AE),
-    shade: Color(0xFF62818C),
-    litBack: Color(0xFF7D99A6),
-    shadeBack: Color(0xFF5E7B88),
+    mid: Color(0xFF7E9AA8),
+    shade: Color(0xFF5B7684),
     snow: Color(0xFFF7EEE4),
-    near: Color(0xFF465F6B),
+    near: Color(0xFF3F5864),
+    trees: Color(0xFF2F4650),
     light: Color(0xFFFFD9A0),
     isSun: true,
     starCount: 0,
+    mist: true,
   ),
   SkyPhase.day: _Palette(
     sky: [Color(0xFF3F78B5), Color(0xFF7FAEDD), Color(0xFFCFE3F2)],
     far: Color(0xFFA9C3D9),
-    lit: Color(0xFF8CB0B8),
-    shade: Color(0xFF5F8794),
-    litBack: Color(0xFF9BBAC4),
-    shadeBack: Color(0xFF6E93A0),
+    mid: Color(0xFF86A9B4),
+    shade: Color(0xFF5E8592),
     snow: Color(0xFFFFFFFF),
-    near: Color(0xFF4A6B76),
+    near: Color(0xFF46666F),
+    trees: Color(0xFF34525B),
     light: Color(0xFFFFF4D6),
     isSun: true,
     starCount: 0,
+    mist: false,
   ),
   SkyPhase.dusk: _Palette(
     sky: [Color(0xFF141F33), Color(0xFF2E3B5E), Color(0xFF8A6A7E)],
     far: Color(0xFF4B5675),
-    lit: Color(0xFF6B8794),
-    shade: Color(0xFF465F6E),
-    litBack: Color(0xFF5A7584),
-    shadeBack: Color(0xFF3F5666),
+    mid: Color(0xFF5F7A89),
+    shade: Color(0xFF3F5666),
     snow: Color(0xFFE6E2EA),
-    near: Color(0xFF26364A),
+    near: Color(0xFF223246),
+    trees: Color(0xFF172536),
     light: Color(0xFFE9E2CC),
     isSun: false,
-    starCount: 18,
+    starCount: 22,
+    mist: true,
   ),
   SkyPhase.night: _Palette(
     sky: [Color(0xFF0B1424), Color(0xFF17243B), Color(0xFF2A3A57)],
     far: Color(0xFF2D3B55),
-    lit: Color(0xFF52707E),
-    shade: Color(0xFF354F5E),
-    litBack: Color(0xFF425E6D),
-    shadeBack: Color(0xFF2E4554),
+    mid: Color(0xFF486474),
+    shade: Color(0xFF2E4554),
     snow: Color(0xFFD5DEE4),
-    near: Color(0xFF1A2A38),
+    near: Color(0xFF172636),
+    trees: Color(0xFF0F1B28),
     light: Color(0xFFE9E2CC),
     isSun: false,
-    starCount: 36,
+    starCount: 46,
+    mist: false,
   ),
 };
 
 /// The landscape: the sky for [phase], its sun or moon, stars at dusk
-/// and night, and three layers of mountains that fade into the page
-/// below. Decoration only, so screen readers skip it.
+/// and night, and three ranges of mountains made up from [seed], which
+/// fade into the page below. Decoration only, so screen readers skip it.
 class SkyHeader extends StatelessWidget {
   /// Creates the landscape.
   const SkyHeader({
@@ -149,6 +157,7 @@ class SkyHeader extends StatelessWidget {
     required this.phase,
     required this.height,
     required this.clearTop,
+    required this.seed,
   });
 
   /// Which sky to draw.
@@ -161,6 +170,14 @@ class SkyHeader extends StatelessWidget {
   /// greeting: the mountains rise only below it.
   final double clearTop;
 
+  /// The seed for the made-up mountains: the same seed always gives the
+  /// same landscape. Home uses the date, so it changes once a day.
+  final int seed;
+
+  /// A seed for [day]: different for every date.
+  static int seedFor(DateTime day) =>
+      day.year * 10000 + day.month * 100 + day.day;
+
   @override
   Widget build(BuildContext context) {
     return ExcludeSemantics(
@@ -170,8 +187,10 @@ class SkyHeader extends StatelessWidget {
         child: CustomPaint(
           painter: _SkyPainter(
             palette: _palettes[phase]!,
+            phase: phase,
             background: Theme.of(context).scaffoldBackgroundColor,
             clearTop: clearTop,
+            seed: seed,
           ),
         ),
       ),
@@ -182,22 +201,29 @@ class SkyHeader extends StatelessWidget {
 class _SkyPainter extends CustomPainter {
   _SkyPainter({
     required this.palette,
+    required this.phase,
     required this.background,
     required this.clearTop,
+    required this.seed,
   });
 
   final _Palette palette;
+  final SkyPhase phase;
   final Color background;
   final double clearTop;
+  final int seed;
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
     final rect = Offset.zero & size;
-    // Heights in the landscape, from 0.3 (the highest summit can reach)
-    // to 1 (the bottom), placed in the land below the clear top.
-    double y(double f) => clearTop + (h - clearTop) * ((f - 0.3) / 0.7);
+    final random = Random(seed);
+    // Peaks near the edges reach past them; keep everything inside.
+    canvas.clipRect(rect);
+    // The land: everything below the clear top.
+    final land = h - clearTop;
+    double y(double fraction) => clearTop + land * fraction;
 
     // The sky.
     canvas.drawRect(
@@ -210,75 +236,60 @@ class _SkyPainter extends CustomPainter {
         ).createShader(rect),
     );
 
-    // The sun or moon, low in the sky, to the right of the peaks.
-    final lightCentre = Offset(w * 0.72, y(palette.isSun ? 0.56 : 0.44));
-    final radius = (h - clearTop) * 0.17;
-    _stars(canvas, size, avoid: lightCentre, avoidRadius: radius * 1.8);
+    // The sun or moon, somewhere over the right half.
+    final lightCentre = Offset(
+      w * (0.55 + random.nextDouble() * 0.3),
+      y(palette.isSun ? 0.30 : 0.18),
+    );
+    final radius = land * 0.20;
+    _stars(canvas, size, Random(seed + 1), lightCentre, radius * 1.8);
+    if (phase == SkyPhase.night && random.nextInt(3) == 0) {
+      _shootingStar(canvas, size, Random(seed + 2));
+    }
     _sunOrMoon(canvas, lightCentre, radius);
+    if (phase == SkyPhase.day || phase == SkyPhase.dawn) {
+      _birds(canvas, size, Random(seed + 3), y(0.05));
+    }
 
-    // The far range: a long, soft, jagged line, hazy with distance.
-    _fill(canvas, palette.far, [
-      Offset(0, y(0.70)),
-      Offset(w * 0.08, y(0.62)),
-      Offset(w * 0.16, y(0.66)),
-      Offset(w * 0.27, y(0.56)),
-      Offset(w * 0.36, y(0.63)),
-      Offset(w * 0.47, y(0.58)),
-      Offset(w * 0.58, y(0.66)),
-      Offset(w * 0.68, y(0.60)),
-      Offset(w * 0.80, y(0.67)),
-      Offset(w * 0.90, y(0.59)),
-      Offset(w, y(0.65)),
-      Offset(w, h),
-      Offset(0, h),
-    ]);
+    // The far range: low and soft, hazy with distance.
+    final far = _ridge(random, w, y(0.40), land * 0.25, 0.5, count: 33);
+    _fillBelow(canvas, far, h, palette.far);
 
-    // The peak behind, then the tall front peak, each with a lit face
-    // and a shaded face, and snow on top.
-    _peak(
+    // The mountains: a row of smaller peaks behind, fainter with distance,
+    // then a row of tall ones in front. Each peak has a lit face, a shaded
+    // face and snow, like the app's icon; how many there are, where they
+    // stand and how tall they are changes with the seed.
+    _peakRow(
       canvas,
-      top: Offset(w * 0.62, y(0.50)),
-      left: w * 0.40,
-      right: w * 0.88,
-      base: h,
-      lit: palette.litBack,
-      shade: palette.shadeBack,
-      snowDepth: (h - clearTop) * 0.10,
+      random,
+      width: w,
+      base: y(0.95),
+      minHeight: land * 0.35,
+      maxHeight: land * 0.55,
+      count: 4 + random.nextInt(3),
+      distance: 0.45,
     );
-    _peak(
+    _peakRow(
       canvas,
-      top: Offset(w * 0.30, y(0.36)),
-      left: -w * 0.02,
-      right: w * 0.66,
-      base: h,
-      lit: palette.lit,
-      shade: palette.shade,
-      snowDepth: (h - clearTop) * 0.14,
+      random,
+      width: w,
+      base: y(1.0),
+      minHeight: land * 0.60,
+      maxHeight: land * 0.95,
+      count: 2 + random.nextInt(3),
+      distance: 0,
     );
-    _peak(
-      canvas,
-      top: Offset(w * 0.90, y(0.58)),
-      left: w * 0.76,
-      right: w * 1.06,
-      base: h,
-      lit: palette.litBack,
-      shade: palette.shadeBack,
-      snowDepth: 0,
-    );
+    if (palette.mist) {
+      _mist(canvas, w, y(0.55), land * 0.25);
+    }
 
-    // The nearest ridge, rolling.
-    final near = Path()
-      ..moveTo(0, y(0.86))
-      ..quadraticBezierTo(w * 0.14, y(0.78), w * 0.30, y(0.84))
-      ..quadraticBezierTo(w * 0.50, y(0.92), w * 0.66, y(0.82))
-      ..quadraticBezierTo(w * 0.82, y(0.74), w, y(0.84))
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(near, Paint()..color = palette.near);
+    // The near ridge: rolling, with pines along its top.
+    final near = _ridge(random, w, y(0.86), land * 0.16, 0.4, count: 33);
+    _fillBelow(canvas, near, h, palette.near);
+    _trees(canvas, near, Random(seed + 4), land);
 
     // Fade into the page, so the cards below start on plain ground.
-    final fade = Rect.fromLTRB(0, y(0.68), w, h);
+    final fade = Rect.fromLTRB(0, y(0.62), w, h);
     canvas.drawRect(
       fade,
       Paint()
@@ -290,38 +301,285 @@ class _SkyPainter extends CustomPainter {
     );
   }
 
-  /// Scattered stars of different sizes and brightness, the same every
-  /// time (a fixed seed), in the upper sky, none behind the moon.
+  /// A ridge line across the width: [count] points, made by "midpoint
+  /// displacement". Start with a line at [base]; then, again and again,
+  /// move the point halfway between two others up or down by a random
+  /// amount that shrinks each round by [roughness] (closer to 1 gives
+  /// more jagged ridges). [height] is how far peaks can rise above base.
+  static List<Offset> _ridge(
+    Random random,
+    double width,
+    double base,
+    double height,
+    double roughness, {
+    int count = 65,
+  }) {
+    final heights = List<double>.filled(count, 0);
+    heights[0] = random.nextDouble();
+    heights[count - 1] = random.nextDouble();
+    var step = count - 1;
+    var spread = 1.0;
+    while (step > 1) {
+      final half = step ~/ 2;
+      for (var start = 0; start + step < count; start += step) {
+        final middle = (heights[start] + heights[start + step]) / 2;
+        heights[start + half] = middle + (random.nextDouble() * 2 - 1) * spread;
+      }
+      spread *= roughness;
+      step = half;
+    }
+    // Scale so the lowest point sits at the base and the highest at
+    // [height] above it.
+    final low = heights.reduce(min);
+    final high = heights.reduce(max);
+    final range = high - low == 0 ? 1 : high - low;
+    return [
+      for (var index = 0; index < count; index++)
+        Offset(
+          width * index / (count - 1),
+          base - height * (heights[index] - low) / range,
+        ),
+    ];
+  }
+
+  /// The shape under [ridge], down to [bottom].
+  static Path _pathBelow(List<Offset> ridge, double bottom) {
+    return Path()..addPolygon([
+      ...ridge,
+      Offset(ridge.last.dx, bottom),
+      Offset(ridge.first.dx, bottom),
+    ], true);
+  }
+
+  void _fillBelow(
+    Canvas canvas,
+    List<Offset> ridge,
+    double bottom,
+    Color color,
+  ) {
+    canvas.drawPath(_pathBelow(ridge, bottom), Paint()..color = color);
+  }
+
+  /// A row of [count] peaks across [width], standing on [base], each
+  /// between [minHeight] and [maxHeight] tall, spread out with some
+  /// jitter. With [distance] above 0, the colours fade toward the far
+  /// range, so the row looks further away. The tallest are drawn first,
+  /// so smaller peaks stand in front of them.
+  void _peakRow(
+    Canvas canvas,
+    Random random, {
+    required double width,
+    required double base,
+    required double minHeight,
+    required double maxHeight,
+    required int count,
+    required double distance,
+  }) {
+    Color faded(Color color) => Color.lerp(color, palette.far, distance)!;
+    final peaks = [
+      for (var index = 0; index < count; index++)
+        (
+          x: width * (index + 0.5 + (random.nextDouble() - 0.5) * 0.7) / count,
+          height: minHeight + random.nextDouble() * (maxHeight - minHeight),
+          // Each slope has its own steepness, so peaks lean.
+          left: 0.9 + random.nextDouble() * 0.9,
+          right: 0.9 + random.nextDouble() * 0.9,
+        ),
+    ]..sort((first, second) => second.height.compareTo(first.height));
+    for (final peak in peaks) {
+      _peak(
+        canvas,
+        top: Offset(peak.x, base - peak.height),
+        left: peak.x - peak.height * peak.left,
+        right: peak.x + peak.height * peak.right,
+        base: base,
+        lit: faded(palette.mid),
+        shade: faded(palette.shade),
+        snow: faded(palette.snow),
+        snowDepth: peak.height * (0.18 + random.nextDouble() * 0.12),
+      );
+    }
+  }
+
+  /// One peak from [left] to [right] with its summit at [top]: the left
+  /// face lit, the right face shaded, and a snow cap with a ragged lower
+  /// edge, a little grey on the shaded side.
+  void _peak(
+    Canvas canvas, {
+    required Offset top,
+    required double left,
+    required double right,
+    required double base,
+    required Color lit,
+    required Color shade,
+    required Color snow,
+    required double snowDepth,
+  }) {
+    _fill(canvas, lit, [top, Offset(top.dx, base), Offset(left, base)]);
+    _fill(canvas, shade, [top, Offset(right, base), Offset(top.dx, base)]);
+    // Where the snowline meets each slope.
+    final leftEdge = top.dx - (top.dx - left) * snowDepth / (base - top.dy);
+    final rightEdge = top.dx + (right - top.dx) * snowDepth / (base - top.dy);
+    final line = top.dy + snowDepth;
+    final cap = [
+      top,
+      Offset(rightEdge, line),
+      Offset(top.dx + (rightEdge - top.dx) * 0.5, line - snowDepth * 0.25),
+      Offset(top.dx, line + snowDepth * 0.05),
+      Offset(top.dx - (top.dx - leftEdge) * 0.45, line - snowDepth * 0.3),
+      Offset(leftEdge, line),
+    ];
+    _fill(canvas, snow, cap);
+    // The cap's shaded half, a little grey.
+    canvas
+      ..save()
+      ..clipRect(Rect.fromLTRB(top.dx, 0, right, base));
+    _fill(canvas, shade.withValues(alpha: 0.35), cap);
+    canvas.restore();
+  }
+
+  void _fill(Canvas canvas, Color color, List<Offset> points) {
+    canvas.drawPath(Path()..addPolygon(points, true), Paint()..color = color);
+  }
+
+  /// A soft band of mist lying in the valleys.
+  void _mist(Canvas canvas, double width, double top, double depth) {
+    final band = Rect.fromLTWH(0, top, width, depth);
+    canvas.drawRect(
+      band,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: 0),
+            Colors.white.withValues(alpha: 0.10),
+            Colors.white.withValues(alpha: 0),
+          ],
+        ).createShader(band),
+    );
+  }
+
+  /// Pines along the near ridge: narrow triangles of varied height, in
+  /// small clumps with gaps between.
+  void _trees(Canvas canvas, List<Offset> ridge, Random random, double land) {
+    final paint = Paint()..color = palette.trees;
+    final width = ridge.last.dx;
+    var x = random.nextDouble() * 12;
+    while (x < width) {
+      // The ridge's height at x.
+      final position = x / width * (ridge.length - 1);
+      final index = position.floor().clamp(0, ridge.length - 2);
+      final t = position - index;
+      final ground = ridge[index].dy * (1 - t) + ridge[index + 1].dy * t;
+      final tall = land * (0.06 + random.nextDouble() * 0.07);
+      final half = tall * 0.28;
+      canvas.drawPath(
+        Path()..addPolygon([
+          Offset(x, ground - tall),
+          Offset(x + half, ground + 1),
+          Offset(x - half, ground + 1),
+        ], true),
+        paint,
+      );
+      // Mostly close together, now and then a clearing.
+      x += random.nextDouble() < 0.15
+          ? 20 + random.nextDouble() * 40
+          : 3 + random.nextDouble() * 6;
+    }
+  }
+
+  /// Scattered stars of different sizes and brightness in the upper sky,
+  /// none behind the moon.
   void _stars(
     Canvas canvas,
-    Size size, {
-    required Offset avoid,
-    required double avoidRadius,
-  }) {
-    final random = Random(7);
-    final paint = Paint()..color = const Color(0xFFF4F1E8);
+    Size size,
+    Random random,
+    Offset avoid,
+    double avoidRadius,
+  ) {
     var drawn = 0;
-    while (drawn < palette.starCount) {
+    var tries = 0;
+    while (drawn < palette.starCount && tries < palette.starCount * 10) {
+      tries++;
       final point = Offset(
         random.nextDouble() * size.width,
-        random.nextDouble() * size.height * 0.55,
+        random.nextDouble() * (clearTop + (size.height - clearTop) * 0.4),
       );
-      final radius = 0.4 + random.nextDouble() * random.nextDouble() * 1.2;
-      final brightness = 0.25 + random.nextDouble() * 0.6;
       if ((point - avoid).distance < avoidRadius) {
         continue;
       }
       drawn++;
-      paint.color = paint.color.withValues(alpha: brightness);
-      canvas.drawCircle(point, radius, paint);
-      // A few of the brightest get a faint glow.
+      // Most stars are faint and small; a few are bright.
+      final radius = 0.35 + pow(random.nextDouble(), 3) * 1.3;
+      final brightness = 0.25 + random.nextDouble() * 0.65;
+      final color = const Color(0xFFF4F1E8).withValues(alpha: brightness);
+      canvas.drawCircle(point, radius, Paint()..color = color);
       if (radius > 1.1) {
         canvas.drawCircle(
           point,
-          radius * 3,
-          Paint()..color = paint.color.withValues(alpha: brightness * 0.12),
+          radius * 3.2,
+          Paint()..color = color.withValues(alpha: brightness * 0.12),
         );
       }
+    }
+  }
+
+  /// A shooting star: a short bright streak that fades along its tail.
+  void _shootingStar(Canvas canvas, Size size, Random random) {
+    final start = Offset(
+      size.width * (0.1 + random.nextDouble() * 0.5),
+      clearTop * (0.3 + random.nextDouble() * 0.5),
+    );
+    final end = start + Offset(-46 - random.nextDouble() * 20, 18);
+    canvas.drawLine(
+      start,
+      end,
+      Paint()
+        ..strokeWidth = 1.4
+        ..strokeCap = StrokeCap.round
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0xFFFFFFFF).withValues(alpha: 0.9),
+            const Color(0xFFFFFFFF).withValues(alpha: 0),
+          ],
+        ).createShader(Rect.fromPoints(start, end)),
+    );
+  }
+
+  /// A few birds far off: small, shallow "v" strokes.
+  void _birds(Canvas canvas, Size size, Random random, double top) {
+    final paint = Paint()
+      ..color = const Color(0xFF2B3A48).withValues(alpha: 0.55)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final centre = Offset(
+      size.width * (0.15 + random.nextDouble() * 0.3),
+      top + random.nextDouble() * 10,
+    );
+    final count = 2 + random.nextInt(3);
+    for (var bird = 0; bird < count; bird++) {
+      final at =
+          centre + Offset(bird * 11.0, (bird.isEven ? 0 : 5) + bird * 2.0);
+      final span = 3.5 + random.nextDouble() * 1.5;
+      canvas.drawPath(
+        Path()
+          ..moveTo(at.dx - span, at.dy - span * 0.5)
+          ..quadraticBezierTo(
+            at.dx - span * 0.4,
+            at.dy - span * 0.6,
+            at.dx,
+            at.dy,
+          )
+          ..quadraticBezierTo(
+            at.dx + span * 0.4,
+            at.dy - span * 0.6,
+            at.dx + span,
+            at.dy - span * 0.5,
+          ),
+        paint,
+      );
     }
   }
 
@@ -329,26 +587,25 @@ class _SkyPainter extends CustomPainter {
   /// faint craters for texture).
   void _sunOrMoon(Canvas canvas, Offset centre, double radius) {
     final light = palette.light;
-    canvas.drawCircle(
-      centre,
-      radius * 2.0,
-      Paint()..color = light.withValues(alpha: 0.07),
-    );
-    canvas.drawCircle(
-      centre,
-      radius * 1.45,
-      Paint()..color = light.withValues(alpha: 0.12),
-    );
-    canvas.drawCircle(centre, radius, Paint()..color = light);
+    canvas
+      ..drawCircle(
+        centre,
+        radius * 2.0,
+        Paint()..color = light.withValues(alpha: 0.07),
+      )
+      ..drawCircle(
+        centre,
+        radius * 1.45,
+        Paint()..color = light.withValues(alpha: 0.12),
+      )
+      ..drawCircle(centre, radius, Paint()..color = light);
     if (palette.isSun) {
       return;
     }
-    final shade = Paint()
-      ..color = const Color(0xFFB9B29C).withValues(alpha: 0.2);
     canvas.drawCircle(
       centre + Offset(radius * 0.25, radius * 0.2),
       radius * 0.94,
-      shade,
+      Paint()..color = const Color(0xFFB9B29C).withValues(alpha: 0.2),
     );
     const craters = [
       (-0.35, -0.30, 0.20, 0.16),
@@ -367,48 +624,10 @@ class _SkyPainter extends CustomPainter {
     }
   }
 
-  /// A peak from [left] to [right] with its summit at [top]: the left
-  /// face lit, the right face shaded, and, with [snowDepth], a jagged
-  /// snow cap.
-  void _peak(
-    Canvas canvas, {
-    required Offset top,
-    required double left,
-    required double right,
-    required double base,
-    required Color lit,
-    required Color shade,
-    required double snowDepth,
-  }) {
-    _fill(canvas, lit, [top, Offset(top.dx, base), Offset(left, base)]);
-    _fill(canvas, shade, [top, Offset(right, base), Offset(top.dx, base)]);
-    if (snowDepth == 0) {
-      return;
-    }
-    // Where the snow line meets each slope.
-    final leftSlope = (top.dx - left) / (base - top.dy);
-    final rightSlope = (right - top.dx) / (base - top.dy);
-    final y = top.dy + snowDepth;
-    final leftEdge = top.dx - leftSlope * snowDepth;
-    final rightEdge = top.dx + rightSlope * snowDepth;
-    _fill(canvas, palette.snow, [
-      top,
-      Offset(rightEdge, y),
-      Offset(top.dx + (rightEdge - top.dx) * 0.45, y - snowDepth * 0.22),
-      Offset(top.dx, y + snowDepth * 0.08),
-      Offset(top.dx - (top.dx - leftEdge) * 0.45, y - snowDepth * 0.25),
-      Offset(leftEdge, y),
-    ]);
-  }
-
-  void _fill(Canvas canvas, Color color, List<Offset> points) {
-    final path = Path()..addPolygon(points, true);
-    canvas.drawPath(path, Paint()..color = color);
-  }
-
   @override
   bool shouldRepaint(_SkyPainter old) =>
-      old.palette != palette ||
+      old.phase != phase ||
       old.background != background ||
-      old.clearTop != clearTop;
+      old.clearTop != clearTop ||
+      old.seed != seed;
 }

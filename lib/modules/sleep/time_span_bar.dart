@@ -4,6 +4,8 @@
 /// sleep, or the day since waking up.
 library;
 
+import 'dart:math';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock_time.dart';
@@ -78,6 +80,11 @@ class TimeSpanBar extends StatelessWidget {
     final style = Theme.of(context).textTheme.labelSmall;
     final from = _position(start);
     final to = _position(end);
+    // The three parts in thousandths of the bar; the stretch is never
+    // thinner than a sliver, so it always shows.
+    final before = (from * 1000).round();
+    final filled = max(30, ((to - from) * 1000).round());
+    final after = max(0, 1000 - before - filled);
     return Semantics(
       label: description,
       child: ExcludeSemantics(
@@ -85,26 +92,33 @@ class TimeSpanBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = constraints.maxWidth;
-                return Container(
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    margin: EdgeInsets.only(left: width * from),
-                    width: width * (to - from).clamp(0.03, 1.0),
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(3),
+            // The bar as three parts side by side, sized in proportion:
+            // before the stretch, the stretch, and after it. (Flex parts
+            // rather than measured widths, so the tile's height can be
+            // worked out before it is laid out.)
+            Container(
+              height: 6,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Row(
+                // The filled part takes the bar's full height.
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (before > 0) Spacer(flex: before),
+                  Expanded(
+                    flex: filled,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
-                );
-              },
+                  if (after > 0) Spacer(flex: after),
+                ],
+              ),
             ),
             const SizedBox(height: 3),
             Row(

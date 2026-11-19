@@ -85,9 +85,14 @@ modules; the only things on Home to tap are the Settings gear and the
 day bar, which looks back at earlier days ("Looking back" replaces the
 greeting, and times since become clock times).
 
-At the top, a landscape (`SkyHeader`): the icon's mountains under a sky
-that follows the time of day (dawn with a low sun, a blue day, dusk
-with the moon rising, night with stars), fading into the page. The
+At the top, a landscape (`SkyHeader`) under a sky that follows the time
+of day (dawn with a low sun and mist, a blue day with a few birds, dusk
+with the moon rising, night with stars and now and then a shooting
+star), fading into the page. The mountains are made up fresh each day
+from the date: a soft far range, a row of fainter peaks behind and a
+row of tall ones in front (each with a lit face, a shaded face and
+snow, like the icon), and a near ridge with pines. So Home looks a
+little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.
 
