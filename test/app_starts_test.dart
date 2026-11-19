@@ -137,9 +137,10 @@ void main() {
       },
     );
 
-    // The Energy tile shows today's total, and the week its average
-    // (also labelled Energy, inside "Last 7 days").
-    expect(find.text('Energy'), findsNWidgets(2));
+    // The Energy tile shows today's total, and the week its average,
+    // labelled as an average so the two are never confused.
+    expect(find.text('Energy'), findsOneWidget);
+    expect(find.text('Energy / day'), findsOneWidget);
     expect(find.text('80 kcal'), findsNWidgets(2));
   });
 

@@ -47,8 +47,9 @@ abstract class IppoModule {
   List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now);
 
   /// One number about the seven days ending on [day], for Home's "Last
-  /// 7 days" tile, such as "Sleep" and "7 h 40 min" (an average per day,
-  /// or a count). Keep the label to one short word: four sit side by side. Null if the
+  /// 7 days" tile: a count, such as "Workouts" and "4 days", or an
+  /// average, whose label says so, such as "Sleep / night" and
+  /// "7 h 40 min", so it is never mistaken for today's value. Keep the label to one short word: four sit side by side. Null if the
   /// module has nothing to add, or nothing was logged.
   TileDetail? weekSummary(AppState appState, DateTime day) => null;
 

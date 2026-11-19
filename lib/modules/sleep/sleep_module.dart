@@ -86,7 +86,7 @@ class SleepModule extends IppoModule {
     if (nights == 0) {
       return null;
     }
-    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep');
+    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep / night');
   }
 
   @override

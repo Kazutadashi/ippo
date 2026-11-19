@@ -63,7 +63,7 @@ class FoodModule extends IppoModule {
     }
     // The average of the days with food logged: a day not logged is not
     // a day without food.
-    return TileDetail(formatEnergy(total / loggedDays), label: 'Energy');
+    return TileDetail(formatEnergy(total / loggedDays), label: 'Energy / day');
   }
 
   @override
