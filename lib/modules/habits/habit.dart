@@ -3,8 +3,11 @@
 /// A habit, and one day's entry for it.
 library;
 
+import 'package:material_ui/material_ui.dart';
+
 import '../../core/dates.dart';
 import '../../core/events/things.dart';
+import '../../core/theme.dart';
 
 /// The value types a habit can have. The names are stored in the data and
 /// must never change. The app currently creates yes/no habits only.
@@ -26,6 +29,7 @@ class Habit {
     required this.id,
     required this.name,
     required this.valueType,
+    required this.color,
     required this.isArchived,
     required this.isDeleted,
   });
@@ -45,6 +49,8 @@ class Habit {
       id: record.id,
       name: name,
       valueType: valueType,
+      // A colour that is not `#RRGGBB` is treated as no colour.
+      color: parseHexColor(record.fields['color']),
       isArchived: record.fields['archived'] == true,
       isDeleted: record.isDeleted,
     );
@@ -58,6 +64,25 @@ class Habit {
 
   /// What is recorded each day: `yes_no`, `number`, ...
   final String valueType;
+
+  /// The colour the user picked, or null to use the accent colour.
+  final Color? color;
+
+  /// The colour to draw the habit in, on a screen with [theme].
+  ///
+  /// Without a colour of its own, a habit uses the accent colour. In
+  /// dark mode, picked colours are lightened a little, so darker ones
+  /// such as indigo stay easy to read on the dark background.
+  Color displayColor(ThemeData theme) {
+    final picked = color;
+    if (picked == null) {
+      return theme.colorScheme.primary;
+    }
+    if (theme.brightness == Brightness.dark) {
+      return Color.lerp(picked, Colors.white, 0.3)!;
+    }
+    return picked;
+  }
 
   /// Whether the habit is hidden without being deleted.
   final bool isArchived;

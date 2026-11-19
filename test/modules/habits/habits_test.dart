@@ -105,7 +105,8 @@ void main() {
       final habitId = (await actions.createHabit('Read')).id;
       await actions.recordDay(habitId, day, done: true);
 
-      await actions.renameHabit(habitId, 'Read a book');
+      final habit = (await logFromDisk()).shownHabits.single;
+      await actions.changeHabit(habit, 'Read a book', habit.color);
       expect((await logFromDisk()).shownHabits.single.name, 'Read a book');
 
       await actions.deleteHabit(habitId);
@@ -116,6 +117,32 @@ void main() {
 
       await actions.restoreHabit(habitId);
       expect((await logFromDisk()).shownHabits, hasLength(1));
+    });
+
+    test(
+      'a colour is saved as #RRGGBB, and only real changes are written',
+      () async {
+        const orange = Color(0xFFFB8C00);
+        final habitId = (await actions.createHabit('Read', color: orange)).id;
+        var habit = (await logFromDisk()).habits[habitId]!;
+        expect(habit.color?.toARGB32(), orange.toARGB32());
+
+        // Saving without changing anything writes nothing.
+        expect(await actions.changeHabit(habit, 'Read', orange), isNull);
+
+        // Only the colour changed, so only the colour is written.
+        final changed = await actions.changeHabit(habit, 'Read', null);
+        expect(changed!.data['changes'], {'color': null});
+        habit = (await logFromDisk()).habits[habitId]!;
+        expect(habit.color, isNull);
+      },
+    );
+
+    test('without a colour, a habit uses the accent colour', () async {
+      final habitId = (await actions.createHabit('Read')).id;
+      final habit = (await logFromDisk()).habits[habitId]!;
+      final theme = ThemeData(colorSchemeSeed: Colors.teal);
+      expect(habit.displayColor(theme), theme.colorScheme.primary);
     });
 
     test('home tiles: done today, and what is left', () async {

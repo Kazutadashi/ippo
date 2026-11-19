@@ -7,12 +7,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/theme.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/color_circles.dart';
 import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
 
-/// The form for a habit: just its name.
+/// The form for a habit: its name and colour.
 class HabitFormScreen extends StatefulWidget {
   /// Creates the form for a new habit, or for changing [habit].
   const HabitFormScreen({super.key, required this.appState, this.habit});
@@ -33,6 +35,9 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   );
   String? _nameProblem;
 
+  /// The picked colour, or null for the accent colour.
+  late Color? _color = widget.habit?.color;
+
   @override
   void dispose() {
     _nameField.dispose();
@@ -49,9 +54,9 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
     final habit = widget.habit;
     final saved = await saveOrShowError(context, () {
       if (habit == null) {
-        return actions.createHabit(_nameField.text);
+        return actions.createHabit(_nameField.text, color: _color);
       }
-      return actions.renameHabit(habit.id, _nameField.text);
+      return actions.changeHabit(habit, _nameField.text, _color);
     });
     if (saved && mounted) {
       Navigator.of(context).pop();
@@ -75,6 +80,28 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
       message: 'Deleted ${habit.name}. Its past days are kept.',
       onUndo: () => actions.restoreHabit(habit.id),
     );
+  }
+
+  /// "Default" (the accent colour) first, then the same colours as the
+  /// accent colours in Settings.
+  List<Widget> _colorCircles(BuildContext context) {
+    final picked = _color?.toARGB32();
+    return [
+      ColorCircle(
+        choice: AccentChoice('Default', Theme.of(context).colorScheme.primary),
+        purpose: 'habit colour, the same as the accent colour',
+        icon: Icons.auto_awesome,
+        isSelected: picked == null,
+        onTap: () => setState(() => _color = null),
+      ),
+      for (final choice in accentChoices)
+        ColorCircle(
+          choice: choice,
+          purpose: 'habit colour',
+          isSelected: picked == choice.color.toARGB32(),
+          onTap: () => setState(() => _color = choice.color),
+        ),
+    ];
   }
 
   @override
@@ -104,6 +131,9 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
             ),
             onSubmitted: (_) => _save(),
           ),
+          const SizedBox(height: 20),
+          const FieldLabel('Colour'),
+          ColorCircleGrid(circles: _colorCircles(context)),
           if (isEditing)
             DeleteButton(label: 'Delete this habit', onPressed: _delete),
         ],

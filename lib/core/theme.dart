@@ -66,9 +66,13 @@ final RegExp _hexColorPattern = RegExp(r'^#[0-9A-Fa-f]{6}$');
 
 /// Reads a colour saved by [accentColorToHex]. Returns
 /// [defaultAccentColor] if [hex] is missing or not a `#RRGGBB` colour.
-Color parseAccentColor(String? hex) {
-  if (hex == null || !_hexColorPattern.hasMatch(hex)) {
-    return defaultAccentColor;
+Color parseAccentColor(String? hex) => parseHexColor(hex) ?? defaultAccentColor;
+
+/// Reads a colour written as `#RRGGBB`. Returns null if [hex] is not
+/// one, for example missing or from a tool that wrote something else.
+Color? parseHexColor(Object? hex) {
+  if (hex is! String || !_hexColorPattern.hasMatch(hex)) {
+    return null;
   }
   final rgb = int.parse(hex.substring(1), radix: 16);
   return Color(0xFF000000 | rgb);

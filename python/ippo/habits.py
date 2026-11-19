@@ -10,14 +10,13 @@ def habits(events):
     """One row per habit, including deleted ones (see ``deleted``).
 
     Columns: ``habit_id``, ``name``, ``value_type`` (``"yes_no"``,
-    ``"number"``, ...), ``unit``, ``description``, ``archived``,
+    ``"number"``, ...), ``unit``, ``description``, ``color``
+    (``"#RRGGBB"``, or empty for the app's accent colour), ``archived``,
     ``deleted``, ``recorded_utc`` (when it was created).
     """
     rows = collect_things(events, "habits", "habit_created", "habit")
-    result = table(
-        rows,
-        ["id", "name", "value_type", "unit", "description", "archived", "deleted", "recorded_utc"],
-    ).rename(columns={"id": "habit_id"})
+    columns = ["id", "name", "value_type", "unit", "description", "color", "archived", "deleted", "recorded_utc"]
+    result = table(rows, columns).rename(columns={"id": "habit_id"})
     result["archived"] = result["archived"].eq(True)
     return result
 

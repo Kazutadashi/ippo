@@ -6,8 +6,12 @@
 /// "Module: habits".
 library;
 
+import 'package:material_ui/material_ui.dart';
+
 import '../../core/app_state.dart';
 import '../../core/events/event.dart';
+import '../../core/theme.dart';
+import 'habit.dart';
 import 'habit_log.dart';
 
 /// Writes the habits module's events through [appState].
@@ -21,22 +25,35 @@ class HabitActions {
   /// The app state that writes the events.
   final AppState appState;
 
-  /// Creates a yes/no habit done once a day. Returns the event, whose id
-  /// is the habit's.
-  Future<Event> createHabit(String name) {
+  /// Creates a yes/no habit done once a day, drawn in [color] (null for
+  /// the accent colour). Returns the event, whose id is the habit's.
+  Future<Event> createHabit(String name, {Color? color}) {
     return _write('habit_created', {
       'name': name.trim(),
       'value_type': 'yes_no',
       'frequency': {'times': 1, 'per_days': 1},
+      if (color != null) 'color': accentColorToHex(color),
     });
   }
 
-  /// Renames a habit.
-  Future<Event> renameHabit(String habitId, String newName) {
-    return _write('habit_changed', {
-      'target_id': habitId,
-      'changes': {'name': newName.trim()},
-    });
+  /// Gives [habit] the name [newName] and the colour [newColor] (null for
+  /// the accent colour). Only what actually changed is written, so a
+  /// rename on one device and a new colour on another both survive.
+  /// Returns null if nothing changed.
+  Future<Event?> changeHabit(
+    Habit habit,
+    String newName,
+    Color? newColor,
+  ) async {
+    final changes = <String, Object?>{
+      if (newName.trim() != habit.name) 'name': newName.trim(),
+      if (newColor?.toARGB32() != habit.color?.toARGB32())
+        'color': newColor == null ? null : accentColorToHex(newColor),
+    };
+    if (changes.isEmpty) {
+      return null;
+    }
+    return _write('habit_changed', {'target_id': habit.id, 'changes': changes});
   }
 
   /// Deletes a habit. Its entries stay in the data.

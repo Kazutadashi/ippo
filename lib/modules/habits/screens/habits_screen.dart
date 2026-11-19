@@ -20,14 +20,18 @@ import 'habit_form_screen.dart';
 /// How many days the grid shows; scroll sideways to see further back.
 const int _shownDays = 60;
 
-/// The width of one day's column.
-const double _dayWidth = 44;
+/// The width of one day's column. Narrow, so more days fit on screen.
+const double _dayWidth = 36;
 
-/// The height of one habit's row (at least the 48 a tap target needs).
-const double _rowHeight = 48;
+/// The height of one habit's row. A little under the usual 48 tap
+/// target, so more habits fit; each cell is still a 36 x 40 target.
+const double _rowHeight = 40;
 
 /// The height of the row of dates at the top.
-const double _headerHeight = 40;
+const double _headerHeight = 34;
+
+/// The size of the ✓ and ✗ marks.
+const double _markSize = 20;
 
 /// The habits grid. Tap a day to cycle it: nothing → ✓ → ✗ → nothing.
 class HabitsScreen extends StatelessWidget {
@@ -135,7 +139,7 @@ class _HabitGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Names get about a third of the width, so most of it shows days.
-        final nameWidth = (constraints.maxWidth * 0.36).clamp(96.0, 180.0);
+        final nameWidth = (constraints.maxWidth * 0.32).clamp(88.0, 160.0);
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,14 +204,18 @@ class _HabitName extends StatelessWidget {
         height: _rowHeight,
         width: double.infinity,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.medium),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.small),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
               habit.name,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: habit.displayColor(Theme.of(context)),
+                fontWeight: FontWeight.w500,
+                height: 1.15,
+              ),
             ),
           ),
         ),
@@ -275,20 +283,29 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final date = formatDate(day);
     final mark = log.markOn(habit.id, date);
     final Widget icon;
     final String meaning;
     switch (mark) {
       case DayMark.done:
-        icon = Icon(Icons.check, color: colors.primary);
+        icon = Icon(
+          Icons.check,
+          size: _markSize,
+          color: habit.displayColor(theme),
+        );
         meaning = 'done';
       case DayMark.notDone:
-        icon = Icon(Icons.close, color: colors.onSurfaceVariant);
+        icon = Icon(
+          Icons.close,
+          size: _markSize,
+          color: colors.onSurfaceVariant,
+        );
         meaning = 'not done';
       case DayMark.none:
-        icon = Icon(Icons.circle, size: 6, color: colors.outlineVariant);
+        icon = Icon(Icons.circle, size: 5, color: colors.outlineVariant);
         meaning = 'not recorded';
     }
     return Semantics(

@@ -270,6 +270,12 @@ Card headers show their icon in the accent colour.
 4. **Red only for problems and deleting.** Use the theme's `error`
    colour, never a hand-picked red.
 5. **Never colour alone.** Red text also says what is wrong in words.
+6. **Colours users pick for their own things.** A habit can have its
+   own colour, used only for its name and its ✓ marks, so habits are
+   easy to tell apart. Without one it uses the accent colour. Such
+   colours come from the same list as the accent colours, are picked
+   with `ColorCircle`s, and are lightened a little in dark mode
+   (`Habit.displayColor`). Nothing else on the screen takes them.
 
 
 ## 10. Density, spacing and sizes

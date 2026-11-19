@@ -347,6 +347,7 @@ record a value for it.
 | `target` | object, optional | The goal. See below. If missing, any recorded value counts as done. |
 | `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week. |
 | `description` | string, optional | A note for yourself. |
+| `color` | string, optional | A display colour, `"#RRGGBB"`. Missing or `null` means the app's accent colour. |
 | `archived` | boolean, optional | `true` hides the habit without deleting it. Usually set later with `habit_changed`. |
 
 `target` has two fields:
