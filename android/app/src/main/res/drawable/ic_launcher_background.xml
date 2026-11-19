@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The background of Ippo's launcher icon: a spring meadow. A pale sage
-     sky fades down to two soft green hills. Drawn by hand for Ippo. -->
+<!-- The back of Ippo's launcher icon: a mountain at night. A dark sky with
+     a few stars, a peak with a snow cap, and a lower ridge in front.
+     Drawn by hand for Ippo. The trail and flag are in front, in
+     ic_launcher_foreground.xml. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The sky. -->
+    <!-- The sky, dark at the top. It fills the whole icon. -->
     <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -17,16 +19,33 @@
                 android:startY="0"
                 android:endX="0"
                 android:endY="108">
-                <item android:offset="0" android:color="#FFE4EED8" />
-                <item android:offset="1" android:color="#FFC9DDB8" />
+                <item android:offset="0" android:color="#FF0D2130" />
+                <item android:offset="1" android:color="#FF1F4B52" />
             </gradient>
         </aapt:attr>
     </path>
-    <!-- The far hill, then the near one. -->
-    <path
-        android:fillColor="#FF9DBF84"
-        android:pathData="M0,84 C20,74 38,76 56,82 C74,88 92,80 108,74 L108,108 L0,108 Z" />
-    <path
-        android:fillColor="#FF7FA866"
-        android:pathData="M0,94 C24,86 46,90 66,95 C84,99 98,94 108,90 L108,108 L0,108 Z" />
+    <!-- The scene is drawn on a 108-unit grid and shrunk to 74 % around the
+         centre, so it fits the middle area every launcher shape shows. -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.74"
+        android:scaleY="0.74">
+        <!-- A few faint stars. -->
+        <path
+            android:fillColor="#99F2EEE2"
+            android:pathData="M20,24 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0 M30,15 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0 M84,20 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0 M92,34 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0 M76,12 m-0.7,0 a0.7,0.7 0 1,0 1.4,0 a0.7,0.7 0 1,0 -1.4,0" />
+        <!-- The peak. -->
+        <path
+            android:fillColor="#FF2F6159"
+            android:pathData="M-10,112 L54,34 L118,112 Z" />
+        <!-- Its snow cap. -->
+        <path
+            android:fillColor="#FFEEF3F2"
+            android:pathData="M54,34 L66.04,48 L59,45 L54,49.5 L49,45 L41.96,48 Z" />
+        <!-- The lower ridge in front. -->
+        <path
+            android:fillColor="#FF22474A"
+            android:pathData="M-10,112 L18,84 L32,95 L46,82 L66,104 L84,86 L118,112 Z" />
+    </group>
 </vector>
