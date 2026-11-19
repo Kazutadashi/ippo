@@ -164,6 +164,9 @@ ThemeData buildTheme(
     // the light accent tint, they look like data, never like an empty
     // text field.
     chipTheme: ChipThemeData(backgroundColor: tint, side: BorderSide.none),
+    // A slightly lower title bar than Material's 64, so more of each
+    // screen is content; the same on every screen.
+    appBarTheme: const AppBarTheme(toolbarHeight: 52),
   );
   return theme.copyWith(textTheme: _withTabularDigits(theme.textTheme));
 }

@@ -21,21 +21,22 @@ import 'habit_form_screen.dart';
 const int _shownDays = 60;
 
 /// The width of one past day's column. Narrow, so more days fit.
-const double _dayWidth = 36;
+const double _dayWidth = 34;
 
 /// Today's column is wider: it is the one tapped every day, and the
 /// extra width keeps it apart from yesterday, so mis-taps are rarer.
-const double _todayWidth = 44;
+const double _todayWidth = 40;
 
-/// The height of one habit's row. Compact on purpose (the owner wanted
-/// a tight grid), a little under the usual 48 tap target.
-const double _rowHeight = 44;
+/// The height of one habit's row. Compact on purpose, so many habits
+/// fit on one screen; under the usual 48 tap target, but a whole row of
+/// a column is easy to hit.
+const double _rowHeight = 36;
 
 /// The height of the row of dates at the top.
 const double _headerHeight = 34;
 
 /// The size of the ✓ and ✗ marks.
-const double _markSize = 20;
+const double _markSize = 18;
 
 /// The habits grid. Tap a day to cycle it: nothing → ✓ → ✗ → nothing.
 class HabitsScreen extends StatefulWidget {
@@ -84,12 +85,7 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
               physics: const AlwaysScrollableScrollPhysics(),
 
               // Room at the bottom, so the button never hides a habit.
-              padding: const EdgeInsets.fromLTRB(
-                Spacing.screen,
-                0,
-                Spacing.screen,
-                96,
-              ),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
               children: [
                 if (log.invalidCount > 0)
                   ProblemText(
@@ -106,7 +102,7 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
                   )
                 else
                   Card(
-                    margin: const EdgeInsets.only(top: Spacing.small),
+                    margin: const EdgeInsets.only(top: Spacing.tight),
                     clipBehavior: Clip.antiAlias,
                     child: _HabitGrid(
                       today: today(),
@@ -153,8 +149,9 @@ class _HabitGrid extends StatelessWidget {
     ];
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Names get about a third of the width, so most of it shows days.
-        final nameWidth = (constraints.maxWidth * 0.32).clamp(88.0, 160.0);
+        // Names get just over a quarter of the width, so most of it
+        // shows days; long names wrap onto a second line.
+        final nameWidth = (constraints.maxWidth * 0.27).clamp(80.0, 150.0);
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -222,7 +219,7 @@ class _HabitName extends StatelessWidget {
           height: _rowHeight,
           width: double.infinity,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.small),
+            padding: const EdgeInsets.fromLTRB(10, 0, Spacing.tight, 0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -264,9 +261,14 @@ class _DayHeader extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // One line each, whatever the font, so the header keeps its
+          // height.
           Text(
             weekdays[day.weekday - 1],
             style: textTheme.labelSmall?.copyWith(color: color),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.clip,
           ),
           Text(
             '${day.day}',
@@ -274,6 +276,9 @@ class _DayHeader extends StatelessWidget {
               color: color,
               fontWeight: isToday ? FontWeight.bold : null,
             ),
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.clip,
           ),
         ],
       ),

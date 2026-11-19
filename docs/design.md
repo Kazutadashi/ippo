@@ -414,7 +414,7 @@ Fixed sizes:
 | --- | --- |
 | Card header height | 36, icon 20 |
 | Home tile icon | 16 |
-| Smallest tap target | 48 × 48 (exception: habit grid cells are 36 × 44, and today's column 44 × 44, so the grid stays compact) |
+| Smallest tap target | 48 × 48 (exception: habit grid cells are 34 × 36, and today's column 40 × 36, so the grid stays compact) |
 | Room under the last card when there are floating buttons | 96 (one), 160 (two) |
 
 
