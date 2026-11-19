@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- Ippo's launcher icon on Android 8 and later: a trail of steps climbing
-     a snowy mountain at night to a flag on the summit, for 一歩, "one
-     step". Drawn as vectors, so there are no image files. The monochrome
-     layer lets Android 13 and later tint it to match the phone's themed
-     icons. Older Android uses the mipmap-*/ PNGs. -->
+<!-- Ippo's launcher icon on Android 8 and later: the character 歩, "step",
+     from 一歩, "one step", above a small mountain range at night. Drawn as
+     vectors, so there are no image files. The monochrome layer (the
+     character alone) lets Android 13 and later tint it to match the
+     phone's themed icons. Older Android uses the mipmap-*/ PNGs. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
 </adaptive-icon>
