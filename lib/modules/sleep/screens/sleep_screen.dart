@@ -12,6 +12,7 @@ import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../nap.dart';
@@ -43,10 +44,7 @@ class SleepScreen extends StatefulWidget {
   State<SleepScreen> createState() => _SleepScreenState();
 }
 
-class _SleepScreenState extends State<SleepScreen> {
-  /// The day being shown, at local midnight.
-  DateTime _day = currentSleepDay(DateTime.now());
-
+class _SleepScreenState extends State<SleepScreen> with FollowsToday {
   void _open(Widget screen) {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (context) => screen));
@@ -54,17 +52,10 @@ class _SleepScreenState extends State<SleepScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sleepToday = currentSleepDay(DateTime.now());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sleep'),
-        actions: [
-          DayBar(
-            day: _day,
-            today: sleepToday,
-            onChanged: (day) => setState(() => _day = day),
-          ),
-        ],
+        actions: [DayBar(day: shownDay, onChanged: showDay)],
       ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
@@ -74,7 +65,7 @@ class _SleepScreenState extends State<SleepScreen> {
           listenable: widget.appState,
           builder: (context, _) {
             final log = SleepLog.of(widget.appState);
-            final date = formatDate(_day);
+            final date = formatDate(shownDay);
             final wakeUp = log.wakeUpOn(date);
             final bedtime = log.bedtimeOf(date);
             final sleptBefore = log.sleepBefore(date);
@@ -93,7 +84,7 @@ class _SleepScreenState extends State<SleepScreen> {
                   children: [
                     CardHeader(
                       icon: Icons.wb_sunny_outlined,
-                      title: _day == sleepToday ? 'Today' : 'This day',
+                      title: showsToday ? 'Today' : 'This day',
                     ),
                     const SizedBox(height: 8),
                     _DayEntry(
@@ -104,7 +95,7 @@ class _SleepScreenState extends State<SleepScreen> {
                         '${bedtime?.id} ${bedtime?.at}',
                       ),
                       appState: widget.appState,
-                      day: _day,
+                      day: shownDay,
                       wakeUp: wakeUp,
                       bedtime: bedtime,
                       wakeGuess:
@@ -132,7 +123,7 @@ class _SleepScreenState extends State<SleepScreen> {
                         onPressed: () => _open(
                           NapFormScreen.addNap(
                             appState: widget.appState,
-                            day: _day,
+                            day: shownDay,
                           ),
                         ),
                       ),

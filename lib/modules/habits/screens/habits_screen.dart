@@ -10,7 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
-import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
@@ -20,12 +20,16 @@ import 'habit_form_screen.dart';
 /// How many days the grid shows; scroll sideways to see further back.
 const int _shownDays = 60;
 
-/// The width of one day's column. Narrow, so more days fit on screen.
+/// The width of one past day's column. Narrow, so more days fit.
 const double _dayWidth = 36;
 
-/// The height of one habit's row. A little under the usual 48 tap
-/// target, so more habits fit; each cell is still a 36 x 40 target.
-const double _rowHeight = 40;
+/// Today's column is wider: it is the one tapped every day, and the
+/// extra width keeps it apart from yesterday, so mis-taps are rarer.
+const double _todayWidth = 44;
+
+/// The height of one habit's row. Compact on purpose (the owner wanted
+/// a tight grid), a little under the usual 48 tap target.
+const double _rowHeight = 44;
 
 /// The height of the row of dates at the top.
 const double _headerHeight = 34;
@@ -34,12 +38,20 @@ const double _headerHeight = 34;
 const double _markSize = 20;
 
 /// The habits grid. Tap a day to cycle it: nothing → ✓ → ✗ → nothing.
-class HabitsScreen extends StatelessWidget {
+class HabitsScreen extends StatefulWidget {
   /// Creates the screen.
   const HabitsScreen({super.key, required this.appState});
 
   /// The app-wide state, with the event log.
   final AppState appState;
+
+  @override
+  State<HabitsScreen> createState() => _HabitsScreenState();
+}
+
+// FollowsToday moves today's column on by itself after midnight.
+class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
+  AppState get appState => widget.appState;
 
   void _open(BuildContext context, Widget screen) {
     Navigator.of(context)
@@ -97,6 +109,7 @@ class HabitsScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(top: Spacing.small),
                     clipBehavior: Clip.antiAlias,
                     child: _HabitGrid(
+                      today: today(),
                       appState: appState,
                       log: log,
                       habits: habits,
@@ -119,12 +132,14 @@ class HabitsScreen extends StatelessWidget {
 /// a sideways-scrolling area, today first.
 class _HabitGrid extends StatelessWidget {
   const _HabitGrid({
+    required this.today,
     required this.appState,
     required this.log,
     required this.habits,
     required this.onEditHabit,
   });
 
+  final DateTime today;
   final AppState appState;
   final HabitLog log;
   final List<Habit> habits;
@@ -132,7 +147,7 @@ class _HabitGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final todayDate = today();
+    final todayDate = today;
     final days = [
       for (var back = 0; back < _shownDays; back++) addDays(todayDate, -back),
     ];
@@ -198,23 +213,27 @@ class _HabitName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        height: _rowHeight,
-        width: double.infinity,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.small),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              habit.name,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: habit.displayColor(Theme.of(context)),
-                fontWeight: FontWeight.w500,
-                height: 1.15,
+    return Semantics(
+      button: true,
+      hint: 'Edit habit',
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: _rowHeight,
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.small),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                habit.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: habit.displayColor(Theme.of(context)),
+                  fontWeight: FontWeight.w500,
+                  height: 1.15,
+                ),
               ),
             ),
           ),
@@ -239,7 +258,7 @@ class _DayHeader extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final color = isToday ? colors.primary : colors.onSurfaceVariant;
     return Container(
-      width: _dayWidth,
+      width: isToday ? _todayWidth : _dayWidth,
       height: _headerHeight,
       color: isToday ? colors.primary.withValues(alpha: 0.08) : null,
       child: Column(
@@ -325,7 +344,7 @@ class _DayCell extends StatelessWidget {
             );
           },
           child: SizedBox(
-            width: _dayWidth,
+            width: isToday ? _todayWidth : _dayWidth,
             height: _rowHeight,
             // The new mark grows in, so the change is easy to see.
             child: AnimatedSwitcher(

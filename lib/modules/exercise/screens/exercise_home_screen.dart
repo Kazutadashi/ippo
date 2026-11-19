@@ -10,6 +10,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
@@ -31,10 +32,8 @@ class ExerciseHomeScreen extends StatefulWidget {
   State<ExerciseHomeScreen> createState() => _ExerciseHomeScreenState();
 }
 
-class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
-  /// The day being shown, at local midnight. Starts at today.
-  DateTime _day = today();
-
+class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
+    with FollowsToday {
   ExerciseLog _currentLog() => ExerciseLog.of(widget.appState);
 
   void _open(Widget screen) {
@@ -47,7 +46,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
     await saveOrShowError(
       context,
       () => actions.recordSets(
-        date: formatDate(_day),
+        date: formatDate(shownDay),
         exercise: exercise,
         value: value,
         setCount: setCount,
@@ -71,9 +70,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exercise'),
-        actions: [
-          DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
-        ],
+        actions: [DayBar(day: shownDay, onChanged: showDay)],
       ),
       floatingActionButton: FloatingActionButton.extended(
         // Every floating button needs its own tag: all tabs stay alive at
@@ -91,7 +88,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen> {
           listenable: widget.appState,
           builder: (context, _) {
             final log = _currentLog();
-            final date = formatDate(_day);
+            final date = formatDate(shownDay);
             return ListView(
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),

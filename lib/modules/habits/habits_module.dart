@@ -30,46 +30,55 @@ class HabitsModule implements IppoModule {
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final log = HabitLog.of(appState);
     final habits = log.shownHabits;
-    final date = formatDate(now);
+    final date = formatDate(currentDay(now));
     if (habits.isEmpty) {
       return const [
         TodayFact(
-          icon: Icons.check_circle_outline,
           label: 'Habits',
           value: TodayFact.unknownValue,
-          detail: 'No habits yet',
+          note: 'No habits yet',
         ),
         TodayFact(
-          icon: Icons.radio_button_unchecked,
           label: 'To do',
           value: TodayFact.unknownValue,
-          detail: 'No habits yet',
+          note: 'No habits yet',
         ),
       ];
     }
     final done = habits
         .where((habit) => log.markOn(habit.id, date) == DayMark.done)
         .length;
-    final open = habits
-        .where((habit) => log.markOn(habit.id, date) == DayMark.none)
-        .map((habit) => habit.name)
-        .toList();
+    final open = [
+      for (final habit in habits)
+        if (log.markOn(habit.id, date) == DayMark.none) habit.name,
+    ];
     return [
       TodayFact(
-        icon: Icons.check_circle_outline,
         label: 'Habits',
         value: '$done / ${habits.length}',
-        detail: 'done today',
+        note: 'done today',
       ),
       TodayFact(
-        icon: Icons.radio_button_unchecked,
         label: 'To do',
-        value: '${open.length}',
-        detail: open.isEmpty ? 'All marked for today' : open.join(', '),
+        value: open.isEmpty ? 'All marked' : '${open.length} left',
+        note: open.isEmpty ? 'Every habit has a mark today.' : null,
+        details: _openHabitLines(open),
       ),
     ];
   }
 
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
+}
+
+/// The names of the habits still open today, one per line. Two lines at
+/// most: with more, the second line ends in "+ 2 more".
+List<TileDetail> _openHabitLines(List<String> open) {
+  if (open.length <= 2) {
+    return [for (final name in open) TileDetail(name)];
+  }
+  return [
+    TileDetail(open[0]),
+    TileDetail('${open[1]} + ${open.length - 2} more'),
+  ];
 }

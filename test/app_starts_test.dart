@@ -11,7 +11,7 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/today_screen.dart';
-import 'package:ippo/core/widgets/section_card.dart';
+import 'package:ippo/core/widgets/info_tile.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -83,7 +83,7 @@ void main() {
     await startApp(tester);
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
-    expect(find.text(describeToday(DateTime.now())), findsOneWidget);
+    expect(find.text(describeToday(today())), findsOneWidget);
     // Two tiles per module, all waiting for data.
     expect(find.byType(InfoTile), findsNWidgets(8));
     expect(find.text('–'), findsNWidgets(8));
@@ -109,7 +109,7 @@ void main() {
           module: 'food',
           type: 'food_entry_recorded',
           data: {
-            'date': formatDate(DateTime.now()),
+            'date': formatDate(today()),
             'meal': 'snack',
             'name': 'Apple',
             'nutrients': {'energy_kcal': 80},

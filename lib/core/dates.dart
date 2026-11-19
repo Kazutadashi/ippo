@@ -52,6 +52,41 @@ bool isValidTimeOfDay(String text) {
   return int.parse(match.group(1)!) <= 23 && int.parse(match.group(2)!) <= 59;
 }
 
+/// The hour at which a new day starts. Before it you are still in the
+/// day before: a snack at 01:00, or going to bed at 02:00, counts for
+/// the evening you were still awake in. Every module uses this same
+/// boundary, so "today" means the same thing on every screen.
+const int dayStartHour = 5;
+
+/// The day you are in at [now]: its calendar day, or the day before if
+/// it is earlier than [dayStartHour]. Returned at local midnight.
+DateTime currentDay(DateTime now) {
+  final day = DateTime(now.year, now.month, now.day);
+  return now.hour < dayStartHour ? addDays(day, -1) : day;
+}
+
+/// The day you are in right now (see [currentDay]).
+DateTime today() => currentDay(DateTime.now());
+
+/// The local moment at [time] (`HH:MM`) on [day], where [day] runs from
+/// [dayStartHour] to [dayStartHour] the next morning: 01:05 on Monday is
+/// early on Tuesday's calendar day. Returns null if [time] is not valid.
+DateTime? momentOnDay(DateTime day, String time) {
+  if (!isValidTimeOfDay(time)) {
+    return null;
+  }
+  final hour = int.parse(time.substring(0, 2));
+  final minute = int.parse(time.substring(3, 5));
+  final calendarDay = hour < dayStartHour ? addDays(day, 1) : day;
+  return DateTime(
+    calendarDay.year,
+    calendarDay.month,
+    calendarDay.day,
+    hour,
+    minute,
+  );
+}
+
 /// Returns the day before or after [day]: [days] can be negative.
 ///
 /// Uses calendar arithmetic rather than adding 24 hours, because days

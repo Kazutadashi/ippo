@@ -56,7 +56,7 @@ void main() {
     expect(wokeUpLeft, lessThan(wentToBedLeft));
     expect(find.text('Save'), findsOneWidget);
     // Woke up starts at the usual time; went to bed is not set yet.
-    final day = currentSleepDay(DateTime.now());
+    final day = today();
     expect(find.text(formatShortDate(day)), findsOneWidget);
     expect(find.text('07:00'), findsOneWidget);
     expect(find.text('Not set'), findsOneWidget);
@@ -72,7 +72,7 @@ void main() {
     });
     await tester.pump();
 
-    final date = formatDate(currentSleepDay(DateTime.now()));
+    final date = formatDate(today());
     final log = SleepLog.fromEvents(appState.eventLog!.events);
     expect(log.wakeUpOn(date)!.clock, const ClockTime(7, 0));
     expect(log.bedtimeOf(date), isNull);
@@ -81,7 +81,7 @@ void main() {
 
   testWidgets('saved times are shown, and can be cleared', (tester) async {
     await openSleepScreen(tester);
-    final day = currentSleepDay(DateTime.now());
+    final day = today();
     await tester.runAsync(() async {
       final actions = SleepActions(appState);
       await actions.recordMoment(

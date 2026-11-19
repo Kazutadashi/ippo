@@ -138,7 +138,7 @@ ThemeData buildTheme(
     secondaryContainer: tint,
     onSecondaryContainer: generated.onSurface,
   );
-  return ThemeData(
+  final theme = ThemeData(
     colorScheme: colorScheme,
     // Compact density: Ippo is a logging tool, so it shows more at once.
     // Fields, buttons and list rows look smaller, but every tap target
@@ -150,9 +150,45 @@ ThemeData buildTheme(
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(),
       isDense: true,
+      // The label always sits on the border, so a field's unit ("kcal")
+      // and example ("2 slices") show before anything is typed.
+      floatingLabelBehavior: FloatingLabelBehavior.always,
     ),
     listTileTheme: const ListTileThemeData(
       visualDensity: VisualDensity.compact,
     ),
+    // Flat cards on a slightly different surface, the same in light and
+    // dark mode (Material's "filled" cards, meant for dense screens).
+    cardTheme: CardThemeData(elevation: 0, color: colorScheme.surfaceContainer),
+    // Chips show logged things, such as a set of 20 reps. Filled with
+    // the light accent tint, they look like data, never like an empty
+    // text field.
+    chipTheme: ChipThemeData(backgroundColor: tint, side: BorderSide.none),
+  );
+  return theme.copyWith(textTheme: _withTabularDigits(theme.textTheme));
+}
+
+/// Gives every text style digits of equal width, so numbers line up in
+/// columns and a value that changes ("25 min ago") does not shift
+/// sideways.
+TextTheme _withTabularDigits(TextTheme textTheme) {
+  TextStyle? tabular(TextStyle? style) =>
+      style?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+  return textTheme.copyWith(
+    displayLarge: tabular(textTheme.displayLarge),
+    displayMedium: tabular(textTheme.displayMedium),
+    displaySmall: tabular(textTheme.displaySmall),
+    headlineLarge: tabular(textTheme.headlineLarge),
+    headlineMedium: tabular(textTheme.headlineMedium),
+    headlineSmall: tabular(textTheme.headlineSmall),
+    titleLarge: tabular(textTheme.titleLarge),
+    titleMedium: tabular(textTheme.titleMedium),
+    titleSmall: tabular(textTheme.titleSmall),
+    bodyLarge: tabular(textTheme.bodyLarge),
+    bodyMedium: tabular(textTheme.bodyMedium),
+    bodySmall: tabular(textTheme.bodySmall),
+    labelLarge: tabular(textTheme.labelLarge),
+    labelMedium: tabular(textTheme.labelMedium),
+    labelSmall: tabular(textTheme.labelSmall),
   );
 }

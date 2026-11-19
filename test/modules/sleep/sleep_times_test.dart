@@ -77,13 +77,10 @@ void main() {
     });
   });
 
-  test('before 05:00 the sleep day is still the day before', () {
-    expect(currentSleepDay(DateTime(2026, 11, 17, 1, 30)), monday);
-    expect(currentSleepDay(DateTime(2026, 11, 17, 4, 59)), monday);
-    expect(
-      currentSleepDay(DateTime(2026, 11, 17, 5, 0)),
-      DateTime(2026, 11, 17),
-    );
+  test('before 05:00 the day is still the day before', () {
+    expect(currentDay(DateTime(2026, 11, 17, 1, 30)), monday);
+    expect(currentDay(DateTime(2026, 11, 17, 4, 59)), monday);
+    expect(currentDay(DateTime(2026, 11, 17, 5, 0)), DateTime(2026, 11, 17));
   });
 
   group('checkDayTimes', () {

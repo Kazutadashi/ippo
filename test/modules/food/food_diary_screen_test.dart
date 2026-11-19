@@ -45,15 +45,15 @@ void main() {
       await appState.load();
       await appState.chooseLinuxDataFolder(dataFolder.path);
       final actions = FoodActions(appState);
-      final today = formatDate(DateTime.now());
+      final todayText = formatDate(today());
       await actions.recordQuickEntry(
-        date: today,
+        date: todayText,
         time: null,
         name: 'Porridge',
         nutrients: const Nutrients({'energy_kcal': 300, 'proteins_g': 10}),
       );
       await actions.recordQuickEntry(
-        date: today,
+        date: todayText,
         time: null,
         name: 'Apple',
         nutrients: const Nutrients({'energy_kcal': 80}),

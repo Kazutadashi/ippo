@@ -75,17 +75,6 @@ String? checkSleepPeriod(SleepPeriod period) {
   return null;
 }
 
-/// The hour at which a new day starts for sleep. Before it, you are
-/// still in the day before (up late, not yet asleep).
-const int sleepDayStartHour = 5;
-
-/// The day you are in right now, for sleep: today, or yesterday if it is
-/// before [sleepDayStartHour] in the morning.
-DateTime currentSleepDay(DateTime now) {
-  final day = DateTime(now.year, now.month, now.day);
-  return now.hour < sleepDayStartHour ? addDays(day, -1) : day;
-}
-
 /// The moment you woke up at [time] on [day].
 DateTime wakeUpMoment(DateTime day, ClockTime time) => _at(day, time);
 

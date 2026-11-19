@@ -172,8 +172,8 @@ void main() {
 
       final morning = DateTime(2026, 11, 17, 9, 15);
       expect(describeTiles(module.todayFacts(appState, morning)), [
-        'Sleep: 7 h 30 min | 23:00 – 06:30',
-        'Awake for: 2 h 45 min | since 06:30',
+        'Sleep: 7 h 30 min | Bed 23:00, Woke 06:30',
+        'Awake for: 2 h 45 min | Woke 06:30',
       ]);
     });
 
@@ -183,7 +183,7 @@ void main() {
 
       expect(
         describeTiles(module.todayFacts(appState, lateNight))[1],
-        'Awake for: 18 h | since 07:00',
+        'Awake for: 18 h | Woke 07:00',
       );
     });
 
@@ -194,7 +194,7 @@ void main() {
 
       expect(
         describeTiles(module.todayFacts(appState, lateNight))[1],
-        'Awake for: 18 h | 07:00 – 01:00',
+        'Awake for: 18 h | Woke 07:00, Bed 01:00',
       );
     });
   });
@@ -234,7 +234,13 @@ void main() {
   });
 }
 
-/// Writes home tiles as `Label: value | detail`, for comparing.
+/// Writes a detail as `Label value`, or just the value without a label.
+String describeDetail(TileDetail detail) =>
+    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
+
+/// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+  for (final fact in facts)
+    '${fact.label}: ${fact.value} | '
+        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

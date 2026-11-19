@@ -160,7 +160,7 @@ void main() {
 
       expect(describeTiles(module.todayFacts(appState, now)), [
         'Habits: 1 / 3 | done today',
-        'To do: 2 | Stretch, Study',
+        'To do: 2 left | Stretch, Study',
       ]);
     });
   });
@@ -181,16 +181,16 @@ void main() {
     expect(find.text('Read 10 pages'), findsOneWidget);
     expect(find.text('Stretch'), findsOneWidget);
     // Today's column is first: its date is left of yesterday's.
-    final now = DateTime.now();
+    final now = today();
     final todayLeft = tester.getTopLeft(find.text('${now.day}').first).dx;
-    final yesterday = addDays(DateTime(now.year, now.month, now.day), -1);
+    final yesterday = addDays(now, -1);
     final yesterdayLeft = tester
         .getTopLeft(find.text('${yesterday.day}').first)
         .dx;
     expect(todayLeft, lessThan(yesterdayLeft));
 
     // Tap today's cell for the first habit: it becomes done.
-    final todayText = formatShortDate(DateTime(now.year, now.month, now.day));
+    final todayText = formatShortDate(now);
     await tester.runAsync(() async {
       await tester.tap(
         find.bySemanticsLabel('Read 10 pages, $todayText: not recorded'),
@@ -204,7 +204,13 @@ void main() {
   });
 }
 
-/// Writes home tiles as `Label: value | detail`, for comparing.
+/// Writes a detail as `Label value`, or just the value without a label.
+String describeDetail(TileDetail detail) =>
+    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
+
+/// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+  for (final fact in facts)
+    '${fact.label}: ${fact.value} | '
+        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

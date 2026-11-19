@@ -295,7 +295,7 @@ void main() {
     const module = FoodModule();
     final now = DateTime(2026, 11, 17, 15, 30);
     expect(describeTiles(module.todayFacts(appState, now)), [
-      'Energy: – | Nothing eaten logged yet',
+      'Energy: – | Nothing logged yet',
       'Last meal: – | Not logged yet',
     ]);
 
@@ -314,8 +314,8 @@ void main() {
     );
 
     expect(describeTiles(module.todayFacts(appState, now)), [
-      'Energy: 689 kcal | Protein 13.2 g · Fat 6.5 g',
-      'Last meal: 3 h 15 min ago | at 12:15 · Soup',
+      'Energy: 689 kcal | Protein 13.2 g, Fat 6.5 g',
+      'Last meal: 3 h 15 min ago | Soup, at 12:15',
     ]);
   });
 
@@ -394,7 +394,13 @@ void main() {
   });
 }
 
-/// Writes home tiles as `Label: value | detail`, for comparing.
+/// Writes a detail as `Label value`, or just the value without a label.
+String describeDetail(TileDetail detail) =>
+    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
+
+/// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+  for (final fact in facts)
+    '${fact.label}: ${fact.value} | '
+        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

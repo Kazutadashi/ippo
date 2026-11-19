@@ -43,8 +43,7 @@ void main() {
   /// Fills the data folder with a little of everything, with long names
   /// on purpose.
   Future<void> addSampleData(AppState appState) async {
-    final todayDate = DateTime.now();
-    final day = DateTime(todayDate.year, todayDate.month, todayDate.day);
+    final day = today();
     final date = formatDate(day);
     await FoodActions(appState).recordQuickEntry(
       date: date,
@@ -75,7 +74,7 @@ void main() {
       setCount: 8,
       log: ExerciseLog.fromEvents(appState.eventLog!.events),
     );
-    final sleepDay = currentSleepDay(DateTime.now());
+    final sleepDay = today();
     await SleepActions(appState).recordMoment(
       kind: MomentKind.wokeUp,
       day: sleepDay,

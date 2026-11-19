@@ -1,41 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// A bar for choosing which day a screen shows: ‹ Today ›.
+/// A bar for choosing which day a screen shows: ‹ Today ▾ ›.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../dates.dart';
 
-/// Returns today's date at local midnight.
-DateTime today() => _calendarToday();
-
-DateTime _calendarToday() {
-  final now = DateTime.now();
-  return DateTime(now.year, now.month, now.day);
-}
-
 /// Shows the chosen day with buttons for the previous and next day.
 /// Tapping the day opens a calendar. It goes in a screen's top bar
 /// (`AppBar.actions`), next to the title.
+///
+/// On any day but today, the day is shown in a tinted pill: logging to
+/// the wrong day by mistake is easy to miss otherwise.
 class DayBar extends StatelessWidget {
   /// Creates the bar showing [day], reporting a new day to [onChanged].
-  ///
-  /// [today] is the day called "Today"; it is the calendar day unless a
-  /// screen counts days differently (for sleep, the day lasts until
-  /// early morning).
-  const DayBar({
-    super.key,
-    required this.day,
-    required this.onChanged,
-    this.today,
-  });
+  const DayBar({super.key, required this.day, required this.onChanged});
 
   /// The day shown, at local midnight.
   final DateTime day;
-
-  /// The day called "Today", or null for the calendar day.
-  final DateTime? today;
 
   /// Called with the newly chosen day.
   final ValueChanged<DateTime> onChanged;
@@ -45,7 +28,7 @@ class DayBar extends StatelessWidget {
       context: context,
       initialDate: day,
       firstDate: DateTime(2000),
-      lastDate: addDays(_calendarToday(), 365),
+      lastDate: addDays(today(), 365),
     );
     if (picked != null) {
       onChanged(picked);
@@ -54,6 +37,8 @@ class DayBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isToday = day == today();
     // Compact, so it fits in a screen's top bar next to the title.
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -63,9 +48,21 @@ class DayBar extends StatelessWidget {
           icon: const Icon(Icons.chevron_left),
           onPressed: () => onChanged(addDays(day, -1)),
         ),
-        TextButton(
-          onPressed: () => _pickDay(context),
-          child: Text(describeDay(day, today: today)),
+        // A minimum width, so the arrows stay in place as the label
+        // changes from "Today" to "Mon 16 Nov".
+        ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 116),
+          child: TextButton.icon(
+            onPressed: () => _pickDay(context),
+            style: TextButton.styleFrom(
+              backgroundColor: isToday ? null : colors.secondaryContainer,
+              foregroundColor: colors.onSurface,
+            ),
+            // The arrow says the day opens a calendar.
+            icon: const Icon(Icons.arrow_drop_down),
+            iconAlignment: IconAlignment.end,
+            label: Text(describeDay(day)),
+          ),
         ),
         IconButton(
           tooltip: 'Next day',
@@ -79,10 +76,9 @@ class DayBar extends StatelessWidget {
 }
 
 /// Names a day: `Today`, `Yesterday`, `Tomorrow`, or for example
-/// `Mon 16 Nov`. [today] is the day called "Today", the calendar
-/// day if not given.
-String describeDay(DateTime day, {DateTime? today}) {
-  final todayDate = today ?? _calendarToday();
+/// `Mon 16 Nov`. Today is the day you are in (see [currentDay]).
+String describeDay(DateTime day) {
+  final todayDate = today();
   if (day == todayDate) {
     return 'Today';
   }

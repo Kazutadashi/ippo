@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/widgets/day_bar.dart';
+import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
@@ -30,17 +31,14 @@ class FoodDiaryScreen extends StatefulWidget {
   State<FoodDiaryScreen> createState() => _FoodDiaryScreenState();
 }
 
-class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
-  /// The day being shown, at local midnight. Starts at today.
-  DateTime _day = today();
-
+class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
   void _addEntry() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ChooseFoodScreen(
           appState: widget.appState,
-          date: formatDate(_day),
-          isToday: _day == today(),
+          date: formatDate(shownDay),
+          isToday: showsToday,
         ),
       ),
     );
@@ -51,8 +49,8 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
       MaterialPageRoute<void>(
         builder: (context) => QuickEntryFormScreen.add(
           appState: widget.appState,
-          date: formatDate(_day),
-          isToday: _day == today(),
+          date: formatDate(shownDay),
+          isToday: showsToday,
         ),
       ),
     );
@@ -73,9 +71,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Food'),
-        actions: [
-          DayBar(day: _day, onChanged: (day) => setState(() => _day = day)),
-        ],
+        actions: [DayBar(day: shownDay, onChanged: showDay)],
       ),
       // Adding to the whole day: buttons at the bottom right, as on the
       // other screens. Each needs its own hero tag, because Flutter
@@ -111,7 +107,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> {
           listenable: widget.appState,
           builder: (context, _) {
             final diary = FoodDiary.of(widget.appState);
-            final date = formatDate(_day);
+            final date = formatDate(shownDay);
             final entries = diary.entriesOn(date);
             return ListView(
               // Pull to refresh works even when the content is short.

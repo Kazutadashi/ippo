@@ -9,6 +9,7 @@ import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
 import '../../core/number_input.dart';
+import 'nutrients.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
 import 'screens/food_diary_screen.dart';
@@ -31,22 +32,19 @@ class FoodModule implements IppoModule {
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final diary = FoodDiary.of(appState);
-    final today = formatDate(now);
-    final entries = diary.entriesOn(today);
-    final total = diary.totalOn(today);
-    final lastMeal = _latestTimedEntry(entries);
+    final day = currentDay(now);
+    final entries = diary.entriesOn(formatDate(day));
+    final total = diary.totalOn(formatDate(day));
     return [
-      TodayFact(
-        icon: Icons.local_fire_department,
-        label: 'Energy',
-        value: entries.isEmpty
-            ? TodayFact.unknownValue
-            : '${formatAmount(total.energyKcal)} kcal',
-        detail: entries.isEmpty
-            ? 'Nothing eaten logged yet'
-            : _describeMacronutrients(total.values, entries.length),
-      ),
-      _lastMealFact(lastMeal, now),
+      if (entries.isEmpty)
+        const TodayFact(
+          label: 'Energy',
+          value: TodayFact.unknownValue,
+          note: 'Nothing logged yet',
+        )
+      else
+        _energyFact(total.values, entries.length),
+      _lastMealFact(_latestTimedEntry(entries), day, now),
     ];
   }
 
@@ -54,66 +52,68 @@ class FoodModule implements IppoModule {
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);
 }
 
-/// The "Last meal" tile: how long ago the latest entry with a known time
-/// was eaten.
-TodayFact _lastMealFact(FoodEntry? lastMeal, DateTime now) {
-  final time = lastMeal?.time;
-  if (lastMeal == null || time == null) {
-    return const TodayFact(
-      icon: Icons.schedule,
-      label: 'Last meal',
-      value: TodayFact.unknownValue,
-      detail: 'Not logged yet',
-    );
-  }
-  final eatenAt = DateTime(
-    now.year,
-    now.month,
-    now.day,
-    int.parse(time.substring(0, 2)),
-    int.parse(time.substring(3, 5)),
-  );
-  final elapsed = now.difference(eatenAt);
-  return TodayFact(
-    icon: Icons.schedule,
-    label: 'Last meal',
-    value: elapsed.isNegative ? time : formatTimeAgo(elapsed),
-    detail: 'at $time · ${lastMeal.name}',
-  );
-}
-
-/// The entry with the latest known time, or null if none has a time.
-FoodEntry? _latestTimedEntry(List<FoodEntry> entries) {
-  FoodEntry? latest;
-  for (final entry in entries) {
-    final time = entry.time;
-    if (time == null) {
-      continue;
-    }
-    // "HH:MM" texts sort the same way as the times they stand for.
-    if (latest == null || time.compareTo(latest.time!) >= 0) {
-      latest = entry;
-    }
-  }
-  return latest;
-}
-
-/// Describes protein, carbohydrates and fat, for example
-/// `Protein 56 g · Carbs 120 g · Fat 30 g`. If none are known, says how
-/// many entries there are instead.
-String _describeMacronutrients(Map<String, double> values, int entryCount) {
+/// The "Energy" tile: the day's energy, with protein, carbohydrates and
+/// fat below it as small labelled columns.
+TodayFact _energyFact(Map<String, double> values, int entryCount) {
   const names = {
     'proteins_g': 'Protein',
     'carbohydrates_g': 'Carbs',
     'fat_g': 'Fat',
   };
-  final parts = [
+  final details = [
     for (final name in names.entries)
       if (values.containsKey(name.key))
-        '${name.value} ${formatAmount(values[name.key]!)} g',
+        TileDetail('${formatAmount(values[name.key]!)} g', label: name.value),
   ];
-  if (parts.isEmpty) {
-    return entryCount == 1 ? '1 entry' : '$entryCount entries';
+  return TodayFact(
+    label: 'Energy',
+    value: '${formatAmount(values[energyKey] ?? 0)} kcal',
+    details: details,
+    // Without any of them (only quick entries), say how much was logged.
+    note: details.isEmpty
+        ? (entryCount == 1 ? '1 entry' : '$entryCount entries')
+        : null,
+  );
+}
+
+/// The "Last meal" tile: how long ago the latest entry with a known time
+/// was eaten, then what it was and when.
+TodayFact _lastMealFact(FoodEntry? lastMeal, DateTime day, DateTime now) {
+  final time = lastMeal?.time;
+  final eatenAt = time == null ? null : momentOnDay(day, time);
+  if (lastMeal == null || time == null || eatenAt == null) {
+    return const TodayFact(
+      label: 'Last meal',
+      value: TodayFact.unknownValue,
+      note: 'Not logged yet',
+    );
   }
-  return parts.join(' · ');
+  final elapsed = now.difference(eatenAt);
+  return TodayFact(
+    label: 'Last meal',
+    value: elapsed.isNegative ? time : formatTimeAgo(elapsed),
+    details: [TileDetail(lastMeal.name), TileDetail('at $time')],
+  );
+}
+
+/// The entry eaten last, by its time, or null if none has a time.
+/// Times are compared as moments, so 01:05 (after midnight) comes after
+/// 23:30 on the same day.
+FoodEntry? _latestTimedEntry(List<FoodEntry> entries) {
+  FoodEntry? latest;
+  DateTime? latestMoment;
+  // Any fixed day works for comparing; only the order matters.
+  final anyDay = DateTime(2000);
+  for (final entry in entries) {
+    final time = entry.time;
+    final moment = time == null ? null : momentOnDay(anyDay, time);
+    if (moment == null) {
+      continue;
+    }
+    if (latestMoment == null || !moment.isBefore(latestMoment)) {
+      latest = entry;
+      latestMoment = moment;
+    }
+  }
+  return latest;
 }

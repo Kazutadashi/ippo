@@ -51,7 +51,7 @@ void main() {
       pushUpId = event.id;
       for (final reps in todaysReps) {
         await actions.recordSets(
-          date: formatDate(DateTime.now()),
+          date: formatDate(today()),
           exercise: ExerciseLog.fromEvents(appState.eventLog!.events)
               .exercises[pushUpId]!,
           value: reps,
@@ -101,7 +101,7 @@ void main() {
 
     expect(find.widgetWithText(ActionChip, '20'), findsNWidgets(2));
     final log = ExerciseLog.fromEvents(appState.eventLog!.events);
-    final sets = log.setsOn(formatDate(DateTime.now()), pushUpId);
+    final sets = log.setsOn(formatDate(today()), pushUpId);
     expect(sets.map((set) => set.setNumber), [1, 2]);
   });
 

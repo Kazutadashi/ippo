@@ -253,7 +253,7 @@ void main() {
       'Last set: – | Not logged yet',
     ]);
 
-    final today = formatDate(now);
+    final today = formatDate(currentDay(now));
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
     final plank = await createExercise('Plank', MeasuredIn.seconds);
     await createExercise('Squat', MeasuredIn.reps);
@@ -265,13 +265,19 @@ void main() {
     // milliseconds ahead, and "5 min ago" rounds down.
     final later = DateTime.now().add(const Duration(minutes: 5, seconds: 30));
     expect(describeTiles(module.todayFacts(appState, later)), [
-      'Exercise: 3 sets | 40 reps · 45 s held',
-      'Last set: 5 min ago | Plank · 45 s',
+      'Exercise: 3 sets | 40 reps, 45 s held',
+      'Last set: 5 min ago | Plank, 45 s',
     ]);
   });
 }
 
-/// Writes home tiles as `Label: value | detail`, for comparing.
+/// Writes a detail as `Label value`, or just the value without a label.
+String describeDetail(TileDetail detail) =>
+    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
+
+/// Writes home tiles as `Label: value | note or details`, for comparing.
 List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts) '${fact.label}: ${fact.value} | ${fact.detail}',
+  for (final fact in facts)
+    '${fact.label}: ${fact.value} | '
+        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
 ];

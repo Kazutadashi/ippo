@@ -12,7 +12,6 @@ import '../../core/module.dart';
 import 'screens/sleep_screen.dart';
 import 'nap.dart';
 import 'sleep_moment.dart';
-import 'sleep_times.dart';
 import 'sleep_log.dart';
 
 /// The sleep module, as seen by the core app.
@@ -34,28 +33,36 @@ class SleepModule implements IppoModule {
   @override
   List<TodayFact> todayFacts(AppState appState, DateTime now) {
     final log = SleepLog.of(appState);
-    // Before 05:00, "today" is still the day before.
-    final day = currentSleepDay(now);
+    final day = currentDay(now);
     final date = formatDate(day);
     final previousDate = formatDate(addDays(day, -1));
     final sleptBefore = log.sleepBefore(date);
     final bedtimeBefore = log.bedtimeOf(previousDate);
     final wakeUp = log.wakeUpOn(date);
     final naps = log.napsOn(date);
-    final details = [
-      if (sleptBefore != null && bedtimeBefore != null && wakeUp != null)
-        '${bedtimeBefore.clock} – ${wakeUp.clock}',
-      if (naps.isNotEmpty) _describeNaps(naps),
-    ];
     return [
-      TodayFact(
-        icon: Icons.bedtime,
-        label: 'Sleep',
-        value: sleptBefore == null
-            ? TodayFact.unknownValue
-            : formatDuration(sleptBefore),
-        detail: details.isEmpty ? 'Not logged yet' : details.join(' · '),
-      ),
+      if (sleptBefore != null && bedtimeBefore != null && wakeUp != null)
+        TodayFact(
+          label: 'Sleep',
+          value: formatDuration(sleptBefore),
+          details: [
+            TileDetail('${bedtimeBefore.clock}', label: 'Bed'),
+            TileDetail('${wakeUp.clock}', label: 'Woke'),
+            if (naps.isNotEmpty)
+              TileDetail(formatDuration(_totalOf(naps)), label: 'Naps'),
+          ],
+        )
+      else
+        TodayFact(
+          label: 'Sleep',
+          value: TodayFact.unknownValue,
+          // Say exactly what is missing, so it is easy to fill in.
+          note: wakeUp != null
+              ? 'Bedtime not logged'
+              : bedtimeBefore != null
+              ? 'Wake-up not logged'
+              : 'Not logged yet',
+        ),
       _awakeFact(wakeUp, log.bedtimeOf(date), now),
     ];
   }
@@ -69,36 +76,35 @@ class SleepModule implements IppoModule {
 TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
   if (wakeUp == null) {
     return const TodayFact(
-      icon: Icons.wb_sunny_outlined,
       label: 'Awake for',
       value: TodayFact.unknownValue,
-      detail: 'Not logged yet',
+      note: 'Not logged yet',
     );
   }
   final nowUtc = now.toUtc();
   if (bedtime != null && !nowUtc.isBefore(bedtime.atUtc)) {
     return TodayFact(
-      icon: Icons.wb_sunny_outlined,
       label: 'Awake for',
       value: formatDuration(bedtime.atUtc.difference(wakeUp.atUtc)),
-      detail: '${wakeUp.clock} – ${bedtime.clock}',
+      details: [
+        TileDetail('${wakeUp.clock}', label: 'Woke'),
+        TileDetail('${bedtime.clock}', label: 'Bed'),
+      ],
     );
   }
   final awake = nowUtc.difference(wakeUp.atUtc);
   return TodayFact(
-    icon: Icons.wb_sunny_outlined,
     label: 'Awake for',
     value: awake.isNegative ? TodayFact.unknownValue : formatDuration(awake),
-    detail: 'since ${wakeUp.clock}',
+    details: [TileDetail('${wakeUp.clock}', label: 'Woke')],
   );
 }
 
-/// Describes naps, for example `nap 20 min` or `2 naps 45 min`.
-String _describeNaps(List<Nap> naps) {
+/// The total time of [naps].
+Duration _totalOf(List<Nap> naps) {
   var total = Duration.zero;
   for (final nap in naps) {
     total += nap.duration;
   }
-  final count = naps.length == 1 ? 'nap' : '${naps.length} naps';
-  return '$count ${formatDuration(total)}';
+  return total;
 }
