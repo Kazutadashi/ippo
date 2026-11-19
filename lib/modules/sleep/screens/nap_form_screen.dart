@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../nap.dart';
@@ -103,50 +104,59 @@ class _NapFormScreenState extends State<NapFormScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => '$_start $_end';
+
   @override
   Widget build(BuildContext context) {
     final period = _period();
     final problem = checkSleepPeriod(period);
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('Nap'),
-        actions: [AppBarSaveButton(onPressed: problem == null ? _save : null)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TimeField(
-                  label: 'Start',
-                  time: _start,
-                  onChanged: (time) => setState(() => _start = time),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TimeField(
-                  label: 'End',
-                  time: _end,
-                  onChanged: (time) => setState(() => _end = time),
-                ),
-              ),
-            ],
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
           ),
-          const SizedBox(height: 12),
-          if (problem == null)
-            NoteText('${formatDuration(period.duration)} of sleep')
-          else
-            ProblemText(problem),
-          if (widget.nap != null)
-            DeleteButton(label: 'Delete this nap', onPressed: _delete),
-        ],
+          title: const Text('Nap'),
+          actions: [
+            AppBarSaveButton(onPressed: problem == null ? _save : null),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TimeField(
+                    label: 'Start',
+                    time: _start,
+                    onChanged: (time) => setState(() => _start = time),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TimeField(
+                    label: 'End',
+                    time: _end,
+                    onChanged: (time) => setState(() => _end = time),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (problem == null)
+              NoteText('${formatDuration(period.duration)} of sleep')
+            else
+              ProblemText(problem),
+            if (widget.nap != null)
+              DeleteButton(label: 'Delete this nap', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

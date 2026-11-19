@@ -11,6 +11,7 @@ import '../../../core/clock_time.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/time_fields.dart';
 import '../food.dart';
@@ -175,65 +176,76 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => [
+    _nameField.text,
+    _time,
+    for (final field in _nutrientFields.values) field.text,
+  ].join('\n');
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: const Text('Quick food'),
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
-        title: const Text('Quick food'),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      // The same cards and fields as "New food", so both read the same.
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          SectionCard(
-            children: [
-              const CardHeader(icon: Icons.restaurant, title: 'Food'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _nameField,
-                autofocus: widget.entry == null,
-                textCapitalization: TextCapitalization.sentences,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'What did you eat?',
-                  hintText: 'Restaurant lunch',
-                  errorText: _nameProblem,
+        // The same cards and fields as "New food", so both read the same.
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.restaurant, title: 'Food'),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _nameField,
+                  autofocus: widget.entry == null,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: 'What did you eat?',
+                    hintText: 'Restaurant lunch',
+                    errorText: _nameProblem,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TimeField(
-                label: 'Eaten at',
-                time: _time,
-                onChanged: (time) => setState(() => _time = time),
-              ),
-            ],
-          ),
-          SectionCard(
-            children: [
-              const CardHeader(
-                icon: Icons.local_fire_department,
-                title: 'Nutrition',
-              ),
-              const NoteText('For the whole portion. Only energy is needed.'),
-              const SizedBox(height: 16),
-              NutritionFields(
-                fields: _nutrientFields,
-                problems: {energyKey: _energyProblem, ..._nutrientProblems},
-                isShowingMore: _isShowingMore,
-                onShowMoreChanged: (show) =>
-                    setState(() => _isShowingMore = show),
-              ),
-            ],
-          ),
-          if (widget.entry != null)
-            DeleteButton(label: 'Delete this entry', onPressed: _delete),
-        ],
+                const SizedBox(height: 12),
+                TimeField(
+                  label: 'Eaten at',
+                  time: _time,
+                  onChanged: (time) => setState(() => _time = time),
+                ),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(
+                  icon: Icons.local_fire_department,
+                  title: 'Nutrition',
+                ),
+                const NoteText('For the whole portion. Only energy is needed.'),
+                const SizedBox(height: 16),
+                NutritionFields(
+                  fields: _nutrientFields,
+                  problems: {energyKey: _energyProblem, ..._nutrientProblems},
+                  isShowingMore: _isShowingMore,
+                  onShowMoreChanged: (show) =>
+                      setState(() => _isShowingMore = show),
+                ),
+              ],
+            ),
+            if (widget.entry != null)
+              DeleteButton(label: 'Delete this entry', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/theme.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/color_circles.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
@@ -104,39 +105,46 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
     ];
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => [_nameField.text, _color?.toARGB32()].join('\n');
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.habit != null;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(isEditing ? 'Edit habit' : 'New habit'),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(Spacing.screen),
-        children: [
-          TextField(
-            controller: _nameField,
-            autofocus: !isEditing,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              labelText: 'Habit',
-              hintText: 'Read 10 pages',
-              errorText: _nameProblem,
-            ),
-            onSubmitted: (_) => _save(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
           ),
-          const SizedBox(height: 20),
-          const FieldLabel('Colour'),
-          ColorCircleGrid(circles: _colorCircles(context)),
-          if (isEditing)
-            DeleteButton(label: 'Delete this habit', onPressed: _delete),
-        ],
+          title: Text(isEditing ? 'Edit habit' : 'New habit'),
+          actions: [AppBarSaveButton(onPressed: _save)],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(Spacing.screen),
+          children: [
+            TextField(
+              controller: _nameField,
+              autofocus: !isEditing,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: 'Habit',
+                hintText: 'Read 10 pages',
+                errorText: _nameProblem,
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 20),
+            const FieldLabel('Colour'),
+            ColorCircleGrid(circles: _colorCircles(context)),
+            if (isEditing)
+              DeleteButton(label: 'Delete this habit', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

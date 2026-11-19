@@ -14,6 +14,7 @@ import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food.dart';
 import '../food_actions.dart';
@@ -323,138 +324,153 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => [
+    _nameField.text,
+    _servingField.text,
+    _weightField.text,
+    _unit,
+    _isPer100,
+    _energyField.text,
+    for (final field in _nutrientFields.values) field.text,
+  ].join('\n');
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.food != null;
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(isEditing ? 'Edit food' : 'New food'),
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
-        title: Text(isEditing ? 'Edit food' : 'New food'),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          // Tonal, so it reads as a button, never as an empty field.
-          FilledButton.tonalIcon(
-            onPressed: _pasteLabel,
-            icon: const Icon(Icons.content_paste),
-            label: const Text('Paste nutrition label'),
-          ),
-          SectionCard(
-            children: [
-              const CardHeader(icon: Icons.restaurant, title: 'Food'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _nameField,
-                textCapitalization: TextCapitalization.sentences,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  errorText: _nameProblem,
-                ),
-              ),
-            ],
-          ),
-          SectionCard(
-            children: [
-              const CardHeader(icon: Icons.scale, title: 'Serving size'),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _servingField,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Serving',
-                        hintText: '2 slices',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: _weightField,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      textInputAction: TextInputAction.next,
-                      decoration: InputDecoration(
-                        labelText: 'Weight',
-                        suffixText: _unit,
-                      ),
-                      // Redraw: the nutrition card says what its values
-                      // are per.
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SegmentedButton<String>(
-                expandedInsets: EdgeInsets.zero,
-                segments: const [
-                  ButtonSegment(value: 'g', label: Text('Grams')),
-                  ButtonSegment(value: 'ml', label: Text('Millilitres')),
-                ],
-                selected: {_unit},
-                showSelectedIcon: false,
-                // Fixed once saved: past entries were logged in it.
-                onSelectionChanged: isEditing
-                    ? null
-                    : (choice) => setState(() => _unit = choice.single),
-              ),
-              if (_servingProblem != null) ...[
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            // Tonal, so it reads as a button, never as an empty field.
+            FilledButton.tonalIcon(
+              onPressed: _pasteLabel,
+              icon: const Icon(Icons.content_paste),
+              label: const Text('Paste nutrition label'),
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.restaurant, title: 'Food'),
                 const SizedBox(height: 8),
-                ProblemText(_servingProblem!),
-              ],
-            ],
-          ),
-          SectionCard(
-            children: [
-              const CardHeader(
-                icon: Icons.local_fire_department,
-                title: 'Nutrition',
-              ),
-              NoteText(_basisText),
-              // Only with a serving size can values be per serving.
-              if (_servingWeight != null) ...[
-                const SizedBox(height: 12),
-                SegmentedButton<bool>(
-                  expandedInsets: EdgeInsets.zero,
-                  segments: [
-                    const ButtonSegment(
-                      value: false,
-                      label: Text('Per serving'),
-                    ),
-                    ButtonSegment(value: true, label: Text('Per 100 $_unit')),
-                  ],
-                  selected: {_isPer100},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (choice) =>
-                      setState(() => _isPer100 = choice.single),
+                TextField(
+                  controller: _nameField,
+                  textCapitalization: TextCapitalization.sentences,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    errorText: _nameProblem,
+                  ),
                 ),
               ],
-              const SizedBox(height: 16),
-              NutritionFields(
-                fields: {energyKey: _energyField, ..._nutrientFields},
-                problems: {energyKey: _energyProblem, ..._nutrientProblems},
-                isShowingMore: _isShowingMore,
-                onShowMoreChanged: (show) =>
-                    setState(() => _isShowingMore = show),
-              ),
-            ],
-          ),
-          if (isEditing)
-            DeleteButton(label: 'Delete this food', onPressed: _delete),
-        ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(icon: Icons.scale, title: 'Serving size'),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _servingField,
+                        textInputAction: TextInputAction.next,
+                        decoration: const InputDecoration(
+                          labelText: 'Serving',
+                          hintText: '2 slices',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: _weightField,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: 'Weight',
+                          suffixText: _unit,
+                        ),
+                        // Redraw: the nutrition card says what its values
+                        // are per.
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<String>(
+                  expandedInsets: EdgeInsets.zero,
+                  segments: const [
+                    ButtonSegment(value: 'g', label: Text('Grams')),
+                    ButtonSegment(value: 'ml', label: Text('Millilitres')),
+                  ],
+                  selected: {_unit},
+                  showSelectedIcon: false,
+                  // Fixed once saved: past entries were logged in it.
+                  onSelectionChanged: isEditing
+                      ? null
+                      : (choice) => setState(() => _unit = choice.single),
+                ),
+                if (_servingProblem != null) ...[
+                  const SizedBox(height: 8),
+                  ProblemText(_servingProblem!),
+                ],
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(
+                  icon: Icons.local_fire_department,
+                  title: 'Nutrition',
+                ),
+                NoteText(_basisText),
+                // Only with a serving size can values be per serving.
+                if (_servingWeight != null) ...[
+                  const SizedBox(height: 12),
+                  SegmentedButton<bool>(
+                    expandedInsets: EdgeInsets.zero,
+                    segments: [
+                      const ButtonSegment(
+                        value: false,
+                        label: Text('Per serving'),
+                      ),
+                      ButtonSegment(value: true, label: Text('Per 100 $_unit')),
+                    ],
+                    selected: {_isPer100},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (choice) =>
+                        setState(() => _isPer100 = choice.single),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                NutritionFields(
+                  fields: {energyKey: _energyField, ..._nutrientFields},
+                  problems: {energyKey: _energyProblem, ..._nutrientProblems},
+                  isShowingMore: _isShowingMore,
+                  onShowMoreChanged: (show) =>
+                      setState(() => _isShowingMore = show),
+                ),
+              ],
+            ),
+            if (isEditing)
+              DeleteButton(label: 'Delete this food', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

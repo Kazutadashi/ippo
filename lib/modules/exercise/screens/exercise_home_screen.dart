@@ -116,6 +116,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
                     key: ValueKey(exercise.id),
                     exercise: exercise,
                     daySets: log.setsOn(date, exercise.id),
+                    isToday: showsToday,
                     startValue: log.lastSetOf(exercise.id)?.value,
                     onAddSets: (value, setCount) =>
                         _addSets(exercise, value, setCount),

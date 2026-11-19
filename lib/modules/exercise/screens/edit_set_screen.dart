@@ -9,6 +9,7 @@ import '../../../core/app_state.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
@@ -126,53 +127,63 @@ class _EditSetScreenState extends State<EditSetScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() =>
+      [_valueField.text, _weightField.text, _reserveField.text].join('\n');
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(widget.exercise.name),
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
-        title: Text(widget.exercise.name),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _valueField,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: _isReps ? 'Reps' : 'Seconds',
-              errorText: _valueProblem,
-            ),
-            onSubmitted: (_) => _save(),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _weightField,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Added weight (optional)',
-              suffixText: 'kg',
-              errorText: _weightProblem,
-            ),
-          ),
-          if (_isReps) const SizedBox(height: 12),
-          if (_isReps)
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
             TextField(
-              controller: _reserveField,
+              controller: _valueField,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Reps in reserve (optional)',
-                helperText: 'How many more reps you could have done.',
-                errorText: _reserveProblem,
+                labelText: _isReps ? 'Reps' : 'Seconds',
+                errorText: _valueProblem,
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _weightField,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Added weight (optional)',
+                suffixText: 'kg',
+                errorText: _weightProblem,
               ),
             ),
-          DeleteButton(label: 'Delete this set', onPressed: _delete),
-        ],
+            if (_isReps) const SizedBox(height: 12),
+            if (_isReps)
+              TextField(
+                controller: _reserveField,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Reps in reserve (optional)',
+                  helperText: 'How many more reps you could have done.',
+                  errorText: _reserveProblem,
+                ),
+              ),
+            DeleteButton(label: 'Delete this set', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

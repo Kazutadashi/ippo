@@ -11,6 +11,7 @@ import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/time_fields.dart';
 import '../food.dart';
@@ -260,81 +261,90 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => [_amountField.text, _inPieces, _time].join('\n');
+
   @override
   Widget build(BuildContext context) {
     final grams = _typedGrams() ?? 0;
     final pieceName = _pieceName;
     final conversion = _conversionNote(grams);
     final serving = widget.food?.serving;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(_name),
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
-        title: Text(_name),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (pieceName != null) ...[
-            const FieldLabel('Amount in'),
-            SegmentedButton<bool>(
-              expandedInsets: EdgeInsets.zero,
-              segments: [
-                ButtonSegment(value: true, label: Text(pieceName)),
-                ButtonSegment(value: false, label: Text(_unit)),
-              ],
-              selected: {_inPieces},
-              showSelectedIcon: false,
-              onSelectionChanged: (choice) => _switchUnit(choice.single),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (pieceName != null) ...[
+              const FieldLabel('Amount in'),
+              SegmentedButton<bool>(
+                expandedInsets: EdgeInsets.zero,
+                segments: [
+                  ButtonSegment(value: true, label: Text(pieceName)),
+                  ButtonSegment(value: false, label: Text(_unit)),
+                ],
+                selected: {_inPieces},
+                showSelectedIcon: false,
+                onSelectionChanged: (choice) => _switchUnit(choice.single),
+              ),
+              const SizedBox(height: 16),
+            ],
+            TextField(
+              controller: _amountField,
+              autofocus: widget.entry == null,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Amount',
+                suffixText: _inPieces ? pieceName : _unit,
+                helperText: serving == null
+                    ? null
+                    : 'One serving is ${serving.describe(_unit)}.',
+                errorText: _amountProblem,
+              ),
+              // Redraw so the preview below follows the typed amount.
+              onChanged: (_) => setState(() => _amountProblem = null),
+              onSubmitted: (_) => _save(),
+            ),
+            if (conversion != null) ...[
+              const SizedBox(height: 8),
+              NoteText(conversion),
+            ],
+            const SizedBox(height: 16),
+            TimeField(
+              label: 'Eaten at',
+              time: _time,
+              onChanged: (time) => setState(() => _time = time),
             ),
             const SizedBox(height: 16),
-          ],
-          TextField(
-            controller: _amountField,
-            autofocus: widget.entry == null,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              labelText: 'Amount',
-              suffixText: _inPieces ? pieceName : _unit,
-              helperText: serving == null
-                  ? null
-                  : 'One serving is ${serving.describe(_unit)}.',
-              errorText: _amountProblem,
-            ),
-            // Redraw so the preview below follows the typed amount.
-            onChanged: (_) => setState(() => _amountProblem = null),
-            onSubmitted: (_) => _save(),
-          ),
-          if (conversion != null) ...[
-            const SizedBox(height: 8),
-            NoteText(conversion),
-          ],
-          const SizedBox(height: 16),
-          TimeField(
-            label: 'Eaten at',
-            time: _time,
-            onChanged: (time) => setState(() => _time = time),
-          ),
-          const SizedBox(height: 16),
-          NutrientInfoRow(nutrients: _nutrientsFor(grams)),
-          if (widget.entry != null)
-            DeleteButton(label: 'Delete this entry', onPressed: _delete),
-          // Changing the food itself (its name or label values) starts
-          // here, where the food is already open.
-          if (widget.food != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _editFood,
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Edit this food'),
+            NutrientInfoRow(nutrients: _nutrientsFor(grams)),
+            if (widget.entry != null)
+              DeleteButton(label: 'Delete this entry', onPressed: _delete),
+            // Changing the food itself (its name or label values) starts
+            // here, where the food is already open.
+            if (widget.food != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _editFood,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Edit this food'),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

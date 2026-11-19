@@ -69,8 +69,8 @@ void main() {
     await setUpPushUps(tester, [10, 7]);
 
     expect(find.text('Push-up'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, '10'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, '7'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, '10 reps'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, '7 reps'), findsOneWidget);
     // There is nothing about progressions or statistics.
     expect(find.textContaining('rogression'), findsNothing);
     expect(find.text('History'), findsNothing);
@@ -99,7 +99,7 @@ void main() {
     });
     await tester.pump();
 
-    expect(find.widgetWithText(ActionChip, '20'), findsNWidgets(2));
+    expect(find.widgetWithText(ActionChip, '20 reps'), findsNWidgets(2));
     final log = ExerciseLog.fromEvents(appState.eventLog!.events);
     final sets = log.setsOn(formatDate(today()), pushUpId);
     expect(sets.map((set) => set.setNumber), [1, 2]);

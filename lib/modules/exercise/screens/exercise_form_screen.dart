@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/app_state.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
+import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
@@ -82,47 +83,70 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
     );
   }
 
+  /// Everything the user can change here, for the discard guard.
+  String _snapshot() => [_nameField.text, _measuredIn.name].join('\n');
+
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.exercise != null;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Close without saving',
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    return DiscardGuard(
+      snapshot: _snapshot,
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            tooltip: 'Close without saving',
+            icon: const Icon(Icons.close),
+            // Through the discard guard, like the back button.
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          title: Text(isEditing ? 'Edit exercise' : 'New exercise'),
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
-        title: Text(isEditing ? 'Edit exercise' : 'New exercise'),
-        actions: [AppBarSaveButton(onPressed: _save)],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _nameField,
-            autofocus: !isEditing,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              labelText: 'Name',
-              errorText: _nameProblem,
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextField(
+              controller: _nameField,
+              autofocus: !isEditing,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                errorText: _nameProblem,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<MeasuredIn>(
-            segments: const [
-              ButtonSegment(value: MeasuredIn.reps, label: Text('Reps')),
-              ButtonSegment(value: MeasuredIn.seconds, label: Text('Seconds')),
+            const SizedBox(height: 16),
+            if (isEditing) ...[
+              // Fixed once created, because past sets were counted in this
+              // unit. So it is shown as information, not as a dead control.
+              InfoValue(
+                label: 'Counted in',
+                value: _measuredIn == MeasuredIn.reps ? 'Reps' : 'Seconds',
+              ),
+              const SizedBox(height: Spacing.tight),
+              const NoteText(
+                'This cannot be changed, so past sets keep their meaning.',
+              ),
+            ] else ...[
+              const FieldLabel('Counted in'),
+              SegmentedButton<MeasuredIn>(
+                expandedInsets: EdgeInsets.zero,
+                segments: const [
+                  ButtonSegment(value: MeasuredIn.reps, label: Text('Reps')),
+                  ButtonSegment(
+                    value: MeasuredIn.seconds,
+                    label: Text('Seconds'),
+                  ),
+                ],
+                selected: {_measuredIn},
+                showSelectedIcon: false,
+                onSelectionChanged: (choice) =>
+                    setState(() => _measuredIn = choice.single),
+              ),
             ],
-            selected: {_measuredIn},
-            showSelectedIcon: false,
-            // The unit cannot change later: past sets were counted in it.
-            onSelectionChanged: isEditing
-                ? null
-                : (choice) => setState(() => _measuredIn = choice.single),
-          ),
-          if (isEditing)
-            DeleteButton(label: 'Delete this exercise', onPressed: _delete),
-        ],
+            if (isEditing)
+              DeleteButton(label: 'Delete this exercise', onPressed: _delete),
+          ],
+        ),
       ),
     );
   }

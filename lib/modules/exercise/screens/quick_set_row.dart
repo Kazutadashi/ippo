@@ -98,12 +98,14 @@ class _QuickSetRowState extends State<QuickSetRow> {
               child: TextField(
                 controller: _valueField,
                 keyboardType: TextInputType.number,
+                // Next moves on to Sets; only Sets' Done adds, so a set is
+                // never added before its count is typed.
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   labelText: widget.measuredIn == MeasuredIn.reps
                       ? 'Reps'
                       : 'Seconds',
                 ),
-                onSubmitted: (_) => _add(),
               ),
             ),
             const SizedBox(width: Spacing.small),
@@ -111,12 +113,16 @@ class _QuickSetRowState extends State<QuickSetRow> {
               child: TextField(
                 controller: _setCountField,
                 keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(labelText: 'Sets'),
                 onSubmitted: (_) => _add(),
               ),
             ),
             const SizedBox(width: Spacing.small),
-            FilledButton(
+            // Tonal: every card has one, so a filled accent button in each
+            // would crowd the screen. As tall as the fields beside it.
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size(64, 40)),
               onPressed: _isSaving ? null : _add,
               child: const Text('Add'),
             ),
