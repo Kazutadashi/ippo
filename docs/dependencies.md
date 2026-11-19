@@ -40,5 +40,5 @@ need it.
 
 | What | From | Licence | Where |
 | --- | --- | --- | --- |
-| The walking figure on the launcher icon | Material Design icon "directions_walk", by Google | Apache License 2.0 (can be combined with GPL-3.0) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml` |
+| The character 歩 on the launcher icon | The font Noto Serif CJK JP Bold, by Adobe and Google (only this one letter's outline, not the font) | SIL Open Font License 1.1 (allows use in artwork) | `android/app/src/main/res/drawable/ic_launcher_foreground.xml`, and the `ic_launcher.png` files made from it |
 
