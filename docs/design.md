@@ -57,12 +57,19 @@ Contents:
   welcome with a button leading to Settings.
 - Each tab keeps its state (the day shown, typed numbers) while another
   tab is open.
+- On a wide window (840 dp or more: the Linux desktop, a tablet on its
+  side), the tabs go down the left side (`NavigationRail`) and screens
+  keep a readable width of at most 720.
+- The app draws behind a see-through system navigation bar, so its own
+  colours reach the bottom edge.
 
 ### A module screen, top to bottom
 
 1. **Top bar** with the module's name ("Sleep") on the left and, if the
-   screen shows one day, the day picker (`DayBar`: ‹ Today ›) on the
-   right, in `AppBar.actions`. It does not take a row of its own.
+   screen shows one day, the day picker (`DayBar`: ‹ Today ▾ ›) on the
+   right, in `AppBar.actions`. It does not take a row of its own. On
+   any day but today, the day is shown in a tinted pill, because logging
+   to the wrong day is easy to miss.
 2. **Cards** (`SectionCard`), one per section, each starting with a
    `CardHeader`.
 4. **Floating buttons** at the bottom right, for creating things for the
@@ -77,17 +84,30 @@ matters about the day so far. The bar at the bottom leads to the
 modules; the only thing on Home to tap is the Settings gear.
 
 Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
-18 November"), then a grid of `InfoTile`s, two per row, each row as
-tall as its tallest tile.
+18 November"), then a grid of `InfoTile`s, two per row (one per row
+with large text, up to four on a wide window), each row as tall as its
+tallest tile. Two notes appear only when needed: for someone who has
+logged nothing yet ("Log things in the tabs below."), and when another
+device has not synced for more than a day.
 
 - Each module gives its tiles through `todayFacts`, usually two, so
-  they fill one row.
-- A tile has a small icon and label, **one large value**, and one short
-  grey detail line: *Last meal · 3 h ago · at 12:15 · Soup*.
+  they fill one row. A tile's icon is its module's icon.
+- A tile has a label, **one large value** (digits large, units small
+  and grey: `ValueText`), and up to **two slots** below it. Facts are
+  **never joined into one line** with "·" or commas. Either:
+  - **labelled numbers side by side**, a small grey label above each
+    value: *Protein 5 g*, *Carbs 22 g*, *Fat 6 g*; *Bed 23:30*,
+    *Woke 07:00*; or
+  - **plain lines, one fact per line**, the most identifying first:
+    *Honey*, then *at 14:43*; or
+  - **a note** when there is nothing to show: *Not logged yet*, or
+    better, exactly what is missing: *Bedtime not logged*.
 - Tiles are what a person needs to know right now. Values worked out
-  live ("Awake for", "Last meal", "Last set") are the most useful.
-- Tiles keep their place before anything is logged, showing "–" and
-  "Not logged yet", so the layout never jumps.
+  live ("Awake for", "Last meal", "Last set") are the most useful, and
+  Home redraws every minute so they stay current.
+- Tiles keep their place and height before anything is logged, showing
+  a quiet grey "–", so the layout never jumps. Screen readers read a
+  tile as one item.
 
 ### Forms (adding or changing one thing)
 
@@ -103,7 +123,13 @@ about the thing (for a food: name, serving size, nutrition). Fields
 most people skip stay closed behind a "More …" link that opens
 smoothly (`AnimatedSize`), and open by themselves when they hold
 values. Number fields use the keyboard's **Next** key
-(`TextInputAction.next`) to move on to the next field.
+(`TextInputAction.next`) to move on to the next field; only the last
+field's Done acts.
+
+Leaving a form with unsaved changes (✕, back button or back gesture)
+asks "Discard changes?" first (`DiscardGuard`); a form without changes
+closes at once. The ✕ calls `Navigator.maybePop`, so it goes through
+the guard too.
 
 
 ## 3. Fields, information and buttons
@@ -130,8 +156,19 @@ Rules:
   rather than guessed.
 - A field that has nothing yet shows "Not set". Saving skips it, so the
   data never holds a value nobody entered.
+- A value that is **only a suggestion** (the usual wake-up time) is shown
+  grey and marked "Suggested", so it is never mistaken for a saved one.
+- Tapping a `DateTimeField` opens the **clock** straight away and works
+  out the date; its calendar button changes the date, which is rarely
+  needed.
 - A field's label says what goes in it ("Went to bed", "Reps"). Add a
-  unit as a suffix inside the field ("kg", "g").
+  unit as a suffix inside the field ("kg", "g"). Labels always sit on
+  the border, so units and examples show before anything is typed.
+- Mark nothing as "(optional)". When most fields are optional, the one
+  that is required says so when it is missing.
+- One word for one thing everywhere: Energy, Protein, Carbs, Fat.
+- A setting that cannot be changed any more is shown as **information**
+  with a note saying why, never as a greyed-out control.
 - Choices between a few options use a `SegmentedButton` filling the
   card's width (`expandedInsets: EdgeInsets.zero`), never a dropdown, so
   every option is visible.
@@ -149,13 +186,19 @@ Rules:
 | --- | --- | --- | --- |
 | Create something for the whole screen | Bottom right, stacked at equal width if more than one | Extended floating button: icon and a short label | **+ New exercise**, **Quick food**, **+ New food** |
 | An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton` | **+ Add** (naps), **Edit** (a logged night), **Refresh** |
-| Change one row of a list | The whole row, plus a ✎ button at its end | `ListTile` with trailing `IconButton` | a food entry, a nap |
+| Change one row of a list | The whole row | `ListTile` with `onTap` | a food entry, a nap |
+| Pick from a list (a chooser) | The whole row; changing the thing itself is on the next screen | `ListTile` with `onTap` | a food in "Add food" |
 | Save a form screen | Right of the top bar | `AppBarSaveButton` | **Save** (New food, Nap) |
 | Save on a module's own screen (not a form) | Bottom of its card, full width | Filled button | **Save** (Sleep's day card) |
 | Delete | Under the Save button | Red text button: `DeleteButton` | **Delete this nap** |
 
 - At most **one filled button** is in view on a card or form, so the
-  main action is obvious.
+  main action is obvious. An action repeated on every card (an exercise's
+  **Add**) is **tonal** (`FilledButton.tonal`), and the second of two
+  floating buttons is the quieter one, so accent colour stays scarce.
+- A Save on a module's own screen says **Saved** (disabled, with a ✓)
+  when nothing is waiting to be saved, which also confirms that saving
+  worked.
 - Every floating button has its own `heroTag`. All tabs stay alive at
   once, and Flutter cannot animate two floating buttons with the same
   tag (opening another screen would fail).
@@ -167,12 +210,15 @@ Rules:
 ## 5. Lists
 
 - Each row has a **title** (the thing: "Cheezits", "14:00 – 14:45") and
-  a **subtitle** with details.
-- Details are in this order, joined by " · ": **time, amount, value**.
-  For example "07:30 · 150 g · 280 kcal". Leave out what is not known.
+  a **subtitle** with details: time first, then amount, side by side
+  with a gap, never joined by "·". Leave out what is not known.
+- **The number people scan goes on the right** (`trailing`), in one
+  column: "280 kcal".
 - Rows are in the order things happened.
 - Small things a person adds several of in a row (sets) can be chips
-  (`ActionChip`); tapping one opens it for changing.
+  (`ActionChip`, filled by the theme so they never look like empty
+  fields), with their unit ("20 reps") and a `FieldLabel` above them
+  that names the day ("Sets today"). Tapping one opens it for changing.
 
 
 ## 6. Text and wording
@@ -192,14 +238,18 @@ Text styles (from the theme's text styles):
 | Use | Style |
 | --- | --- |
 | Home greeting | `headlineSmall` |
-| Home tile values | `headlineSmall` (set by `InfoTile`) |
+| Home tile values | `headlineSmall` digits, `titleSmall` grey units (set by `InfoTile` with `ValueText`) |
+| Home tile details | `bodyMedium`; labels above numbers `labelSmall`, grey |
 | Home tile labels | `labelLarge`, grey (set by `InfoTile`) |
 | Home date | `titleMedium`, grey (`onSurfaceVariant`) |
 | Card titles | `titleMedium` (set by `CardHeader`) |
 | Information values | `titleMedium` (set by `InfoValue`) |
 | Information labels | `labelMedium`, grey (set by `InfoValue`) |
 | Notes | `bodyMedium`, grey (set by `NoteText`) |
-| Small print (device id) | `bodySmall`, grey |
+| Small print (device id) | `bodySmall`, grey (`InfoText` with `isSmallPrint`) |
+
+Every style uses digits of equal width (set once in `buildTheme`), so
+numbers line up in columns and values that change do not shift.
 
 
 ## 7. Numbers, times and units
@@ -210,7 +260,7 @@ Text styles (from the theme's text styles):
 | Durations | Hours and minutes, no zeros | `7 h 30 min`, `8 h`, `45 min` |
 | Time since | Duration and "ago" | `3 h 15 min ago`, `Just now` |
 | Dates in lists | `YYYY-MM-DD` | `2026-11-18` |
-| Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 2026-11-16` |
+| Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 16 Nov` |
 | A date and time in a field | Short date above the time | `Thu 19 Nov` / `01:00` |
 | Amounts | No needless decimals, at most one | `150`, `12.5` |
 | Energy | Number, space, `kcal` | `200 kcal` |
@@ -219,6 +269,15 @@ Text styles (from the theme's text styles):
 
 Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 `formatTimeOfDay` and `describeDay` rather than formatting by hand.
+Pickers use British English, so they match: weeks start on Monday and
+the clock has 24 hours.
+
+**When a day starts.** A day lasts until 05:00 the next morning
+(`dayStartHour`), in every module: a snack at 01:00 or going to bed at
+02:00 counts for the evening you were still awake in. Use `today()` or
+`currentDay(now)`, never the calendar date of `DateTime.now()`. Screens
+that show a day mix in `FollowsToday`, so they move on to the new day
+by themselves unless the user picked another day.
 
 
 ## 8. Icons
@@ -232,7 +291,6 @@ Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 | --- | --- |
 | Home | `home` (outlined when not selected) |
 | Habits | `check_circle_outline` |
-| A habit still to do | `radio_button_unchecked` |
 | Done / not done (habit grid) | `check` / `close` |
 | Food, food eaten | `restaurant` |
 | Food totals (energy) | `local_fire_department` |
@@ -250,10 +308,9 @@ Use `formatAmount`, `formatDuration`, `formatTimeAgo`,
 | This device | `smartphone` |
 | Other devices | `devices`, `devices_other` |
 | Read again | `refresh` |
-| Time since (last meal, last set) | `schedule` |
-| Awake for | `wb_sunny_outlined` |
 
-Card headers show their icon in the accent colour.
+Card headers show their icon in the accent colour. Home tiles use their
+module's icon, so a glance says which tab a tile belongs to.
 
 
 ## 9. Colour
@@ -274,8 +331,11 @@ Card headers show their icon in the accent colour.
    own colour, used only for its name and its ✓ marks, so habits are
    easy to tell apart. Without one it uses the accent colour. Such
    colours come from the same list as the accent colours, are picked
-   with `ColorCircle`s, and are lightened a little in dark mode
+   with `ColorCircle`s, and are adjusted a little so they stay readable
+   as text: lighter in dark mode, darker in light mode
    (`Habit.displayColor`). Nothing else on the screen takes them.
+7. **Flat cards.** Cards have no shadow and sit on a slightly different
+   surface (`surfaceContainer`), the same in light and dark mode.
 
 
 ## 10. Density, spacing and sizes
@@ -289,7 +349,7 @@ guidance).
   (`isDense`), so fields, buttons and list rows are shorter
   everywhere. Do not undo this per screen.
 - Put things that belong together **on one row** when they fit:
-  Reps · Sets · Add, Protein · Carbs · Fat, Woke up · Went to bed.
+  Reps, Sets and Add; Protein, Carbs and Fat; Woke up and Went to bed.
 - Leave out lines that only repeat what the screen already shows (no
   "No sets yet" above empty fields that obviously take sets).
 
@@ -311,7 +371,7 @@ Fixed sizes:
 | --- | --- |
 | Card header height | 36, icon 20 |
 | Home tile icon | 16 |
-| Smallest tap target | 48 × 48 |
+| Smallest tap target | 48 × 48 (exception: habit grid cells are 36 × 44, and today's column 44 × 44, so the grid stays compact) |
 | Room under the last card when there are floating buttons | 96 (one), 160 (two) |
 
 
@@ -354,6 +414,11 @@ Fixed sizes:
 ## 13. Accessibility
 
 - Every icon-only button has a `tooltip`, which screen readers read out.
+- Things that are read together are one item for screen readers
+  (`MergeSemantics` on Home tiles); chips and habit names say what a tap
+  does ("Set 1: 20 reps", "Edit habit").
+- With large text, Home shows one tile per row rather than shrinking
+  values.
 - Colour swatches and other custom controls have a `Semantics` label
   ("Orange accent colour").
 - Tap targets are at least 48 × 48 pixels (Flutter's buttons already
@@ -366,7 +431,11 @@ Fixed sizes:
 
 ```dart
 Scaffold(
-  appBar: AppBar(title: const Text('Module name')),
+  appBar: AppBar(
+    title: const Text('Module name'),
+    // With FollowsToday mixed into the screen's State.
+    actions: [DayBar(day: shownDay, onChanged: showDay)],
+  ),
   floatingActionButton: FloatingActionButton.extended(
     onPressed: createSomething,
     icon: const Icon(Icons.add),
@@ -377,7 +446,6 @@ Scaffold(
     builder: (context, _) => ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
       children: [
-        DayBar(day: day, onChanged: changeDay),
         SectionCard(
           children: [
             CardHeader(
