@@ -101,8 +101,8 @@ void main() {
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(today())), findsOneWidget);
     // The modules' tiles and the week, all waiting for data.
-    expect(find.byType(InfoTile), findsNWidgets(8));
-    expect(find.text('–'), findsNWidgets(6));
+    expect(find.byType(InfoTile), findsNWidgets(9));
+    expect(find.text('–'), findsNWidgets(8));
     expect(find.text('Nothing logged in these days.'), findsOneWidget);
     // Information only: everything tappable is the gear or the day bar.
     bool isTappable(Widget widget) =>

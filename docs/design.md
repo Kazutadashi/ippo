@@ -119,7 +119,10 @@ device has not synced for more than a day.
   marks that read faster than numbers, never charts.
 - Every tile must earn its place: something a person wants to know at a
   glance. Totals that mix unlike things (all reps of all exercises) do
-  not; a best set, a streak or the time since the last meal do.
+  not; a streak, what beat last time or the time since the last meal
+  do. A tile must also work with any number of things: one dot per
+  habit or exercise wraps, while a column per exercise runs out of
+  room.
 - **Home is one grid.** On a phone it has two columns: the left and
   the right half tiles. Everything lines up with them, across and down:
   - Every tile has the **same three slots**: a header (the module's
@@ -130,12 +133,11 @@ device has not synced for more than a day.
     last seven days); and a **footer** holding exactly one thing. The
     header and value slots have the same height in every tile, so
     labels, values and the tops of footers form straight lines across
-    the page. A wide tile may leave out the value (Exercise shows only
-    its best sets).
+    the page. A wide tile may leave out the value.
   - A **wide tile is split into two halves** (`TileHalves`) that start
     exactly where the two half tiles below start their content. The
     week tile puts its days in the left half and its numbers in the
-    right; Exercise puts its best sets under the two columns.
+    right.
   - **One alignment:** text starts at the left of its column. Only a
     small picture beside a value sits at the right edge.
   - Facts are **never joined into one line** with "·" or commas.
