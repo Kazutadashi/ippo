@@ -9,6 +9,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/module.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
@@ -160,10 +161,10 @@ void main() {
     const module = SleepModule();
 
     test('show "–" until something is logged', () {
-      expect(describeTiles(module.todayFacts(appState, monday)), [
-        'Sleep: – | Not logged yet',
-        'Awake for: – | Not logged yet',
-      ]);
+      expect(
+        describeTiles(module.dayFacts(appState, currentDay(monday), monday)),
+        ['Sleep: – | Not logged yet', 'Awake for: – | Not logged yet'],
+      );
     });
 
     test('sleep before today, and awake since waking up', () async {
@@ -171,10 +172,13 @@ void main() {
       await wokeUp(tuesday, const ClockTime(6, 30));
 
       final morning = DateTime(2026, 11, 17, 9, 15);
-      expect(describeTiles(module.todayFacts(appState, morning)), [
-        'Sleep: 7 h 30 min | Bed 23:00, Woke 06:30',
-        'Awake for: 2 h 45 min | Woke 06:30',
-      ]);
+      expect(
+        describeTiles(module.dayFacts(appState, currentDay(morning), morning)),
+        [
+          'Sleep: 7 h 30 min | Bed 23:00, Woke 06:30',
+          'Awake for: 2 h 45 min | Woke 06:30',
+        ],
+      );
     });
 
     test('at 01:00, the day before is still today', () async {
@@ -182,7 +186,9 @@ void main() {
       final lateNight = DateTime(2026, 11, 17, 1, 0);
 
       expect(
-        describeTiles(module.todayFacts(appState, lateNight))[1],
+        describeTiles(
+          module.dayFacts(appState, currentDay(lateNight), lateNight),
+        )[1],
         'Awake for: 18 h | Woke 07:00',
       );
     });
@@ -193,7 +199,9 @@ void main() {
       final lateNight = DateTime(2026, 11, 17, 2, 0);
 
       expect(
-        describeTiles(module.todayFacts(appState, lateNight))[1],
+        describeTiles(
+          module.dayFacts(appState, currentDay(lateNight), lateNight),
+        )[1],
         'Awake for: 18 h | Woke 07:00, Bed 01:00',
       );
     });

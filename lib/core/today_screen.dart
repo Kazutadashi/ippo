@@ -13,6 +13,7 @@ import '../modules/all_modules.dart';
 import 'app_state.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
+import 'widgets/day_bar.dart';
 import 'widgets/follows_today.dart';
 import 'widgets/info_tile.dart';
 import 'widgets/section_card.dart';
@@ -45,16 +46,21 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final colors = Theme.of(context).colorScheme;
     final appState = widget.appState;
     final now = DateTime.now();
-    final tiles = [
+    final day = shownDay;
+    final tiles = <_Tile>[
       for (final module in allModules)
-        for (final fact in module.todayFacts(appState, now))
-          InfoTile(
-            icon: module.icon,
-            label: fact.label,
-            value: fact.value,
-            details: fact.details,
-            note: fact.note,
+        for (final fact in module.dayFacts(appState, day, now))
+          _Tile(
+            InfoTile(
+              icon: module.icon,
+              label: fact.label,
+              value: fact.value,
+              details: fact.details,
+              note: fact.note,
+            ),
+            isWide: fact.isWide,
           ),
+      _weekTile(appState, day),
     ];
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
@@ -74,7 +80,8 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                 children: [
                   Expanded(
                     child: Text(
-                      greetingFor(now),
+                      // Looking back at another day, the heading says so.
+                      showsToday ? greetingFor(now) : 'Looking back',
                       style: textTheme.headlineSmall,
                     ),
                   ),
@@ -85,12 +92,20 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                describeToday(today()),
-                style: textTheme.titleMedium?.copyWith(
-                  color: colors.onSurfaceVariant,
-                ),
+              // The date, and the day bar for looking back at earlier
+              // days (and coming back to today).
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      describeToday(day),
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  DayBar(day: day, onChanged: showDay),
+                ],
               ),
               // Only for someone who has not logged anything yet: where
               // logging happens. It goes away by itself.
@@ -150,13 +165,43 @@ String? _staleDeviceNote(AppState appState, DateTime now) {
       '${days == 1 ? 'a day' : '$days days'} ago';
 }
 
+/// A tile for the grid, and whether it takes a whole row.
+class _Tile {
+  const _Tile(this.tile, {this.isWide = false});
+
+  final Widget tile;
+  final bool isWide;
+}
+
+/// The "Last 7 days" tile: one number from each module about the week
+/// ending on [day], such as sleep per night and energy per day. A
+/// summary, not a chart: the trends belong in an analysis of the data.
+_Tile _weekTile(AppState appState, DateTime day) {
+  final summaries = [
+    for (final module in allModules)
+      if (module.weekSummary(appState, day) case final summary?) summary,
+  ];
+  final firstDay = addDays(day, -6);
+  return _Tile(
+    InfoTile(
+      icon: Icons.date_range,
+      label: 'Last 7 days',
+      value: '${formatShortDate(firstDay)} to ${formatShortDate(day)}',
+      details: summaries,
+      note: summaries.isEmpty ? 'Nothing logged in these days.' : null,
+    ),
+    isWide: true,
+  );
+}
+
 /// Lays out the tiles in rows, with every tile in a row as tall as the
 /// tallest: two per row on a phone, more on a wide screen, and one per
-/// row when the user has chosen large text.
+/// row when the user has chosen large text. A wide tile has a row of
+/// its own.
 class _TileGrid extends StatelessWidget {
   const _TileGrid({required this.tiles});
 
-  final List<Widget> tiles;
+  final List<_Tile> tiles;
 
   @override
   Widget build(BuildContext context) {
@@ -167,32 +212,50 @@ class _TileGrid extends StatelessWidget {
         final perRow = largeText
             ? 1
             : (constraints.maxWidth / 180).floor().clamp(2, 4);
-        final rows = <Widget>[];
-        for (var start = 0; start < tiles.length; start += perRow) {
-          rows.add(
-            Padding(
-              padding: EdgeInsets.only(top: start == 0 ? 0 : Spacing.small),
-              // IntrinsicHeight gives every tile in the row one height.
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var column = 0; column < perRow; column++) ...[
-                      if (column > 0) const SizedBox(width: Spacing.small),
-                      Expanded(
-                        child: start + column < tiles.length
-                            ? tiles[start + column]
-                            : const SizedBox(),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          );
+        // Group the tiles into rows: a wide tile alone, the others
+        // filling rows of perRow.
+        final rows = <List<_Tile>>[];
+        for (final tile in tiles) {
+          final last = rows.isEmpty ? null : rows.last;
+          final fits =
+              last != null &&
+              !tile.isWide &&
+              !last.first.isWide &&
+              last.length < perRow;
+          if (fits) {
+            last.add(tile);
+          } else {
+            rows.add([tile]);
+          }
         }
-        return Column(children: rows);
+        return Column(
+          children: [
+            for (var index = 0; index < rows.length; index++)
+              Padding(
+                padding: EdgeInsets.only(top: index == 0 ? 0 : Spacing.small),
+                child: _row(rows[index], rows[index].first.isWide ? 1 : perRow),
+              ),
+          ],
+        );
       },
+    );
+  }
+
+  /// One row of [columns] equal places; empty places stay empty.
+  Widget _row(List<_Tile> row, int columns) {
+    // IntrinsicHeight gives every tile in the row one height.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var column = 0; column < columns; column++) ...[
+            if (column > 0) const SizedBox(width: Spacing.small),
+            Expanded(
+              child: column < row.length ? row[column].tile : const SizedBox(),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

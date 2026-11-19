@@ -4,6 +4,7 @@
 library;
 
 import '../../core/app_state.dart';
+import '../../core/dates.dart';
 import '../../core/events/event.dart';
 import '../../core/events/things.dart';
 import 'habit.dart';
@@ -131,5 +132,22 @@ class HabitLog {
       return DayMark.notDone;
     }
     return DayMark.none;
+  }
+
+  /// How many days in a row [habitId] was done, up to and including
+  /// [day]. If [day] has no mark yet (the day is not over), the streak
+  /// counts up to the day before, so it does not drop to zero each
+  /// morning. A "not done" mark, or a day with nothing recorded, ends it.
+  int streakOn(String habitId, DateTime day) {
+    var current = day;
+    if (markOn(habitId, formatDate(current)) == DayMark.none) {
+      current = addDays(current, -1);
+    }
+    var streak = 0;
+    while (markOn(habitId, formatDate(current)) == DayMark.done) {
+      streak++;
+      current = addDays(current, -1);
+    }
+    return streak;
   }
 }

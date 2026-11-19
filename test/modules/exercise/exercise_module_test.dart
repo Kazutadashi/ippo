@@ -245,29 +245,32 @@ void main() {
     expect(log.exercises, isEmpty);
   });
 
-  test('home tiles: today\'s sets, and the last set', () async {
+  test('home tile: the best set of each exercise done that day', () async {
     const module = ExerciseModule();
-    final now = DateTime.now();
-    expect(describeTiles(module.todayFacts(appState, now)), [
+    final now = DateTime(2026, 11, 18, 20);
+    final day = currentDay(now);
+    expect(describeTiles(module.dayFacts(appState, day, now)), [
       'Exercise: – | No sets logged yet',
-      'Last set: – | Not logged yet',
     ]);
 
-    final today = formatDate(currentDay(now));
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
     final plank = await createExercise('Plank', MeasuredIn.seconds);
     await createExercise('Squat', MeasuredIn.reps);
-    await addSets(pushUp, today, 20, 2);
-    await addSets(plank, today, 45, 1);
-    await addSets(pushUp, day1, 5, 1); // Another day: not counted.
-
-    // Half a minute of margin: quick writes can be stamped a few
-    // milliseconds ahead, and "5 min ago" rounds down.
-    final later = DateTime.now().add(const Duration(minutes: 5, seconds: 30));
-    expect(describeTiles(module.todayFacts(appState, later)), [
-      'Exercise: 3 sets | 40 reps, 45 s held',
-      'Last set: 5 min ago | Plank, 45 s',
+    await addSets(pushUp, '2026-11-16', 15, 1);
+    expect(describeTiles(module.dayFacts(appState, day, now)), [
+      'Exercise: – | Last workout 2 days ago',
     ]);
+
+    await addSets(pushUp, '2026-11-18', 20, 1);
+    await addSets(pushUp, '2026-11-18', 18, 1);
+    await addSets(plank, '2026-11-18', 45, 1);
+    expect(describeTiles(module.dayFacts(appState, day, now)), [
+      'Exercise: best sets: 2 exercises | Push-up 20 reps, Plank 45 s',
+    ]);
+    expect(
+      describeDetail(module.weekSummary(appState, day)!),
+      'Workouts 2 days',
+    );
   });
 }
 

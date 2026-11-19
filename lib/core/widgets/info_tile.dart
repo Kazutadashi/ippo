@@ -61,7 +61,7 @@ class InfoTile extends StatelessWidget {
   /// The value, shown large, or [unknownTileValue].
   final String value;
 
-  /// Up to three small facts below the value.
+  /// Up to four small facts below the value (four fit on a wide tile).
   final List<TileDetail> details;
 
   /// A short note shown instead of [details].
@@ -167,7 +167,7 @@ class InfoTile extends StatelessWidget {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final detail in details.take(3))
+          for (final detail in details.take(4))
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

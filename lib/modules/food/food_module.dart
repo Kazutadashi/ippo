@@ -30,9 +30,8 @@ class FoodModule implements IppoModule {
 
   /// Two tiles: energy eaten today, and the last meal.
   @override
-  List<TodayFact> todayFacts(AppState appState, DateTime now) {
+  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
     final diary = FoodDiary.of(appState);
-    final day = currentDay(now);
     final entries = diary.entriesOn(formatDate(day));
     final total = diary.totalOn(formatDate(day));
     return [
@@ -46,6 +45,29 @@ class FoodModule implements IppoModule {
         _energyFact(total.values, entries.length),
       _lastMealFact(_latestTimedEntry(entries), day, now),
     ];
+  }
+
+  @override
+  TileDetail? weekSummary(AppState appState, DateTime day) {
+    final diary = FoodDiary.of(appState);
+    var total = 0.0;
+    var loggedDays = 0;
+    for (var back = 0; back < 7; back++) {
+      final date = formatDate(addDays(day, -back));
+      if (diary.entriesOn(date).isNotEmpty) {
+        total += diary.totalOn(date).energyKcal;
+        loggedDays++;
+      }
+    }
+    if (loggedDays == 0) {
+      return null;
+    }
+    // The average of the days with food logged: a day not logged is not
+    // a day without food.
+    return TileDetail(
+      '${formatAmount(total / loggedDays)} kcal',
+      label: 'Energy / day',
+    );
   }
 
   @override
@@ -77,7 +99,8 @@ TodayFact _energyFact(Map<String, double> values, int entryCount) {
 }
 
 /// The "Last meal" tile: how long ago the latest entry with a known time
-/// was eaten, then what it was and when.
+/// was eaten, then what it was and when. Looking back at an earlier day,
+/// the value is simply the time.
 TodayFact _lastMealFact(FoodEntry? lastMeal, DateTime day, DateTime now) {
   final time = lastMeal?.time;
   final eatenAt = time == null ? null : momentOnDay(day, time);
@@ -89,9 +112,12 @@ TodayFact _lastMealFact(FoodEntry? lastMeal, DateTime day, DateTime now) {
     );
   }
   final elapsed = now.difference(eatenAt);
+  final isToday = day == currentDay(now);
   return TodayFact(
     label: 'Last meal',
-    value: elapsed.isNegative ? showSavedTime(time) : formatTimeAgo(elapsed),
+    value: !isToday || elapsed.isNegative
+        ? showSavedTime(time)
+        : formatTimeAgo(elapsed),
     details: [
       TileDetail(lastMeal.name),
       TileDetail('at ${showSavedTime(time)}'),

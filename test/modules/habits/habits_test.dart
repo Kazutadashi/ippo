@@ -145,24 +145,46 @@ void main() {
       expect(habit.displayColor(theme), theme.colorScheme.primary);
     });
 
-    test('home tiles: done today, and what is left', () async {
+    test('home tiles: done today, what is left, and streaks', () async {
       const module = HabitsModule();
       final now = DateTime(2026, 11, 17, 20);
-      expect(describeTiles(module.todayFacts(appState, now)), [
+      expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
         'Habits: – | No habits yet',
-        'To do: – | No habits yet',
+        'Streaks: – | No habits yet',
       ]);
 
       final read = (await actions.createHabit('Read')).id;
       await actions.createHabit('Stretch');
       await actions.createHabit('Study');
       await actions.recordDay(read, day, done: true);
+      await actions.recordDay(read, '2026-11-16', done: true);
+      await actions.recordDay(read, '2026-11-15', done: true);
 
-      expect(describeTiles(module.todayFacts(appState, now)), [
-        'Habits: 1 / 3 | done today',
-        'To do: 2 left | Stretch, Study',
+      expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
+        'Habits: 1 / 3 | Stretch, Study',
+        'Streaks: 3 days | Read',
       ]);
     });
+  });
+
+  test('a streak counts days done in a row', () async {
+    await setUpApp();
+    final read = (await actions.createHabit('Read')).id;
+    final log0 = HabitLog.fromEvents(appState.eventLog!.events);
+    final tuesday = DateTime(2026, 11, 17);
+    expect(log0.streakOn(read, tuesday), 0);
+
+    await actions.recordDay(read, '2026-11-14', done: true);
+    await actions.recordDay(read, '2026-11-15', done: false);
+    await actions.recordDay(read, '2026-11-16', done: true);
+    var log = HabitLog.fromEvents(appState.eventLog!.events);
+    // Tuesday has no mark yet: the streak still counts up to Monday.
+    expect(log.streakOn(read, tuesday), 1);
+
+    await actions.recordDay(read, '2026-11-17', done: true);
+    log = HabitLog.fromEvents(appState.eventLog!.events);
+    // Saturday's "not done" ends the run before it.
+    expect(log.streakOn(read, tuesday), 2);
   });
 
   testWidgets('the grid: habits down, today on the left, tap to mark', (

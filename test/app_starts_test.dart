@@ -11,6 +11,7 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/today_screen.dart';
+import 'package:ippo/core/widgets/day_bar.dart';
 import 'package:ippo/core/widgets/info_tile.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
@@ -98,21 +99,24 @@ void main() {
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(today())), findsOneWidget);
-    // Two tiles per module, all waiting for data.
+    // The modules' tiles and the week, all waiting for data.
     expect(find.byType(InfoTile), findsNWidgets(8));
-    expect(find.text('–'), findsNWidgets(8));
-    // Information only: everything tappable belongs to the one gear.
+    expect(find.text('–'), findsNWidgets(7));
+    expect(find.text('Nothing logged in these days.'), findsOneWidget);
+    // Information only: everything tappable is the gear or the day bar.
     bool isTappable(Widget widget) =>
         widget is ButtonStyleButton || widget is InkWell;
     final tappable = find.descendant(
       of: find.byType(TodayScreen),
       matching: find.byWidgetPredicate(isTappable),
     );
-    final inGear = find.descendant(
-      of: find.byType(IconButton),
+    final inGearOrDayBar = find.descendant(
+      of: find.byWidgetPredicate(
+        (widget) => widget is IconButton || widget is DayBar,
+      ),
       matching: find.byWidgetPredicate(isTappable),
     );
-    expect(tappable.evaluate().length, inGear.evaluate().length);
+    expect(tappable.evaluate().length, inGearOrDayBar.evaluate().length);
   });
 
   testWidgets('Home shows what was logged today', (tester) async {
@@ -132,9 +136,10 @@ void main() {
       },
     );
 
-    // The Energy tile shows today's total.
+    // The Energy tile shows today's total, and the week its average.
     expect(find.text('Energy'), findsOneWidget);
-    expect(find.text('80 kcal'), findsOneWidget);
+    expect(find.text('80 kcal'), findsNWidgets(2));
+    expect(find.text('Energy / day'), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

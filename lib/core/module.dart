@@ -30,14 +30,23 @@ abstract class IppoModule {
   Widget buildScreen(AppState appState);
 
   /// Tiles for the home screen with the most important things to know
-  /// about today in this module, such as "Sleep: 7 h 30 min". Usually two,
-  /// so they fill one row. "Today" is the day you are in (see
-  /// `currentDay` in `dates.dart`), which lasts until early morning.
+  /// about [day] in this module, such as "Sleep: 7 h 30 min": two half
+  /// tiles, which fill one row, or one wide tile ([TodayFact.isWide]).
+  ///
+  /// [day] is today (see `currentDay` in `dates.dart`) unless the user
+  /// looks back at another day on Home; then values worked out from the
+  /// time ("3 h ago") become clock times. [now] is the current time;
+  /// tests pass a fixed one.
   ///
   /// A module returns the same tiles whether or not anything was logged,
   /// with "–" as the value until something is, so the home screen keeps
-  /// its layout. [now] is the current time; tests pass a fixed one.
-  List<TodayFact> todayFacts(AppState appState, DateTime now);
+  /// its layout.
+  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now);
+
+  /// One number about the seven days ending on [day], for Home's "Last
+  /// 7 days" tile, such as "Sleep / night" and "7 h 40 min". Null if the
+  /// module has nothing to add, or nothing was logged.
+  TileDetail? weekSummary(AppState appState, DateTime day) => null;
 }
 
 /// One tile on the home screen: a label, a large value, and small
@@ -53,6 +62,7 @@ class TodayFact {
     required this.value,
     this.details = const [],
     this.note,
+    this.isWide = false,
   });
 
   /// The text shown for a value that is not known yet.
@@ -69,4 +79,8 @@ class TodayFact {
 
   /// A short note instead of details, for example `Not logged yet`.
   final String? note;
+
+  /// Whether the tile takes a whole row, for details that need the
+  /// room, such as one column per exercise.
+  final bool isWide;
 }

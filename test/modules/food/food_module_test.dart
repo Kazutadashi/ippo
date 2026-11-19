@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/module.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
@@ -294,7 +295,7 @@ void main() {
   test('home tiles: energy, and the last meal', () async {
     const module = FoodModule();
     final now = DateTime(2026, 11, 17, 15, 30);
-    expect(describeTiles(module.todayFacts(appState, now)), [
+    expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
       'Energy: – | Nothing logged yet',
       'Last meal: – | Not logged yet',
     ]);
@@ -313,7 +314,7 @@ void main() {
       nutrients: const Nutrients({'energy_kcal': 300}),
     );
 
-    expect(describeTiles(module.todayFacts(appState, now)), [
+    expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
       'Energy: 689 kcal | Protein 13.2 g, Fat 6.5 g',
       'Last meal: 3 h 15 min ago | Soup, at 12:15',
     ]);

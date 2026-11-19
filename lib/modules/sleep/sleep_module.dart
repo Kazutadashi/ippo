@@ -31,9 +31,8 @@ class SleepModule implements IppoModule {
   /// Two tiles: the sleep before today (with any naps), and how long
   /// you have been awake.
   @override
-  List<TodayFact> todayFacts(AppState appState, DateTime now) {
+  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
     final log = SleepLog.of(appState);
-    final day = currentDay(now);
     final date = formatDate(day);
     final previousDate = formatDate(addDays(day, -1));
     final sleptBefore = log.sleepBefore(date);
@@ -63,8 +62,31 @@ class SleepModule implements IppoModule {
               ? 'Wake-up not logged'
               : 'Not logged yet',
         ),
-      _awakeFact(wakeUp, log.bedtimeOf(date), now),
+      _awakeFact(
+        wakeUp,
+        log.bedtimeOf(date),
+        now,
+        isToday: day == currentDay(now),
+      ),
     ];
+  }
+
+  @override
+  TileDetail? weekSummary(AppState appState, DateTime day) {
+    final log = SleepLog.of(appState);
+    var total = Duration.zero;
+    var nights = 0;
+    for (var back = 0; back < 7; back++) {
+      final slept = log.sleepBefore(formatDate(addDays(day, -back)));
+      if (slept != null) {
+        total += slept;
+        nights++;
+      }
+    }
+    if (nights == 0) {
+      return null;
+    }
+    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep / night');
   }
 
   @override
@@ -72,8 +94,14 @@ class SleepModule implements IppoModule {
 }
 
 /// The "Awake for" tile: time since waking up today, or, once you went
-/// to bed, how long the day lasted.
-TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
+/// to bed, how long the day lasted. Looking back at an earlier day, only
+/// the day's length can be shown.
+TodayFact _awakeFact(
+  SleepMoment? wakeUp,
+  SleepMoment? bedtime,
+  DateTime now, {
+  required bool isToday,
+}) {
   if (wakeUp == null) {
     return const TodayFact(
       label: 'Awake for',
@@ -90,6 +118,13 @@ TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
         TileDetail(wakeUp.clock.shown, label: 'Woke'),
         TileDetail(bedtime.clock.shown, label: 'Bed'),
       ],
+    );
+  }
+  if (!isToday) {
+    return const TodayFact(
+      label: 'Awake for',
+      value: TodayFact.unknownValue,
+      note: 'Bedtime not logged',
     );
   }
   final awake = nowUtc.difference(wakeUp.atUtc);

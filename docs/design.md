@@ -81,7 +81,9 @@ Nothing sits outside a card except short notes or problems at the top.
 
 Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
-modules; the only thing on Home to tap is the Settings gear.
+modules; the only things on Home to tap are the Settings gear and the
+day bar, which looks back at earlier days ("Looking back" replaces the
+greeting, and times since become clock times).
 
 Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
 18 November"), then a grid of `InfoTile`s, two per row (one per row
@@ -90,8 +92,15 @@ tallest tile. Two notes appear only when needed: for someone who has
 logged nothing yet ("Log things in the tabs below."), and when another
 device has not synced for more than a day.
 
-- Each module gives its tiles through `todayFacts`, usually two, so
-  they fill one row. A tile's icon is its module's icon.
+- Each module gives its tiles for a day through `dayFacts`: two half
+  tiles, or one wide tile (`isWide`) when its details need the room,
+  such as one column per exercise. A tile's icon is its module's icon.
+- Each module may add one number to the wide **Last 7 days** tile at the
+  end, through `weekSummary`: sleep per night, energy per day, habits
+  done, workout days. A summary, not a chart.
+- Every tile must earn its place: something a person wants to know at a
+  glance. Totals that mix unlike things (all reps of all exercises) do
+  not; a best set, a streak or the time since the last meal do.
 - A tile has a label, **one large value** (digits large, units small
   and grey: `ValueText`), and up to **two slots** below it. Facts are
   **never joined into one line** with "·" or commas. Either:
@@ -469,7 +478,8 @@ and shares it, which keeps every screen fast as years of data build up.
 
 A new module also needs:
 
-- `todayFacts` (its Home tiles, usually two), from `IppoModule`;
+- `dayFacts` (its Home tiles: two half tiles or one wide one) and, if
+  it has a weekly number, `weekSummary`, from `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.
 
