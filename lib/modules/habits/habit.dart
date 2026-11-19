@@ -70,20 +70,10 @@ class Habit {
 
   /// The colour to draw the habit in, on a screen with [theme].
   ///
-  /// Without a colour of its own, a habit uses the accent colour.
-  /// Picked colours are adjusted a little so they stay easy to read as
-  /// text: lighter in dark mode (for indigo or brown), darker in light
-  /// mode (for amber or light green).
-  Color displayColor(ThemeData theme) {
-    final picked = color;
-    if (picked == null) {
-      return theme.colorScheme.primary;
-    }
-    if (theme.brightness == Brightness.dark) {
-      return Color.lerp(picked, Colors.white, 0.3)!;
-    }
-    return Color.lerp(picked, Colors.black, 0.2)!;
-  }
+  /// Without a colour of its own, a habit uses the accent colour. A
+  /// picked colour is shown exactly as picked, in light and dark mode
+  /// alike: it belongs to the habit, not to the theme.
+  Color displayColor(ThemeData theme) => color ?? theme.colorScheme.primary;
 
   /// Whether the habit is hidden without being deleted.
   final bool isArchived;

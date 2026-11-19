@@ -91,8 +91,11 @@ TodayFact _lastMealFact(FoodEntry? lastMeal, DateTime day, DateTime now) {
   final elapsed = now.difference(eatenAt);
   return TodayFact(
     label: 'Last meal',
-    value: elapsed.isNegative ? time : formatTimeAgo(elapsed),
-    details: [TileDetail(lastMeal.name), TileDetail('at $time')],
+    value: elapsed.isNegative ? showSavedTime(time) : formatTimeAgo(elapsed),
+    details: [
+      TileDetail(lastMeal.name),
+      TileDetail('at ${showSavedTime(time)}'),
+    ],
   );
 }
 

@@ -80,6 +80,25 @@ class AppearanceSection extends StatelessWidget {
               appState.setThemeMode(choice.single.name),
         ),
         const SizedBox(height: 20),
+        const FieldLabel('Clock'),
+        SegmentedButton<bool>(
+          expandedInsets: EdgeInsets.zero,
+          segments: [
+            ButtonSegment(
+              value: false,
+              label: Text('24-hour (${_example(24)})'),
+            ),
+            ButtonSegment(
+              value: true,
+              label: Text('12-hour (${_example(12)})'),
+            ),
+          ],
+          selected: {settings?.uses12HourClock ?? false},
+          showSelectedIcon: false,
+          onSelectionChanged: (choice) =>
+              appState.setClockStyle(choice.single ? '12h' : '24h'),
+        ),
+        const SizedBox(height: 20),
         const FieldLabel('Accent colour'),
         ColorCircleGrid(circles: swatches),
         if (systemAccent != null) ...[
@@ -90,3 +109,6 @@ class AppearanceSection extends StatelessWidget {
     );
   }
 }
+
+/// An example time for the clock choice: `19:30` or `7:30 pm`.
+String _example(int hours) => hours == 24 ? '19:30' : '7:30 pm';

@@ -60,7 +60,7 @@ class TimeField extends StatelessWidget {
           suffixIcon: const Icon(Icons.schedule),
         ),
         child: Text(
-          time == null ? 'Not set' : '$time',
+          time == null ? 'Not set' : time.shown,
           style: time == null
               ? textTheme.titleLarge?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -178,7 +178,7 @@ class DateTimeField extends StatelessWidget {
               ),
             ),
             Text(
-              value == null ? 'Not set' : formatTimeOfDay(value),
+              value == null ? 'Not set' : showTimeOfDay(value),
               style: textTheme.titleLarge?.copyWith(
                 color: greyed ? muted : null,
               ),

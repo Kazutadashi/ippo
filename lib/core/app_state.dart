@@ -319,6 +319,11 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(accentColor: hexColor),
   );
 
+  /// Saves how times are shown: `24h` or `12h`.
+  Future<void> setClockStyle(String clockStyle) => _changeDisplaySetting(
+    (settings) => settings.copyWith(clockStyle: clockStyle),
+  );
+
   /// Applies [change] to the settings, saves them, and tells listening
   /// screens. A failure is shown through [errorMessage].
   Future<void> _changeDisplaySetting(

@@ -148,7 +148,7 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
       for (final nap in naps)
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text('${nap.startClock} – ${nap.endClock}'),
+          title: Text('${nap.startClock.shown} – ${nap.endClock.shown}'),
           subtitle: Text(formatDuration(nap.duration)),
           trailing: IconButton(
             tooltip: 'Edit nap',

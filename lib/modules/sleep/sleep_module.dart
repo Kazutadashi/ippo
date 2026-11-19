@@ -46,8 +46,8 @@ class SleepModule implements IppoModule {
           label: 'Sleep',
           value: formatDuration(sleptBefore),
           details: [
-            TileDetail('${bedtimeBefore.clock}', label: 'Bed'),
-            TileDetail('${wakeUp.clock}', label: 'Woke'),
+            TileDetail(bedtimeBefore.clock.shown, label: 'Bed'),
+            TileDetail(wakeUp.clock.shown, label: 'Woke'),
             if (naps.isNotEmpty)
               TileDetail(formatDuration(_totalOf(naps)), label: 'Naps'),
           ],
@@ -87,8 +87,8 @@ TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
       label: 'Awake for',
       value: formatDuration(bedtime.atUtc.difference(wakeUp.atUtc)),
       details: [
-        TileDetail('${wakeUp.clock}', label: 'Woke'),
-        TileDetail('${bedtime.clock}', label: 'Bed'),
+        TileDetail(wakeUp.clock.shown, label: 'Woke'),
+        TileDetail(bedtime.clock.shown, label: 'Bed'),
       ],
     );
   }
@@ -96,7 +96,7 @@ TodayFact _awakeFact(SleepMoment? wakeUp, SleepMoment? bedtime, DateTime now) {
   return TodayFact(
     label: 'Awake for',
     value: awake.isNegative ? TodayFact.unknownValue : formatDuration(awake),
-    details: [TileDetail('${wakeUp.clock}', label: 'Woke')],
+    details: [TileDetail(wakeUp.clock.shown, label: 'Woke')],
   );
 }
 

@@ -178,7 +178,10 @@ class _EntryDetails extends StatelessWidget {
     final time = entry.time;
     return Row(
       children: [
-        if (time != null) ...[Text(time), const SizedBox(width: 12)],
+        if (time != null) ...[
+          Text(showSavedTime(time)),
+          const SizedBox(width: 12),
+        ],
         Flexible(
           child: Text(_describeAmount(entry), overflow: TextOverflow.ellipsis),
         ),

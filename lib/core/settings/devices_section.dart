@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../app_state.dart';
+import '../dates.dart';
 import '../events/event_log.dart';
 import '../widgets/section_card.dart';
 
@@ -139,5 +140,5 @@ String formatLocalDateTime(DateTime moment) {
   final local = moment.toLocal();
   String twoDigits(int number) => number.toString().padLeft(2, '0');
   return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)} '
-      '${twoDigits(local.hour)}:${twoDigits(local.minute)}';
+      '${showTimeOfDay(local)}';
 }

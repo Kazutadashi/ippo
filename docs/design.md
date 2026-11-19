@@ -331,9 +331,9 @@ module's icon, so a glance says which tab a tile belongs to.
    own colour, used only for its name and its ✓ marks, so habits are
    easy to tell apart. Without one it uses the accent colour. Such
    colours come from the same list as the accent colours, are picked
-   with `ColorCircle`s, and are adjusted a little so they stay readable
-   as text: lighter in dark mode, darker in light mode
-   (`Habit.displayColor`). Nothing else on the screen takes them.
+   with `ColorCircle`s, and are shown **exactly as picked** in light and
+   dark mode (`Habit.displayColor`): they belong to the habit, not to the
+   theme. Nothing else on the screen takes them.
 7. **Flat cards.** Cards have no shadow and sit on a slightly different
    surface (`surfaceContainer`), the same in light and dark mode.
 

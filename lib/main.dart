@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'core/app_state.dart';
+import 'core/dates.dart';
 import 'core/home_screen.dart';
 import 'core/storage/data_folder.dart';
 import 'core/storage/settings_file.dart';
@@ -115,22 +116,30 @@ class _IppoAppState extends State<IppoApp> {
       listenable: widget.appState,
       builder: (context, _) {
         _updateThemes();
+        final uses12Hours = widget.appState.settings?.uses12HourClock ?? false;
+        // Every screen shows times in the chosen style (see dates.dart).
+        showTimesIn24Hours = !uses12Hours;
         return MaterialApp(
           title: 'Ippo',
           theme: _lightTheme,
           darkTheme: _darkTheme,
           themeMode: parseThemeMode(widget.appState.settings?.themeMode),
-          // British English: dates read "Wed 18 Nov" everywhere, as the
-          // app writes them, calendars start on Monday, and the clock
-          // picker uses 24 hours. The app's text is English either way.
-          locale: const Locale('en', 'GB'),
-          supportedLocales: const [Locale('en', 'GB')],
+          // The pickers' language. Both read dates as "Wed 18 Nov", as
+          // the app writes them, and start weeks on Monday. British
+          // English has a 24-hour clock picker; Australian English the
+          // same with a 12-hour one. The app's text is English either way.
+          locale: uses12Hours ? _englishWith12Hours : _englishWith24Hours,
+          supportedLocales: const [_englishWith24Hours, _englishWith12Hours],
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          // A clear system navigation bar, with icons that suit the
-          // current light or dark theme.
-          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-            value: _systemBarsFor(Theme.of(context).brightness),
-            child: child!,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(alwaysUse24HourFormat: !uses12Hours),
+            // A clear system navigation bar, with icons that suit the
+            // current light or dark theme.
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: _systemBarsFor(Theme.of(context).brightness),
+              child: child!,
+            ),
           ),
           home: HomeScreen(appState: widget.appState),
         );
@@ -138,6 +147,12 @@ class _IppoAppState extends State<IppoApp> {
     );
   }
 }
+
+/// The pickers' language with a 24-hour clock.
+const Locale _englishWith24Hours = Locale('en', 'GB');
+
+/// The pickers' language with a 12-hour clock.
+const Locale _englishWith12Hours = Locale('en', 'AU');
 
 /// See-through system bars, with dark icons on a light theme and light
 /// icons on a dark one.

@@ -20,6 +20,7 @@ class AppSettings {
     required this.linuxDataFolderPath,
     required this.themeMode,
     required this.accentColor,
+    required this.clockStyle,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -31,6 +32,7 @@ class AppSettings {
       linuxDataFolderPath: null,
       themeMode: null,
       accentColor: null,
+      clockStyle: null,
     );
   }
 
@@ -56,6 +58,7 @@ class AppSettings {
       linuxDataFolderPath: _textOrNull(json['linux_data_folder_path']),
       themeMode: _textOrNull(json['theme_mode']),
       accentColor: _textOrNull(json['accent_color']),
+      clockStyle: _textOrNull(json['clock_style']),
     );
   }
 
@@ -78,12 +81,20 @@ class AppSettings {
   /// The accent colour as `#RRGGBB`, or null for the default.
   final String? accentColor;
 
+  /// How times are shown: `24h` ("19:30") or `12h` ("7:30 pm"), or null
+  /// for the default (24 hours).
+  final String? clockStyle;
+
+  /// Whether times are shown on a 12-hour clock.
+  bool get uses12HourClock => clockStyle == '12h';
+
   /// Returns a copy with the given values changed.
   AppSettings copyWith({
     String? deviceName,
     String? linuxDataFolderPath,
     String? themeMode,
     String? accentColor,
+    String? clockStyle,
   }) {
     return AppSettings(
       deviceId: deviceId,
@@ -91,6 +102,7 @@ class AppSettings {
       linuxDataFolderPath: linuxDataFolderPath ?? this.linuxDataFolderPath,
       themeMode: themeMode ?? this.themeMode,
       accentColor: accentColor ?? this.accentColor,
+      clockStyle: clockStyle ?? this.clockStyle,
     );
   }
 
@@ -101,6 +113,7 @@ class AppSettings {
     'linux_data_folder_path': linuxDataFolderPath,
     'theme_mode': themeMode,
     'accent_color': accentColor,
+    'clock_style': clockStyle,
   };
 }
 

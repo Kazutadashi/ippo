@@ -87,6 +87,42 @@ DateTime? momentOnDay(DateTime day, String time) {
   );
 }
 
+/// Whether times are shown on a 24-hour clock ("19:30") rather than a
+/// 12-hour one ("7:30 pm").
+///
+/// The user chooses this in Settings; the app sets it when it starts and
+/// whenever the setting changes. It only changes how times are *shown*:
+/// times are always saved as 24-hour `HH:MM`, so the data never depends
+/// on it.
+bool showTimesIn24Hours = true;
+
+/// Shows a clock time in the user's chosen style: `19:30`, or `7:30 pm`.
+String formatClock(int hour, int minute) {
+  final minutes = _digits(minute, 2);
+  if (showTimesIn24Hours) {
+    return '${_digits(hour, 2)}:$minutes';
+  }
+  final hourOn12 = hour % 12 == 0 ? 12 : hour % 12;
+  return '$hourOn12:$minutes ${hour < 12 ? 'am' : 'pm'}';
+}
+
+/// Shows the clock time of [moment] in the user's chosen style. (For
+/// saving, use [formatTimeOfDay], which is always `HH:MM`.)
+String showTimeOfDay(DateTime moment) =>
+    formatClock(moment.hour, moment.minute);
+
+/// Shows a saved `HH:MM` time in the user's chosen style. Text that is
+/// not such a time is shown as it is.
+String showSavedTime(String time) {
+  if (!isValidTimeOfDay(time)) {
+    return time;
+  }
+  return formatClock(
+    int.parse(time.substring(0, 2)),
+    int.parse(time.substring(3, 5)),
+  );
+}
+
 /// Returns the day before or after [day]: [days] can be negative.
 ///
 /// Uses calendar arithmetic rather than adding 24 hours, because days
