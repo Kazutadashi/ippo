@@ -30,114 +30,157 @@ class SleepModule extends IppoModule {
   @override
   IconData get icon => Icons.bedtime;
 
-  /// Two tiles: the sleep before today (with any naps), and how long
-  /// you have been awake.
+  /// The sleep the night before [day], drawn as a bar over the usual
+  /// night; then how long you have been awake (or naps), and the 7-day
+  /// average.
   @override
-  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
+  HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = SleepLog.of(appState);
     final date = formatDate(day);
-    final previousDate = formatDate(addDays(day, -1));
     final sleptBefore = log.sleepBefore(date);
-    final bedtimeBefore = log.bedtimeOf(previousDate);
+    final bedtimeBefore = log.bedtimeOf(formatDate(addDays(day, -1)));
     final wakeUp = log.wakeUpOn(date);
-    final naps = log.napsOn(date);
-    return [
-      if (sleptBefore != null && bedtimeBefore != null && wakeUp != null)
-        TodayFact(
-          label: 'Sleep',
-          value: formatDuration(sleptBefore),
-          // The night as a bar, so early, late, long and short show at
-          // a glance.
-          visual: _SleepBar(bedtime: bedtimeBefore, wakeUp: wakeUp),
-          note: naps.isEmpty ? null : 'Naps: ${formatDuration(_totalOf(naps))}',
-        )
-      else
-        TodayFact(
-          label: 'Sleep',
-          value: TodayFact.unknownValue,
+    final average = _averageSleep(log, day);
+    final averageLine = average == null
+        ? null
+        : '7-day avg ${formatDuration(average)}';
+    if (sleptBefore == null || bedtimeBefore == null || wakeUp == null) {
+      return HomeTile(
+        value: HomeTile.unknownValue,
+        lines: [
           // Say exactly what is missing, so it is easy to fill in.
-          note: wakeUp != null
+          wakeUp != null
               ? 'Bedtime not logged'
               : bedtimeBefore != null
               ? 'Wake-up not logged'
               : 'Not logged yet',
-        ),
-      _awakeFact(
-        wakeUp,
-        log.bedtimeOf(date),
-        now,
-        isToday: day == currentDay(now),
+          if (averageLine != null) averageLine,
+        ],
+      );
+    }
+    final usual = _usualNight(log, day);
+    final dayLine = _dayLine(
+      log,
+      date,
+      wakeUp,
+      now,
+      isToday: day == currentDay(now),
+    );
+    return HomeTile(
+      value: formatDuration(sleptBefore),
+      valueNote: 'slept',
+      mark: _SleepBar(
+        bedtime: bedtimeBefore,
+        wakeUp: wakeUp,
+        usualBedtime: usual?.bedtime,
+        usualWakeUp: usual?.wakeUp,
       ),
-    ];
+      lines: [
+        if (dayLine != null) dayLine,
+        if (averageLine != null) averageLine,
+      ],
+    );
   }
 
+  /// A bar for each of the seven nights, as tall as the sleep (a full
+  /// bar is ten hours).
   @override
-  TileDetail? weekSummary(AppState appState, DateTime day) {
+  WeekRow? weekRow(AppState appState, DateTime day) {
     final log = SleepLog.of(appState);
-    var total = Duration.zero;
-    var nights = 0;
-    for (var back = 0; back < 7; back++) {
-      final slept = log.sleepBefore(formatDate(addDays(day, -back)));
-      if (slept != null) {
-        total += slept;
-        nights++;
-      }
-    }
-    if (nights == 0) {
+    final hours = [
+      for (final column in weekEndingOn(day))
+        log.sleepBefore(formatDate(column))?.inMinutes,
+    ];
+    if (hours.every((minutes) => minutes == null)) {
       return null;
     }
-    return TileDetail(formatDuration(total ~/ nights), label: 'Sleep / night');
+    final average = _averageSleep(log, addDays(day, 1));
+    return WeekRow(
+      values: [
+        for (final minutes in hours)
+          minutes == null ? null : (minutes / 60 / 10).clamp(0.0, 1.0),
+      ],
+      shape: WeekMarkShape.bar,
+      description: average == null
+          ? 'Sleep each night'
+          : 'Sleep each night, ${formatDuration(average)} on average',
+    );
   }
 
   @override
   Widget buildScreen(AppState appState) => SleepScreen(appState: appState);
 }
 
-/// The "Awake for" tile: time since waking up today, or, once you went
-/// to bed, how long the day lasted, with the day drawn as a bar. Looking
-/// back at an earlier day, only the day's length can be shown.
-TodayFact _awakeFact(
-  SleepMoment? wakeUp,
-  SleepMoment? bedtime,
+/// The average sleep a night over the week before [day], counting only
+/// nights logged; null without any.
+Duration? _averageSleep(SleepLog log, DateTime day) {
+  var total = Duration.zero;
+  var nights = 0;
+  for (final before in daysBefore(day)) {
+    final slept = log.sleepBefore(formatDate(before));
+    if (slept != null) {
+      total += slept;
+      nights++;
+    }
+  }
+  return nights == 0 ? null : total ~/ nights;
+}
+
+/// The usual night over the week before [day]: the average bedtime and
+/// wake-up, or null without a whole night logged.
+({ClockTime bedtime, ClockTime wakeUp})? _usualNight(
+  SleepLog log,
+  DateTime day,
+) {
+  // Minutes after 20:00, so a bedtime after midnight averages with one
+  // before it (23:30 and 00:30 make midnight, not noon).
+  int afterEvening(ClockTime time) =>
+      (time.minutesSinceMidnight - 20 * 60) % (24 * 60);
+  ClockTime fromEvening(int minutes) {
+    final clock = (minutes + 20 * 60) % (24 * 60);
+    return ClockTime(clock ~/ 60, clock % 60);
+  }
+
+  var bedtimes = 0;
+  var wakeUps = 0;
+  var nights = 0;
+  for (final before in daysBefore(day)) {
+    final bedtime = log.bedtimeOf(formatDate(addDays(before, -1)));
+    final wakeUp = log.wakeUpOn(formatDate(before));
+    if (bedtime != null && wakeUp != null) {
+      bedtimes += afterEvening(bedtime.clock);
+      wakeUps += afterEvening(wakeUp.clock);
+      nights++;
+    }
+  }
+  if (nights == 0) {
+    return null;
+  }
+  return (
+    bedtime: fromEvening(bedtimes ~/ nights),
+    wakeUp: fromEvening(wakeUps ~/ nights),
+  );
+}
+
+/// One fact about the day after the night: how long you have been awake
+/// (today, before bed), or the day's naps; null for neither.
+String? _dayLine(
+  SleepLog log,
+  String date,
+  SleepMoment wakeUp,
   DateTime now, {
   required bool isToday,
 }) {
-  if (wakeUp == null) {
-    return const TodayFact(
-      label: 'Awake for',
-      value: TodayFact.unknownValue,
-      note: 'Not logged yet',
-    );
+  final bedtime = log.bedtimeOf(date);
+  final awake = now.toUtc().difference(wakeUp.atUtc);
+  if (isToday && bedtime == null && !awake.isNegative) {
+    return 'Awake ${formatDuration(awake)}';
   }
-  final nowUtc = now.toUtc();
-  if (bedtime != null && !nowUtc.isBefore(bedtime.atUtc)) {
-    return TodayFact(
-      label: 'Awake for',
-      value: formatDuration(bedtime.atUtc.difference(wakeUp.atUtc)),
-      visual: _DayBar(
-        start: wakeUp.clock,
-        end: bedtime.clock,
-        endLabel: bedtime.clock.shown,
-      ),
-    );
+  final naps = log.napsOn(date);
+  if (naps.isNotEmpty) {
+    return 'Naps ${formatDuration(_totalOf(naps))}';
   }
-  if (!isToday) {
-    return const TodayFact(
-      label: 'Awake for',
-      value: TodayFact.unknownValue,
-      note: 'Bedtime not logged',
-    );
-  }
-  final awake = nowUtc.difference(wakeUp.atUtc);
-  return TodayFact(
-    label: 'Awake for',
-    value: awake.isNegative ? TodayFact.unknownValue : formatDuration(awake),
-    visual: _DayBar(
-      start: wakeUp.clock,
-      end: ClockTime(now.hour, now.minute),
-      endLabel: 'now',
-    ),
-  );
+  return null;
 }
 
 /// The total time of [naps].
@@ -151,10 +194,19 @@ Duration _totalOf(List<Nap> naps) {
 
 /// The night, from bedtime to waking up, in the theme's accent colour.
 class _SleepBar extends StatelessWidget {
-  const _SleepBar({required this.bedtime, required this.wakeUp});
+  const _SleepBar({
+    required this.bedtime,
+    required this.wakeUp,
+    required this.usualBedtime,
+    required this.usualWakeUp,
+  });
 
   final SleepMoment bedtime;
   final SleepMoment wakeUp;
+
+  /// The week's average night, drawn faintly behind; null for none.
+  final ClockTime? usualBedtime;
+  final ClockTime? usualWakeUp;
 
   @override
   Widget build(BuildContext context) {
@@ -167,33 +219,8 @@ class _SleepBar extends StatelessWidget {
       endLabel: wakeUp.clock.shown,
       description:
           'Bed at ${bedtime.clock.shown}, woke at ${wakeUp.clock.shown}',
-    );
-  }
-}
-
-/// The day, from waking up to [end] (now, or bedtime), in the theme's
-/// accent colour.
-class _DayBar extends StatelessWidget {
-  const _DayBar({
-    required this.start,
-    required this.end,
-    required this.endLabel,
-  });
-
-  final ClockTime start;
-  final ClockTime end;
-  final String endLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return TimeSpanBar(
-      start: start,
-      end: end,
-      trackStartHour: TimeSpanBar.dayStartHour,
-      trackHours: TimeSpanBar.dayHours,
-      startLabel: start.shown,
-      endLabel: endLabel,
-      description: 'Awake from ${start.shown} to $endLabel',
+      usualStart: usualBedtime,
+      usualEnd: usualWakeUp,
     );
   }
 }

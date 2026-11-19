@@ -99,62 +99,60 @@ mountains. It is decoration: screen readers skip it.
 
 The greeting ("Good afternoon") and the gear sit on its sky; the date
 ("Wednesday, 18 Nov") and the day bar sit on the ground at its foot.
-Then the "Last 7 days" row, and a grid of `InfoTile`s, two per row (one
-per row with large text, up to four on a wide window), each row as tall
-as its tallest tile. Everything fits on one phone screen, so Home is a
-glance, not a scroll. Two notes appear only when needed: for someone who has
-logged nothing yet ("Log things in the tabs below."), and when another
-device has not synced for more than a day.
+Then the **week grid**, and under it **one tile per module** in a grid,
+two per row (one per row with large text, up to four on a wide
+window), each row as tall as its tallest tile. Everything fits on one
+phone screen, so Home is a glance, not a scroll. Two notes appear only
+when needed: for someone who has logged nothing yet ("Log things in
+the tabs below."), and when another device has not synced for more
+than a day.
 
-- Each module gives its tiles for a day through `dayFacts`: two half
-  tiles, or one wide tile (`isWide`) when its details need the room,
-  such as one column per exercise. A tile's icon is its module's icon.
-- Each module may add one number to the wide **Last 7 days** tile at the
-  end, through `weekSummary`: sleep per night, energy per day, habits
-  done, workout days. A summary, not a chart.
-- A tile can hold a small picture between its value and details
-  (`TodayFact.visual`), drawn by its module: one dot per habit (filled
-  when done), a streak's last seven days as squares, a night as a bar
-  from bedtime to wake-up, and the week's habit days as dots. They are
-  marks that read faster than numbers, never charts.
+The page follows the way Apple's Weather app makes numbers easy to
+read: one tile per subject, every tile built the same way, and **no
+number without its context**. Today's value is large; the usual is
+always written out next to it ("7-day avg 1326 kcal"), never left for
+the reader to guess.
+
+- **The week grid** ("Last 7 days", `WeekGrid`): the days across the
+  top, today's in the accent colour, and one row per module, named on
+  the left ("Habits", "Food", "Exercise", "Sleep"), with one mark per
+  day (`IppoModule.weekRow`). No numbers: the names say what the marks
+  mean. A dot is as full as its value (habits done, trained or not,
+  food logged or not); a bar is as tall as its amount (hours slept).
+  A module without any data yet has no row.
+- **One tile per module** (`IppoModule.homeTile`, drawn by
+  `HomeTileCard`). Every tile has the same four parts, in the same
+  places, so tiles side by side line up:
+  1. the header: the module's icon in the accent colour and its title
+     in small grey capitals ("FOOD");
+  2. **today's value**, large (digits large, units small and grey:
+     `ValueText`), with a word after it that says what it is: "4 of 5
+     done", "1007 kcal so far", "7 h 8 min slept";
+  3. **one mark**, in a row of fixed height: one dot per habit in its
+     own colour; protein, carbs and fat as labelled numbers; one arrow
+     per exercise (up: beat last time, dash: the same, down: less, in
+     grey, never red; a dot: done for the first time; a faint ring: not
+     done yet); last night as a bar from bedtime to wake-up over a
+     faint bar of the usual night;
+  4. **one or two short grey lines**: one fact ("Last meal 8 h ago",
+     "Read 10 pages: 30 days", "Awake 20 h 41 min", "4 beat last
+     time"), then the comparison with the usual, **always last and
+     always written out**: "7-day avg 3.9 of 5", "Trained 3 of the last
+     7 days".
+- **The usual** is the 7 days before the day shown, not counting days
+  with nothing logged (a day not logged is not a day without food).
+  The day shown is left out: it is usually not over yet.
 - Every tile must earn its place: something a person wants to know at a
   glance. Totals that mix unlike things (all reps of all exercises) do
   not; a streak, what beat last time or the time since the last meal
-  do. A tile must also work with any number of things: one dot per
-  habit or exercise wraps, while a column per exercise runs out of
-  room.
-- **Home is one grid.** On a phone it has two columns: the left and
-  the right half tiles. Everything lines up with them, across and down:
-  - Every tile has the **same three slots**: a header (the module's
-    icon in the accent colour and the label in grey, with an optional
-    short word at the right, such as a streak's habit); **one value**
-    (digits large, units small and grey: `ValueText`), with an
-    optional small picture at the right (one dot per habit, a streak's
-    last seven days); and a **footer** holding exactly one thing. The
-    header and value slots have the same height in every tile, so
-    labels, values and the tops of footers form straight lines across
-    the page. A wide tile may leave out the value.
-  - A **wide tile is split into two halves** (`TileHalves`) that start
-    exactly where the two half tiles below start their content. The
-    week tile puts its days in the left half and its numbers in the
-    right.
-  - **One alignment:** text starts at the left of its column. Only a
-    small picture beside a value sits at the right edge.
-  - Facts are **never joined into one line** with "·" or commas.
-  The footer is one of: a picture as wide as the tile (a sleep bar); or
-  - **labelled numbers in equal columns**, all aligned left, a small
-    grey label above each value: *Protein 5 g*, *Carbs 22 g*, *Fat
-    6 g*; or
-  - **plain lines, one fact per line**, the most identifying first:
-    *Honey*, then *at 14:43*; or
-  - **a note** when there is nothing to show: *Not logged yet*, or
-    better, exactly what is missing: *Bedtime not logged*.
-- Tiles are what a person needs to know right now. Values worked out
-  live ("Awake for", "Last meal", "Last set") are the most useful, and
-  Home redraws every minute so they stay current.
-- Tiles keep their place and height before anything is logged, showing
-  a quiet grey "–", so the layout never jumps. Screen readers read a
-  tile as one item.
+  do. A mark must work with any number of things: dots and arrows wrap.
+- Facts are **never joined into one line** with "·" or commas.
+- Durations ago are rounded for a glance: "25 min ago", then whole
+  hours, "8 h ago". Home redraws every minute so they stay current.
+- Tiles keep their shape before anything is logged, showing a quiet
+  grey "–", and say exactly what is missing ("Bedtime not logged").
+  The note takes the mark's place, so an empty tile has no hole.
+  Screen readers read a tile as one item.
 
 ### Forms (adding or changing one thing)
 
@@ -187,7 +185,7 @@ the same:
 | Kind | Looks like | Use |
 | --- | --- | --- |
 | **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times, `DateTimeField` when the date matters too |
-| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `InfoTile` on Home |
+| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `HomeTileCard` on Home |
 | **Note** | Plain grey text | `NoteText`, for short notes and empty states |
 | **Problem** | Plain red text that says what is wrong | `ProblemText` |
 | **Action** | A button: filled, text, or floating | See section 4 |
@@ -287,9 +285,9 @@ Text styles (from the theme's text styles):
 | Use | Style |
 | --- | --- |
 | Home greeting | `headlineSmall` |
-| Home tile values | `headlineSmall` digits, `titleSmall` grey units (set by `InfoTile` with `ValueText`) |
-| Home tile details | `bodyMedium`; labels above numbers `labelSmall`, grey |
-| Home tile labels | `labelLarge`, grey (set by `InfoTile`) |
+| Home tile values | `headlineSmall` digits, `labelLarge` grey units and note (set by `HomeTileCard` with `ValueText`) |
+| Home tile lines | `bodySmall`, grey; labels above numbers `labelSmall`, grey |
+| Home tile titles | `labelSmall` capitals, grey (set by `HomeTileCard`) |
 | Home date | `titleMedium`, grey (`onSurfaceVariant`) |
 | Card titles | `titleMedium` (set by `CardHeader`) |
 | Information values | `titleMedium` (set by `InfoValue`) |
@@ -523,8 +521,8 @@ and shares it, which keeps every screen fast as years of data build up.
 
 A new module also needs:
 
-- `dayFacts` (its Home tiles: two half tiles or one wide one) and, if
-  it has a weekly number, `weekSummary`, from `IppoModule`;
+- `homeTile` (its tile on Home) and, if it has one, `weekRow` (its
+  row of the week grid), from `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.
 

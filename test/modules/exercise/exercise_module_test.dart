@@ -245,14 +245,14 @@ void main() {
     expect(log.exercises, isEmpty);
   });
 
-  test('home tiles: exercises done, and what beat last time', () async {
+  test('home tile: exercises done, what beat last time, the week', () async {
     const module = ExerciseModule();
     final now = DateTime(2026, 11, 18, 20);
     final day = currentDay(now);
-    expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: – | No exercises yet',
-      'Beat last time: – | No exercises yet',
-    ]);
+    expect(
+      describeTile(module.homeTile(appState, day, now)),
+      '– | No exercises yet',
+    );
 
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
     final plank = await createExercise('Plank', MeasuredIn.seconds);
@@ -260,34 +260,24 @@ void main() {
     await addSets(pushUp, '2026-11-16', 15, 1);
     await addSets(plank, '2026-11-16', 40, 1);
     await addSets(squat, '2026-11-16', 30, 1);
-    expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: 0 of 3 | Last workout 2 days ago',
-      'Beat last time: – | No sets yet today',
-    ]);
+    expect(
+      describeTile(module.homeTile(appState, day, now)),
+      '0 of 3 done | Last workout 2 days ago, Trained 1 of the last 7 days',
+    );
 
     await addSets(pushUp, '2026-11-18', 20, 1);
     await addSets(pushUp, '2026-11-18', 18, 1);
     await addSets(plank, '2026-11-18', 41, 1);
-    await addSets(squat, '2026-11-18', 30, 1);
-    expect(describeTiles(module.dayFacts(appState, day, now)), [
-      'Exercise: 3 of 3 | ',
-      'Beat last time: 2 exercises | Push-up +5 reps, Plank +1 s',
-    ]);
+    await addSets(squat, '2026-11-18', 28, 1);
     expect(
-      describeDetail(module.weekSummary(appState, day)!),
-      'Workouts 2 days',
+      describeTile(module.homeTile(appState, day, now)),
+      '3 of 3 done | 2 beat last time, Trained 1 of the last 7 days',
     );
+    expect(module.weekRow(appState, day)!.values, [0, 0, 0, 0, 1, 0, 1]);
   });
 }
 
-/// Writes a detail as `Label value`, or just the value without a label.
-String describeDetail(TileDetail detail) =>
-    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
-
-/// Writes home tiles as `Label: value | note or details`, for comparing.
-List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts)
-    '${fact.label}: ${fact.value}'
-        '${fact.labelNote == null ? '' : ' ${fact.labelNote}'} | '
-        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
-];
+/// Writes a home tile as `value note | lines`, for comparing.
+String describeTile(HomeTile tile) =>
+    '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
+    '${tile.lines.join(', ')}';

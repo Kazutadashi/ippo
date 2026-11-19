@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../../core/number_input.dart';
 import 'habit.dart';
 import 'habit_log.dart';
 import 'habit_marks.dart';
@@ -27,97 +28,91 @@ class HabitsModule extends IppoModule {
   @override
   IconData get icon => Icons.check_circle_outline;
 
-  /// Two tiles: how many habits are done today, and which are left.
+  /// How many habits are done on [day], with one dot per habit; then the
+  /// longest streak and the 7-day average.
   @override
-  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
+  HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = HabitLog.of(appState);
     final habits = log.shownHabits;
     if (habits.isEmpty) {
-      return const [
-        TodayFact(
-          label: 'Habits',
-          value: TodayFact.unknownValue,
-          note: 'No habits yet',
-        ),
-        TodayFact(
-          label: 'Streaks',
-          value: TodayFact.unknownValue,
-          note: 'No habits yet',
-        ),
-      ];
+      return const HomeTile(
+        value: HomeTile.unknownValue,
+        lines: ['No habits yet'],
+      );
     }
     final date = formatDate(day);
-    final done = habits
-        .where((habit) => log.markOn(habit.id, date) == DayMark.done)
-        .length;
-    return [
-      // How the day is going: one dot per habit, and what is still open.
-      TodayFact(
-        label: 'Habits',
-        value: '$done of ${habits.length}',
-        aside: HabitDots(habits: habits, log: log, date: date),
-      ),
-      _streaksFact(log, habits, day),
+    final streak = _longestStreak(log, habits, day);
+    final average = _averageDone(log, habits, day);
+    return HomeTile(
+      value: '${_doneOn(log, habits, date)} of ${habits.length}',
+      valueNote: 'done',
+      mark: HabitDots(habits: habits, log: log, date: date),
+      lines: [
+        // A streak counts from two days on; one day is not a run yet.
+        if (streak.days >= 2) '${streak.habit.name}: ${streak.days} days',
+        if (average != null)
+          '7-day avg ${formatAmount(average)} of ${habits.length}',
+      ],
+    );
+  }
+
+  /// The share of habits done on each of the seven days.
+  @override
+  WeekRow? weekRow(AppState appState, DateTime day) {
+    final log = HabitLog.of(appState);
+    final habits = log.shownHabits;
+    if (habits.isEmpty) {
+      return null;
+    }
+    final shares = [
+      for (final column in weekEndingOn(day))
+        _doneOn(log, habits, formatDate(column)) / habits.length,
     ];
-  }
-
-  @override
-  Widget? weekStrip(AppState appState, DateTime day) {
-    final log = HabitLog.of(appState);
-    final habits = log.shownHabits;
-    if (habits.isEmpty) {
-      return null;
-    }
-    return HabitWeekStrip(habits: habits, log: log, day: day);
-  }
-
-  @override
-  TileDetail? weekSummary(AppState appState, DateTime day) {
-    final log = HabitLog.of(appState);
-    final habits = log.shownHabits;
-    if (habits.isEmpty) {
-      return null;
-    }
-    var done = 0;
-    for (var back = 0; back < 7; back++) {
-      final date = formatDate(addDays(day, -back));
-      for (final habit in habits) {
-        if (log.markOn(habit.id, date) == DayMark.done) {
-          done++;
-        }
-      }
-    }
-    final percent = (100 * done / (7 * habits.length)).round();
-    return TileDetail('$percent %', label: 'Habits');
+    final percent = (100 * shares.reduce((a, b) => a + b) / 7).round();
+    return WeekRow(
+      values: shares,
+      description: 'Habits done each day, $percent % over the week',
+    );
   }
 
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
 }
 
-/// The "Streaks" tile: the longest current streak, which habit it is,
-/// and that habit's last seven days.
-TodayFact _streaksFact(HabitLog log, List<Habit> habits, DateTime day) {
-  final streaks = [
-    for (final habit in habits)
-      (habit: habit, days: log.streakOn(habit.id, day)),
-  ]..sort((first, second) => second.days.compareTo(first.days));
-  final best = streaks.first;
-  if (best.days == 0) {
-    return const TodayFact(
-      label: 'Streaks',
-      value: TodayFact.unknownValue,
-      note: 'No streak right now.',
+/// How many of [habits] are done on [date] (`YYYY-MM-DD`).
+int _doneOn(HabitLog log, List<Habit> habits, String date) =>
+    habits.where((habit) => log.markOn(habit.id, date) == DayMark.done).length;
+
+/// The average number of [habits] done a day over the week before
+/// [day], counting only days with any habit marked; null without any.
+double? _averageDone(HabitLog log, List<Habit> habits, DateTime day) {
+  var done = 0;
+  var markedDays = 0;
+  for (final before in daysBefore(day)) {
+    final date = formatDate(before);
+    final anyMarked = habits.any(
+      (habit) => log.markOn(habit.id, date) != DayMark.none,
     );
+    if (anyMarked) {
+      done += _doneOn(log, habits, date);
+      markedDays++;
+    }
   }
-  // The longest streak, which habit it is, and its last seven days.
-  return TodayFact(
-    label: 'Streaks',
-    value: _days(best.days),
-    labelNote: best.habit.name,
-    aside: StreakSquares(habit: best.habit, log: log, day: day),
-  );
+  return markedDays == 0 ? null : done / markedDays;
 }
 
-/// `1 day` or `12 days`.
-String _days(int count) => count == 1 ? '1 day' : '$count days';
+/// The habit with the longest current streak on [day], and its length.
+({Habit habit, int days}) _longestStreak(
+  HabitLog log,
+  List<Habit> habits,
+  DateTime day,
+) {
+  var best = (habit: habits.first, days: log.streakOn(habits.first.id, day));
+  for (final habit in habits.skip(1)) {
+    final days = log.streakOn(habit.id, day);
+    if (days > best.days) {
+      best = (habit: habit, days: days);
+    }
+  }
+  return best;
+}

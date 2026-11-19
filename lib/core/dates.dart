@@ -171,7 +171,12 @@ String formatTimeAgo(Duration elapsed) {
   if (elapsed.inMinutes < 1) {
     return 'Just now';
   }
-  return '${formatDuration(elapsed)} ago';
+  if (elapsed.inMinutes < 60) {
+    return '${elapsed.inMinutes} min ago';
+  }
+  // From an hour on, whole hours are enough for a glance: "8 h ago",
+  // not "7 h 58 min ago".
+  return '${(elapsed.inMinutes / 60).round()} h ago';
 }
 
 /// Writes [number] with leading zeros up to [width] digits.

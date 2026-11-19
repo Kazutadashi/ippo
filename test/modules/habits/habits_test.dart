@@ -145,25 +145,31 @@ void main() {
       expect(habit.displayColor(theme), theme.colorScheme.primary);
     });
 
-    test('home tiles: done today, what is left, and streaks', () async {
+    test('home tile: done today, the streak, and the usual', () async {
       const module = HabitsModule();
       final now = DateTime(2026, 11, 17, 20);
-      expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-        'Habits: – | No habits yet',
-        'Streaks: – | No habits yet',
-      ]);
+      expect(
+        describeTile(module.homeTile(appState, currentDay(now), now)),
+        '– | No habits yet',
+      );
+      expect(module.weekRow(appState, currentDay(now)), isNull);
 
       final read = (await actions.createHabit('Read')).id;
-      await actions.createHabit('Stretch');
+      final stretch = (await actions.createHabit('Stretch')).id;
       await actions.createHabit('Study');
       await actions.recordDay(read, day, done: true);
       await actions.recordDay(read, '2026-11-16', done: true);
       await actions.recordDay(read, '2026-11-15', done: true);
+      await actions.recordDay(stretch, '2026-11-16', done: true);
 
-      expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-        'Habits: 1 of 3 | ',
-        'Streaks: 3 days Read | ',
-      ]);
+      // The week before: 2 done on the 16th and 1 on the 15th.
+      expect(
+        describeTile(module.homeTile(appState, currentDay(now), now)),
+        '1 of 3 done | Read: 3 days, 7-day avg 1.5 of 3',
+      );
+      final row = module.weekRow(appState, currentDay(now))!;
+      expect(row.values.length, 7);
+      expect(row.values.last, closeTo(1 / 3, 0.001));
     });
   });
 
@@ -226,14 +232,7 @@ void main() {
   });
 }
 
-/// Writes a detail as `Label value`, or just the value without a label.
-String describeDetail(TileDetail detail) =>
-    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
-
-/// Writes home tiles as `Label: value | note or details`, for comparing.
-List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts)
-    '${fact.label}: ${fact.value}'
-        '${fact.labelNote == null ? '' : ' ${fact.labelNote}'} | '
-        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
-];
+/// Writes a home tile as `value note | lines`, for comparing.
+String describeTile(HomeTile tile) =>
+    '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
+    '${tile.lines.join(', ')}';

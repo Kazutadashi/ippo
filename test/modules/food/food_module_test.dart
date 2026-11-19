@@ -292,13 +292,13 @@ void main() {
     expect(diary.entries, isEmpty);
   });
 
-  test('home tiles: energy, and the last meal', () async {
+  test('home tile: energy so far, the last meal, and the usual', () async {
     const module = FoodModule();
     final now = DateTime(2026, 11, 17, 15, 30);
-    expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-      'Energy: – | Nothing logged yet',
-      'Last meal: – | Not logged yet',
-    ]);
+    expect(
+      describeTile(module.homeTile(appState, currentDay(now), now)),
+      '– | Nothing logged yet',
+    );
 
     final oatsId = await createOats();
     await actions.recordFoodEntry(
@@ -313,11 +313,23 @@ void main() {
       name: 'Soup',
       nutrients: const Nutrients({'energy_kcal': 300}),
     );
+    // Two days before: the usual day.
+    await actions.recordQuickEntry(
+      date: '2026-11-15',
+      time: null,
+      name: 'Pasta',
+      nutrients: const Nutrients({'energy_kcal': 900}),
+    );
 
-    expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-      'Energy: 689 kcal | Protein 13 g, Fat 6.5 g',
-      'Last meal: 3 h 15 min ago | Soup, at 12:15',
-    ]);
+    final tile = module.homeTile(appState, currentDay(now), now);
+    expect(
+      describeTile(tile),
+      '689 kcal so far | Last meal 3 h ago, 7-day avg 900 kcal',
+    );
+    // Protein, carbs and fat are the mark.
+    expect(tile.mark, isA<LabelledValues>());
+    final row = module.weekRow(appState, currentDay(now))!;
+    expect(row.values, [0, 0, 0, 0, 1, 0, 1]);
   });
 
   group('serving sizes and pieces', () {
@@ -399,14 +411,7 @@ void main() {
   });
 }
 
-/// Writes a detail as `Label value`, or just the value without a label.
-String describeDetail(TileDetail detail) =>
-    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
-
-/// Writes home tiles as `Label: value | note or details`, for comparing.
-List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts)
-    '${fact.label}: ${fact.value}'
-        '${fact.labelNote == null ? '' : ' ${fact.labelNote}'} | '
-        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
-];
+/// Writes a home tile as `value note | lines`, for comparing.
+String describeTile(HomeTile tile) =>
+    '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
+    '${tile.lines.join(', ')}';

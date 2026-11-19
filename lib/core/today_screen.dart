@@ -11,6 +11,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../modules/all_modules.dart';
 import 'app_state.dart';
+import 'module.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
 import 'widgets/day_bar.dart';
@@ -18,6 +19,7 @@ import 'widgets/follows_today.dart';
 import 'widgets/info_tile.dart';
 import 'widgets/section_card.dart';
 import 'widgets/sky_header.dart';
+import 'widgets/week_grid.dart';
 
 /// The home tab.
 class TodayScreen extends StatefulWidget {
@@ -48,26 +50,18 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final appState = widget.appState;
     final now = DateTime.now();
     final day = shownDay;
-    final tiles = <_Tile>[
-      // The week first: the wider view, before the details of the day.
-      _weekTile(appState, day),
-      for (final module in allModules)
-        for (final fact in module.dayFacts(appState, day, now))
-          _Tile(
-            InfoTile(
-              icon: module.icon,
-              label: fact.label,
-              value: fact.value,
-              labelNote: fact.labelNote,
-              aside: fact.aside,
-              details: fact.details,
-              note: fact.note,
-              visual: fact.visual,
-              isWide: fact.isWide,
-            ),
-            isWide: fact.isWide,
-          ),
+    // One tile per module, the same shape each, in a grid.
+    final tiles = [
+      for (final module in allModules) _tileFor(module, appState, day, now),
     ];
+    // The modules' rows of the week grid, for those that have one.
+    final weekRows = <WeekGridRow>[];
+    for (final module in allModules) {
+      final row = module.weekRow(appState, day);
+      if (row != null) {
+        weekRows.add((title: module.title, icon: module.icon, row: row));
+      }
+    }
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
     final topInset = MediaQuery.paddingOf(context).top;
@@ -181,6 +175,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   if (staleDevice != null ||
                       (eventLog != null && eventLog.events.isEmpty))
                     const SizedBox(height: tileGap),
+                  // The week first, the wider view; then today, module by
+                  // module.
+                  if (weekRows.isNotEmpty) ...[
+                    WeekGrid(day: day, rows: weekRows),
+                    const SizedBox(height: tileGap),
+                  ],
                   _TileGrid(tiles: tiles),
                 ],
               ),
@@ -232,98 +232,47 @@ String? _staleDeviceNote(AppState appState, DateTime now) {
       '${days == 1 ? 'a day' : '$days days'} ago';
 }
 
-/// A tile for the grid, and whether it takes a whole row.
-class _Tile {
-  const _Tile(this.tile, {this.isWide = false});
-
-  final Widget tile;
-  final bool isWide;
-}
-
-/// The "Last 7 days" tile, one slim row: the week's days as dots (from
-/// the first module that draws them, the habits) on the left, and one
-/// number from each module on the right, such as sleep per night. A
-/// summary, not a chart: the trends belong in an analysis of the data.
-_Tile _weekTile(AppState appState, DateTime day) {
-  final summaries = [
-    for (final module in allModules)
-      if (module.weekSummary(appState, day) case final summary?) summary,
-  ];
-  Widget? strip;
-  for (final module in allModules) {
-    strip ??= module.weekStrip(appState, day);
-  }
-  final hasNothing = summaries.isEmpty && strip == null;
-  return _Tile(
-    InfoTile(
-      icon: Icons.date_range,
-      label: 'Last 7 days',
-      value: '',
-      note: hasNothing ? 'Nothing logged in these days.' : null,
-      visual: hasNothing
-          ? null
-          // The days in the left half and the numbers in the right, in
-          // two columns, lined up with the tiles below.
-          : TileHalves(
-              hasDivider: strip != null && summaries.isNotEmpty,
-              // Both halves start with a small label, on one line.
-              left: Align(
-                alignment: Alignment.topLeft,
-                child: strip ?? const SizedBox(),
-              ),
-              right: Align(
-                alignment: Alignment.topLeft,
-                child: summaries.isEmpty
-                    ? const SizedBox()
-                    : LabelledValues(details: summaries, columns: 2),
-              ),
-            ),
-      isWide: true,
-    ),
-    isWide: true,
+/// The tile of [module] for [day].
+Widget _tileFor(
+  IppoModule module,
+  AppState appState,
+  DateTime day,
+  DateTime now,
+) {
+  final tile = module.homeTile(appState, day, now);
+  return HomeTileCard(
+    icon: module.icon,
+    title: module.title,
+    value: tile.value,
+    valueNote: tile.valueNote,
+    mark: tile.mark,
+    lines: tile.lines,
   );
 }
 
 /// Lays out the tiles in rows, with every tile in a row as tall as the
 /// tallest: two per row on a phone, more on a wide screen, and one per
-/// row when the user has chosen large text. A wide tile has a row of
-/// its own.
+/// row when the user has chosen large text.
 class _TileGrid extends StatelessWidget {
   const _TileGrid({required this.tiles});
 
-  final List<_Tile> tiles;
+  final List<Widget> tiles;
 
   @override
   Widget build(BuildContext context) {
     final largeText = MediaQuery.textScalerOf(context).scale(10) > 13;
     return LayoutBuilder(
       builder: (context, constraints) {
-        // About 180 dp per tile, at least one and at most four.
+        // About 180 dp per tile, at least two and at most four.
         final perRow = largeText
             ? 1
             : (constraints.maxWidth / 180).floor().clamp(2, 4);
-        // Group the tiles into rows: a wide tile alone, the others
-        // filling rows of perRow.
-        final rows = <List<_Tile>>[];
-        for (final tile in tiles) {
-          final last = rows.isEmpty ? null : rows.last;
-          final fits =
-              last != null &&
-              !tile.isWide &&
-              !last.first.isWide &&
-              last.length < perRow;
-          if (fits) {
-            last.add(tile);
-          } else {
-            rows.add([tile]);
-          }
-        }
         return Column(
           children: [
-            for (var index = 0; index < rows.length; index++)
+            for (var start = 0; start < tiles.length; start += perRow)
               Padding(
-                padding: EdgeInsets.only(top: index == 0 ? 0 : tileGap),
-                child: _row(rows[index], rows[index].first.isWide ? 1 : perRow),
+                padding: EdgeInsets.only(top: start == 0 ? 0 : tileGap),
+                child: _row(tiles.skip(start).take(perRow).toList(), perRow),
               ),
           ],
         );
@@ -332,7 +281,7 @@ class _TileGrid extends StatelessWidget {
   }
 
   /// One row of [columns] equal places; empty places stay empty.
-  Widget _row(List<_Tile> row, int columns) {
+  Widget _row(List<Widget> row, int columns) {
     // IntrinsicHeight gives every tile in the row one height.
     return IntrinsicHeight(
       child: Row(
@@ -341,7 +290,7 @@ class _TileGrid extends StatelessWidget {
           for (var column = 0; column < columns; column++) ...[
             if (column > 0) const SizedBox(width: tileGap),
             Expanded(
-              child: column < row.length ? row[column].tile : const SizedBox(),
+              child: column < row.length ? row[column] : const SizedBox(),
             ),
           ],
         ],

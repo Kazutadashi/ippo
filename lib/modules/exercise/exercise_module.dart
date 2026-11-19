@@ -28,67 +28,55 @@ class ExerciseModule extends IppoModule {
   @override
   IconData get icon => Icons.fitness_center;
 
-  /// Two tiles: how many exercises were done on [day], one dot each;
-  /// and which of them beat their last session, biggest gain first.
-  /// Both work with any number of exercises.
+  /// How many exercises were done on [day], with one mark each saying
+  /// whether it beat its last session; then how many did, and how many
+  /// of the last seven days had a workout.
   @override
-  List<TodayFact> dayFacts(AppState appState, DateTime day, DateTime now) {
+  HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = ExerciseLog.of(appState);
     final exercises = log.activeExercises;
     if (exercises.isEmpty) {
-      return const [
-        TodayFact(
-          label: 'Exercise',
-          value: TodayFact.unknownValue,
-          note: 'No exercises yet',
-        ),
-        TodayFact(
-          label: 'Beat last time',
-          value: TodayFact.unknownValue,
-          note: 'No exercises yet',
-        ),
-      ];
+      return const HomeTile(
+        value: HomeTile.unknownValue,
+        lines: ['No exercises yet'],
+      );
     }
     final date = formatDate(day);
-    final isToday = day == currentDay(now);
-    final done = [
-      for (final exercise in exercises)
-        if (log.setsOn(date, exercise.id).isNotEmpty) exercise,
+    final progress = [
+      for (final exercise in exercises) _progressOf(log, exercise, date),
     ];
-    return [
-      TodayFact(
-        label: 'Exercise',
-        value: '${done.length} of ${exercises.length}',
-        aside: _ExerciseDots(exercises: exercises, done: done),
-        // On a rest day, when the last workout was.
-        note: done.isEmpty
-            ? _sinceLastWorkout(log, day, isToday: isToday)
-            : null,
-      ),
-      _beatLastTime(log, done, date, isToday: isToday),
-    ];
+    final done = progress.where((one) => one != _Progress.notDone).length;
+    final beat = progress.where((one) => one == _Progress.better).length;
+    final trainedDays = daysBefore(day)
+        .where((before) => _trainedOn(log, formatDate(before)))
+        .length;
+    return HomeTile(
+      value: '$done of ${exercises.length}',
+      valueNote: 'done',
+      mark: _ProgressMarks(exercises: exercises, progress: progress),
+      lines: [
+        if (done == 0)
+          _sinceLastWorkout(log, day, isToday: day == currentDay(now))
+        else
+          '$beat beat last time',
+        'Trained $trainedDays of the last 7 days',
+      ],
+    );
   }
 
+  /// A full dot on each of the seven days with a workout.
   @override
-  TileDetail? weekSummary(AppState appState, DateTime day) {
+  WeekRow? weekRow(AppState appState, DateTime day) {
     final log = ExerciseLog.of(appState);
     if (log.activeExercises.isEmpty) {
       return null;
     }
-    var workoutDays = 0;
-    for (var back = 0; back < 7; back++) {
-      final date = formatDate(addDays(day, -back));
-      final trained = log.activeExercises.any(
-        (exercise) => log.setsOn(date, exercise.id).isNotEmpty,
-      );
-      if (trained) {
-        workoutDays++;
-      }
-    }
-    return TileDetail(
-      workoutDays == 1 ? '1 day' : '$workoutDays days',
-      label: 'Workouts',
-    );
+    final trained = [
+      for (final column in weekEndingOn(day))
+        _trainedOn(log, formatDate(column)) ? 1.0 : 0.0,
+    ];
+    final days = trained.where((value) => value > 0).length;
+    return WeekRow(values: trained, description: 'Trained on $days of 7 days');
   }
 
   @override
@@ -124,100 +112,111 @@ String _sinceLastWorkout(
   return 'Last workout $days days ${isToday ? 'ago' : 'before'}';
 }
 
-/// The "Beat last time" tile: how many of the exercises [done] on
-/// [date] had a best set better than their last session's, and by how
-/// much, biggest gain first. Exercises done for the first time have
-/// nothing to beat and are left out.
-TodayFact _beatLastTime(
-  ExerciseLog log,
-  List<Exercise> done,
-  String date, {
-  required bool isToday,
-}) {
-  if (done.isEmpty) {
-    return TodayFact(
-      label: 'Beat last time',
-      value: TodayFact.unknownValue,
-      note: isToday ? 'No sets yet today' : 'No sets that day',
-    );
-  }
-  final gains = <({String name, int gain, String unit})>[];
-  for (final exercise in done) {
-    final previous = log.previousSessionOf(exercise.id, date);
-    if (previous == null || previous.sets.isEmpty) {
-      continue;
-    }
-    final best = _best(log.setsOn(date, exercise.id).map((set) => set.value));
-    final bestBefore = _best(previous.sets.map((set) => set.value));
-    if (best > bestBefore) {
-      final reps = best - bestBefore == 1 ? 'rep' : 'reps';
-      gains.add((
-        name: exercise.name,
-        gain: best - bestBefore,
-        unit: exercise.measuredIn == MeasuredIn.reps ? reps : 's',
-      ));
-    }
-  }
-  gains.sort((first, second) => second.gain.compareTo(first.gain));
-  if (gains.isEmpty) {
-    return TodayFact(
-      label: 'Beat last time',
-      value: '0',
-      note: isToday ? 'Not yet today' : 'Nothing that day',
-    );
-  }
-  return TodayFact(
-    label: 'Beat last time',
-    value: gains.length == 1 ? '1 exercise' : '${gains.length} exercises',
-    // The two biggest gains, one per line.
-    details: [
-      for (final gain in gains.take(2))
-        TileDetail('${gain.name} +${gain.gain} ${gain.unit}'),
-    ],
-  );
+/// Whether any exercise has a set on [date].
+bool _trainedOn(ExerciseLog log, String date) => log.activeExercises.any(
+  (exercise) => log.setsOn(date, exercise.id).isNotEmpty,
+);
+
+/// How an exercise went on a day, compared with its last session.
+enum _Progress {
+  /// Its best set beat the last session's best.
+  better,
+
+  /// The same best as last time.
+  same,
+
+  /// A lower best than last time.
+  less,
+
+  /// Done for the first time: nothing to compare with.
+  first,
+
+  /// Not done that day.
+  notDone,
 }
 
-/// The largest of [values], which are never empty here.
-int _best(Iterable<int> values) => values.reduce(max);
+/// How [exercise] went on [date], by its best set against the best set
+/// of the session before.
+_Progress _progressOf(ExerciseLog log, Exercise exercise, String date) {
+  final sets = log.setsOn(date, exercise.id);
+  if (sets.isEmpty) {
+    return _Progress.notDone;
+  }
+  final previous = log.previousSessionOf(exercise.id, date);
+  if (previous == null || previous.sets.isEmpty) {
+    return _Progress.first;
+  }
+  final best = sets.map((set) => set.value).reduce(max);
+  final bestBefore = previous.sets.map((set) => set.value).reduce(max);
+  if (best > bestBefore) {
+    return _Progress.better;
+  }
+  return best == bestBefore ? _Progress.same : _Progress.less;
+}
 
-/// One dot per exercise, in the theme's accent: filled when it was done
-/// that day, an empty ring when not. Like the habit dots beside "3 of 4".
-class _ExerciseDots extends StatelessWidget {
-  const _ExerciseDots({required this.exercises, required this.done});
+/// One mark per exercise, in the order of the Exercise tab: an arrow up
+/// when it beat last time, a dash when it matched it, an arrow down when
+/// it fell short, a dot when done for the first time, and a faint ring
+/// when not done yet. Calm on purpose: a lower day is grey, never red.
+class _ProgressMarks extends StatelessWidget {
+  const _ProgressMarks({required this.exercises, required this.progress});
 
   final List<Exercise> exercises;
-  final List<Exercise> done;
+  final List<_Progress> progress;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
+    final colors = Theme.of(context).colorScheme;
+    const words = {
+      _Progress.better: 'better than last time',
+      _Progress.same: 'same as last time',
+      _Progress.less: 'less than last time',
+      _Progress.first: 'done',
+      _Progress.notDone: 'not done',
+    };
     return Semantics(
-      label: done.isEmpty
-          ? 'None done yet'
-          : 'Done: ${done.map((exercise) => exercise.name).join(', ')}',
+      label: [
+        for (var index = 0; index < exercises.length; index++)
+          '${exercises[index].name}: ${words[progress[index]]}',
+      ].join(', '),
       child: ExcludeSemantics(
         child: Wrap(
-          // Beside the value, the dots line up with the tile's right
-          // edge, on a second line too if there are many.
-          alignment: WrapAlignment.end,
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            for (final exercise in exercises)
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: done.contains(exercise) ? color : null,
-                  border: done.contains(exercise)
-                      ? null
-                      : Border.all(color: color, width: 1.5),
-                ),
-              ),
-          ],
+          spacing: 4,
+          runSpacing: 4,
+          children: [for (final one in progress) _mark(one, colors)],
         ),
       ),
+    );
+  }
+
+  Widget _mark(_Progress progress, ColorScheme colors) {
+    final accent = colors.primary;
+    final muted = colors.onSurfaceVariant;
+    return SizedBox(
+      width: 18,
+      height: 18,
+      child: switch (progress) {
+        _Progress.better => Icon(Icons.arrow_upward, size: 18, color: accent),
+        _Progress.same => Icon(Icons.remove, size: 18, color: muted),
+        _Progress.less => Icon(Icons.arrow_downward, size: 18, color: muted),
+        _Progress.first => Center(
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+          ),
+        ),
+        _Progress.notDone => Center(
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: accent.withValues(alpha: 0.4)),
+            ),
+          ),
+        ),
+      },
     );
   }
 }

@@ -157,53 +157,72 @@ void main() {
     ]);
   });
 
-  group('home tiles', () {
+  group('home tile', () {
     const module = SleepModule();
 
-    test('show "–" until something is logged', () {
+    test('shows "–" until something is logged', () {
       expect(
-        describeTiles(module.dayFacts(appState, currentDay(monday), monday)),
-        ['Sleep: – | Not logged yet', 'Awake for: – | Not logged yet'],
+        describeTile(module.homeTile(appState, currentDay(monday), monday)),
+        '– | Not logged yet',
       );
+      expect(module.weekRow(appState, currentDay(monday)), isNull);
     });
 
-    test('sleep before today, and awake since waking up', () async {
+    test('the night before, awake since, and the usual', () async {
+      await wentToBed(
+        DateTime(2026, 11, 15),
+        const ClockTime(22, 0),
+        const ClockTime(6, 0),
+      );
+      await wokeUp(monday, const ClockTime(6, 0));
       await wentToBed(monday, const ClockTime(23, 0), const ClockTime(7, 0));
       await wokeUp(tuesday, const ClockTime(6, 30));
 
       final morning = DateTime(2026, 11, 17, 9, 15);
+      final tile = module.homeTile(appState, currentDay(morning), morning);
       expect(
-        describeTiles(module.dayFacts(appState, currentDay(morning), morning)),
-        ['Sleep: 7 h 30 min | ', 'Awake for: 2 h 45 min | '],
+        describeTile(tile),
+        '7 h 30 min slept | Awake 2 h 45 min, 7-day avg 8 h',
       );
-      // The night and the day are drawn as bars instead of written out.
-      final sleep = module.dayFacts(appState, currentDay(morning), morning);
-      expect(sleep.first.visual, isNotNull);
-      expect(sleep.last.visual, isNotNull);
+      // The night is drawn as a bar.
+      expect(tile.mark, isNotNull);
+      final row = module.weekRow(appState, currentDay(morning))!;
+      expect(row.shape, WeekMarkShape.bar);
+      expect(row.values.last, closeTo(0.75, 0.001));
     });
 
     test('at 01:00, the day before is still today', () async {
+      await wentToBed(
+        DateTime(2026, 11, 15),
+        const ClockTime(23, 0),
+        const ClockTime(7, 0),
+      );
       await wokeUp(monday, const ClockTime(7, 0));
       final lateNight = DateTime(2026, 11, 17, 1, 0);
 
       expect(
-        describeTiles(
-          module.dayFacts(appState, currentDay(lateNight), lateNight),
-        )[1],
-        'Awake for: 18 h | ',
+        describeTile(
+          module.homeTile(appState, currentDay(lateNight), lateNight),
+        ),
+        '8 h slept | Awake 18 h',
       );
     });
 
-    test('after going to bed, awake for is the whole day', () async {
+    test('after going to bed, the awake line goes', () async {
+      await wentToBed(
+        DateTime(2026, 11, 15),
+        const ClockTime(23, 0),
+        const ClockTime(7, 0),
+      );
       await wokeUp(monday, const ClockTime(7, 0));
       await wentToBed(monday, const ClockTime(1, 0), const ClockTime(7, 0));
       final lateNight = DateTime(2026, 11, 17, 2, 0);
 
       expect(
-        describeTiles(
-          module.dayFacts(appState, currentDay(lateNight), lateNight),
-        )[1],
-        'Awake for: 18 h | ',
+        describeTile(
+          module.homeTile(appState, currentDay(lateNight), lateNight),
+        ),
+        '8 h slept | ',
       );
     });
   });
@@ -243,14 +262,7 @@ void main() {
   });
 }
 
-/// Writes a detail as `Label value`, or just the value without a label.
-String describeDetail(TileDetail detail) =>
-    detail.label == null ? detail.value : '${detail.label} ${detail.value}';
-
-/// Writes home tiles as `Label: value | note or details`, for comparing.
-List<String> describeTiles(List<TodayFact> facts) => [
-  for (final fact in facts)
-    '${fact.label}: ${fact.value}'
-        '${fact.labelNote == null ? '' : ' ${fact.labelNote}'} | '
-        '${fact.note ?? fact.details.map(describeDetail).join(', ')}',
-];
+/// Writes a home tile as `value note | lines`, for comparing.
+String describeTile(HomeTile tile) =>
+    '${tile.value}${tile.valueNote == null ? '' : ' ${tile.valueNote}'} | '
+    '${tile.lines.join(', ')}';

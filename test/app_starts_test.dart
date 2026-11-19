@@ -13,6 +13,7 @@ import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/today_screen.dart';
 import 'package:ippo/core/widgets/day_bar.dart';
 import 'package:ippo/core/widgets/info_tile.dart';
+import 'package:ippo/core/widgets/week_grid.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -66,10 +67,9 @@ void main() {
     expect(find.byType(NavigationRail), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
     // Home shows more tiles per row: the first three share one row.
-    final tiles = find.byType(InfoTile);
-    // (The first tile, the week, takes a whole row of its own.)
-    final firstTop = tester.getTopLeft(tiles.at(1)).dy;
-    expect(tester.getTopLeft(tiles.at(3)).dy, firstTop);
+    final tiles = find.byType(HomeTileCard);
+    final firstTop = tester.getTopLeft(tiles.at(0)).dy;
+    expect(tester.getTopLeft(tiles.at(2)).dy, firstTop);
   });
 
   testWidgets('on first run, the app asks for a data folder', (tester) async {
@@ -100,10 +100,10 @@ void main() {
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(today())), findsOneWidget);
-    // The modules' tiles and the week, all waiting for data.
-    expect(find.byType(InfoTile), findsNWidgets(9));
-    expect(find.text('–'), findsNWidgets(8));
-    expect(find.text('Nothing logged in these days.'), findsOneWidget);
+    // A tile per module, all waiting for data, and no week yet.
+    expect(find.byType(HomeTileCard), findsNWidgets(4));
+    expect(find.text('–'), findsNWidgets(4));
+    expect(find.byType(WeekGrid), findsNothing);
     // Information only: everything tappable is the gear or the day bar.
     bool isTappable(Widget widget) =>
         widget is ButtonStyleButton || widget is InkWell;
@@ -137,11 +137,12 @@ void main() {
       },
     );
 
-    // The Energy tile shows today's total, and the week its average,
-    // labelled as an average so the two are never confused.
-    expect(find.text('Energy'), findsOneWidget);
-    expect(find.text('Energy / day'), findsOneWidget);
-    expect(find.text('80 kcal'), findsNWidgets(2));
+    // The Food tile shows today's total so far, and the week grid a
+    // row for food.
+    expect(find.text('FOOD'), findsOneWidget);
+    expect(find.text('80 kcal'), findsOneWidget);
+    expect(find.text('so far'), findsOneWidget);
+    expect(find.byType(WeekGrid), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

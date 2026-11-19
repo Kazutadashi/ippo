@@ -25,6 +25,8 @@ class TimeSpanBar extends StatelessWidget {
     required this.startLabel,
     required this.endLabel,
     required this.description,
+    this.usualStart,
+    this.usualEnd,
   });
 
   /// The night that sleep usually falls in: 20:00 to noon.
@@ -61,6 +63,14 @@ class TimeSpanBar extends StatelessWidget {
   /// 7:00 am".
   final String description;
 
+  /// Where the usual stretch begins, such as the average bedtime of the
+  /// last week, or null for none. The usual stretch is drawn faintly
+  /// behind the filled part, so an early or late night shows at once.
+  final ClockTime? usualStart;
+
+  /// Where the usual stretch ends.
+  final ClockTime? usualEnd;
+
   /// Where [time] falls on the bar, from 0 to 1. Times before the bar's
   /// start count as the next day; times outside it stay at its ends.
   double _position(ClockTime time) {
@@ -75,13 +85,8 @@ class TimeSpanBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.labelSmall;
     final color = Theme.of(context).colorScheme.primary;
-    final from = _position(start);
-    final to = _position(end);
-    // The three parts in thousandths of the bar; the stretch is never
-    // thinner than a sliver, so it always shows.
-    final before = (from * 1000).round();
-    final filled = max(30, ((to - from) * 1000).round());
-    final after = max(0, 1000 - before - filled);
+    final usualStart = this.usualStart;
+    final usualEnd = this.usualEnd;
     return Semantics(
       label: description,
       child: ExcludeSemantics(
@@ -96,24 +101,20 @@ class TimeSpanBar extends StatelessWidget {
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.18),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: Row(
-                // The filled part takes the bar's full height.
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              // The usual stretch, faint, under this one, solid.
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  if (before > 0) Spacer(flex: before),
-                  Expanded(
-                    flex: filled,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
+                  if (usualStart != null && usualEnd != null)
+                    _stretch(
+                      usualStart,
+                      usualEnd,
+                      color.withValues(alpha: 0.35),
                     ),
-                  ),
-                  if (after > 0) Spacer(flex: after),
+                  _stretch(start, end, color),
                 ],
               ),
             ),
@@ -128,6 +129,37 @@ class TimeSpanBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// The bar's stretch from [from] to [to] in [color], as three parts
+  /// side by side, sized in proportion: before the stretch, the stretch,
+  /// and after it. (Flex parts rather than measured widths, so the
+  /// tile's height can be worked out before it is laid out.)
+  Widget _stretch(ClockTime from, ClockTime to, Color color) {
+    final start = _position(from);
+    final end = _position(to);
+    // In thousandths of the bar; the stretch is never thinner than a
+    // sliver, so it always shows.
+    final before = (start * 1000).round();
+    final filled = max(30, ((end - start) * 1000).round());
+    final after = max(0, 1000 - before - filled);
+    return Row(
+      // The filled part takes the bar's full height.
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (before > 0) Spacer(flex: before),
+        Expanded(
+          flex: filled,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+        if (after > 0) Spacer(flex: after),
+      ],
     );
   }
 }
