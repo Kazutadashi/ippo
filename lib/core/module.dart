@@ -16,6 +16,9 @@ export 'widgets/info_tile.dart' show TileDetail;
 
 /// A module: one area of the app, such as the food diary.
 abstract class IppoModule {
+  /// Lets modules be constant, as in `allModules`.
+  const IppoModule();
+
   /// The module's name in event files, for example `food`. It must never
   /// change, because it is stored in every event the module writes.
   String get moduleName;
@@ -25,6 +28,12 @@ abstract class IppoModule {
 
   /// The icon shown next to the module's title.
   IconData get icon;
+
+  /// The module's own colour, for its icon in the tab bar and its tiles
+  /// on Home, so each area is easy to tell apart at a glance. It is a
+  /// mid tone; screens show it through `moduleTone` in `theme.dart`,
+  /// which makes it lighter in dark mode and deeper in light mode.
+  Color get color;
 
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
@@ -47,6 +56,11 @@ abstract class IppoModule {
   /// 7 days" tile, such as "Sleep / night" and "7 h 40 min". Null if the
   /// module has nothing to add, or nothing was logged.
   TileDetail? weekSummary(AppState appState, DateTime day) => null;
+
+  /// A row of seven marks for the days ending on [day], for the "Last 7
+  /// days" tile, such as how many habits were done each day. Home shows
+  /// the first module's that has one. Null if the module has none.
+  Widget? weekStrip(AppState appState, DateTime day) => null;
 }
 
 /// One tile on the home screen: a label, a large value, and small
@@ -63,6 +77,7 @@ class TodayFact {
     this.details = const [],
     this.note,
     this.isWide = false,
+    this.visual,
   });
 
   /// The text shown for a value that is not known yet.
@@ -79,6 +94,10 @@ class TodayFact {
 
   /// A short note instead of details, for example `Not logged yet`.
   final String? note;
+
+  /// A small picture between the value and the details, such as one dot
+  /// per habit. Built by the module, so it can draw its own data.
+  final Widget? visual;
 
   /// Whether the tile takes a whole row, for details that need the
   /// room, such as one column per exercise.

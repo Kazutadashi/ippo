@@ -14,7 +14,7 @@ import 'value_text.dart';
 /// Without one, it is a line of its own, such as a food's name.
 class TileDetail {
   /// Creates a detail.
-  const TileDetail(this.value, {this.label, this.color});
+  const TileDetail(this.value, {this.label, this.color, this.badge});
 
   /// The fact, for example `6 g` or `Honey`.
   final String value;
@@ -24,6 +24,10 @@ class TileDetail {
 
   /// A colour for a plain line, such as a habit's own colour.
   final Color? color;
+
+  /// A small mark after a labelled value, such as `+2` for a best set
+  /// that beat the one before.
+  final String? badge;
 }
 
 /// The value shown when nothing is known yet.
@@ -50,10 +54,21 @@ class InfoTile extends StatelessWidget {
     required this.value,
     this.details = const [],
     this.note,
+    this.color,
+    this.visual,
   });
 
   /// The icon next to the label: the module's own icon.
   final IconData icon;
+
+  /// The module's colour, already toned for the theme: the icon and
+  /// label take it, and the tile gets a soft tint of it. Null for a tile
+  /// that belongs to no module, which stays neutral.
+  final Color? color;
+
+  /// A small picture between the value and the details, such as one dot
+  /// per habit or a night's sleep as a bar.
+  final Widget? visual;
 
   /// What the value is, for example `Last meal`.
   final String label;
@@ -80,9 +95,18 @@ class InfoTile extends StatelessWidget {
         .scale(bodyStyle.fontSize! * (bodyStyle.height ?? 1.4));
     // Screen readers read the whole tile as one item: "Last meal,
     // 3 h ago, Honey, at 14:43".
+    final tint = color;
     return MergeSemantics(
       child: Card(
         margin: EdgeInsets.zero,
+        // A soft tint of the module's colour, so the tiles of one area
+        // belong together at a glance.
+        color: tint == null
+            ? null
+            : Color.alphaBlend(
+                tint.withValues(alpha: 0.10),
+                colors.surfaceContainer,
+              ),
         child: Padding(
           padding: const EdgeInsets.all(Spacing.medium),
           child: Column(
@@ -90,12 +114,14 @@ class InfoTile extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 16, color: colors.primary),
+                  Icon(icon, size: 16, color: tint ?? colors.primary),
                   const SizedBox(width: Spacing.small),
                   Expanded(
                     child: Text(
                       label,
-                      style: textTheme.labelLarge?.copyWith(color: muted),
+                      style: textTheme.labelLarge?.copyWith(
+                        color: tint ?? muted,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -137,6 +163,10 @@ class InfoTile extends StatelessWidget {
                         ),
                 ),
               ),
+              if (visual != null) ...[
+                const SizedBox(height: Spacing.small),
+                visual!,
+              ],
               const SizedBox(height: Spacing.tight),
               ConstrainedBox(
                 constraints: BoxConstraints(minHeight: 2 * lineHeight),
@@ -183,12 +213,21 @@ class InfoTile extends StatelessWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      detail.value,
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          detail.value,
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                        ),
+                        if (detail.badge != null) ...[
+                          const SizedBox(width: Spacing.tight),
+                          _Badge(text: detail.badge!, color: color),
+                        ],
+                      ],
                     ),
                   ),
                 ],
@@ -212,6 +251,30 @@ class InfoTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
       ],
+    );
+  }
+}
+
+/// A small rounded mark, such as `+2`, in the tile's colour.
+class _Badge extends StatelessWidget {
+  const _Badge({required this.text, required this.color});
+
+  final String text;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = color ?? Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: tone),
+      ),
     );
   }
 }

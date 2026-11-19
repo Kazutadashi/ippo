@@ -15,7 +15,7 @@ import 'food_entry.dart';
 import 'screens/food_diary_screen.dart';
 
 /// The food module, as seen by the core app.
-class FoodModule implements IppoModule {
+class FoodModule extends IppoModule {
   /// Creates the module.
   const FoodModule();
 
@@ -27,6 +27,9 @@ class FoodModule implements IppoModule {
 
   @override
   IconData get icon => Icons.restaurant;
+
+  @override
+  Color get color => const Color(0xFFD69A2D); // warm amber
 
   /// Two tiles: energy eaten today, and the last meal.
   @override

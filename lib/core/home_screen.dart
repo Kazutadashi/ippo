@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../modules/all_modules.dart';
 import 'app_state.dart';
 import 'settings/settings_screen.dart';
+import 'theme.dart';
 import 'today_screen.dart';
 
 /// The app's frame. The tabs are, in order: Home, then each module from
@@ -118,9 +119,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 selectedIcon: Icon(Icons.home),
                 label: 'Home',
               ),
+              // Each module's icon in its own colour, as on its Home
+              // tiles.
               for (final module in allModules)
                 NavigationDestination(
-                  icon: Icon(module.icon),
+                  icon: Icon(
+                    module.icon,
+                    color: moduleTone(
+                      module.color,
+                      Theme.of(context).brightness,
+                    ),
+                  ),
                   label: module.title,
                 ),
             ],

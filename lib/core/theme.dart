@@ -192,3 +192,16 @@ TextTheme _withTabularDigits(TextTheme textTheme) {
     labelSmall: tabular(textTheme.labelSmall),
   );
 }
+
+/// A module's colour ([base], a mid tone) made easy to read on the
+/// current background: light and soft in dark mode, deep in light mode.
+/// Only its lightness changes, so it stays recognisably the same colour.
+Color moduleTone(Color base, Brightness brightness) {
+  final hsl = HSLColor.fromColor(base);
+  return brightness == Brightness.dark
+      ? hsl
+            .withLightness(0.74)
+            .withSaturation(hsl.saturation.clamp(0, 0.6))
+            .toColor()
+      : hsl.withLightness(0.36).toColor();
+}

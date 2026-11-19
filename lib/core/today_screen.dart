@@ -13,10 +13,12 @@ import '../modules/all_modules.dart';
 import 'app_state.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
+import 'theme.dart';
 import 'widgets/day_bar.dart';
 import 'widgets/follows_today.dart';
 import 'widgets/info_tile.dart';
 import 'widgets/section_card.dart';
+import 'widgets/sky_header.dart';
 
 /// The home tab.
 class TodayScreen extends StatefulWidget {
@@ -53,10 +55,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
           _Tile(
             InfoTile(
               icon: module.icon,
+              color: moduleTone(module.color, Theme.of(context).brightness),
               label: fact.label,
               value: fact.value,
               details: fact.details,
               note: fact.note,
+              visual: fact.visual,
             ),
             isWide: fact.isWide,
           ),
@@ -64,67 +68,98 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     ];
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
+    final topInset = MediaQuery.paddingOf(context).top;
     return Scaffold(
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
         // sync.
         onRefresh: appState.reloadEvents,
-        child: SafeArea(
-          child: ListView(
-            // Pull to refresh works even when the content is short.
-            physics: const AlwaysScrollableScrollPhysics(),
-
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      // Looking back at another day, the heading says so.
-                      showsToday ? greetingFor(now) : 'Looking back',
-                      style: textTheme.headlineSmall,
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Settings',
-                    icon: const Icon(Icons.settings_outlined),
-                    onPressed: widget.onOpenSettings,
-                  ),
-                ],
-              ),
-              // The date, and the day bar for looking back at earlier
-              // days (and coming back to today).
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      describeToday(day),
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
+        child: ListView(
+          // Pull to refresh works even when the content is short.
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          children: [
+            // The landscape runs up behind the status bar, with the
+            // greeting and the gear on its sky.
+            Stack(
+              children: [
+                SkyHeader(
+                  phase: SkyPhase.of(now),
+                  height: topInset + 184,
+                  clearTop: topInset + 60,
+                ),
+                Positioned(
+                  top: topInset + 12,
+                  left: Spacing.screen,
+                  right: Spacing.small,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          // Looking back at another day, the heading
+                          // says so.
+                          showsToday ? greetingFor(now) : 'Looking back',
+                          style: textTheme.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            shadows: const [
+                              Shadow(color: Colors.black38, blurRadius: 6),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      IconButton(
+                        tooltip: 'Settings',
+                        color: Colors.white,
+                        icon: const Icon(Icons.settings_outlined),
+                        onPressed: widget.onOpenSettings,
+                      ),
+                    ],
                   ),
-                  DayBar(day: day, onChanged: showDay),
-                ],
-              ),
-              // Only for someone who has not logged anything yet: where
-              // logging happens. It goes away by itself.
-              if (eventLog != null && eventLog.events.isEmpty) ...[
-                const SizedBox(height: Spacing.small),
-                const NoteText(
-                  'Log things in the tabs below. This page sums up your day.',
                 ),
               ],
-              // Only when another device has not been heard from in a
-              // while, so missing entries are not a surprise.
-              if (staleDevice != null) ...[
-                const SizedBox(height: Spacing.small),
-                NoteText(staleDevice),
-              ],
-              const SizedBox(height: Spacing.medium),
-              _TileGrid(tiles: tiles),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // The date, and the day bar for looking back at earlier
+                  // days (and coming back to today).
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          describeToday(day),
+                          style: textTheme.titleMedium?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      DayBar(day: day, onChanged: showDay),
+                    ],
+                  ),
+                  // Only for someone who has not logged anything yet:
+                  // where logging happens. It goes away by itself.
+                  if (eventLog != null && eventLog.events.isEmpty) ...[
+                    const SizedBox(height: Spacing.small),
+                    const NoteText(
+                      'Log things in the tabs below. This page sums up your '
+                      'day.',
+                    ),
+                  ],
+                  // Only when another device has not been heard from in a
+                  // while, so missing entries are not a surprise.
+                  if (staleDevice != null) ...[
+                    const SizedBox(height: Spacing.small),
+                    NoteText(staleDevice),
+                  ],
+                  const SizedBox(height: Spacing.small),
+                  _TileGrid(tiles: tiles),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -182,11 +217,16 @@ _Tile _weekTile(AppState appState, DateTime day) {
       if (module.weekSummary(appState, day) case final summary?) summary,
   ];
   final firstDay = addDays(day, -6);
+  Widget? strip;
+  for (final module in allModules) {
+    strip ??= module.weekStrip(appState, day);
+  }
   return _Tile(
     InfoTile(
       icon: Icons.date_range,
       label: 'Last 7 days',
       value: '${formatShortDate(firstDay)} to ${formatShortDate(day)}',
+      visual: strip,
       details: summaries,
       note: summaries.isEmpty ? 'Nothing logged in these days.' : null,
     ),
@@ -289,13 +329,15 @@ String describeToday(DateTime day) {
   return '${weekdays[day.weekday - 1]}, ${day.day} ${months[day.month - 1]}';
 }
 
-/// A greeting for the time of day: `Good morning`, `Good afternoon` or
-/// `Good evening`.
+/// A greeting for the time of day: `Good morning` from 05:00 (when a
+/// new day starts, see `dayStartHour`), `Good afternoon` from noon and
+/// `Good evening` from 18:00 until the day ends in the small hours.
 String greetingFor(DateTime moment) {
-  if (moment.hour < 12) {
+  final hour = moment.hour;
+  if (hour >= dayStartHour && hour < 12) {
     return 'Good morning';
   }
-  if (moment.hour < 18) {
+  if (hour >= 12 && hour < 18) {
     return 'Good afternoon';
   }
   return 'Good evening';

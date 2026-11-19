@@ -9,13 +9,15 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../../core/theme.dart';
 import 'screens/sleep_screen.dart';
 import 'nap.dart';
+import 'night_bar.dart';
 import 'sleep_moment.dart';
 import 'sleep_log.dart';
 
 /// The sleep module, as seen by the core app.
-class SleepModule implements IppoModule {
+class SleepModule extends IppoModule {
   /// Creates the module.
   const SleepModule();
 
@@ -27,6 +29,9 @@ class SleepModule implements IppoModule {
 
   @override
   IconData get icon => Icons.bedtime;
+
+  @override
+  Color get color => const Color(0xFF6F7FD6); // lavender blue
 
   /// Two tiles: the sleep before today (with any naps), and how long
   /// you have been awake.
@@ -44,12 +49,14 @@ class SleepModule implements IppoModule {
         TodayFact(
           label: 'Sleep',
           value: formatDuration(sleptBefore),
-          details: [
-            TileDetail(bedtimeBefore.clock.shown, label: 'Bed'),
-            TileDetail(wakeUp.clock.shown, label: 'Woke'),
-            if (naps.isNotEmpty)
-              TileDetail(formatDuration(_totalOf(naps)), label: 'Naps'),
-          ],
+          // The night as a bar, so early, late, long and short show at
+          // a glance.
+          visual: _SleepBar(
+            bedtime: bedtimeBefore,
+            wakeUp: wakeUp,
+            base: color,
+          ),
+          note: naps.isEmpty ? null : 'Naps: ${formatDuration(_totalOf(naps))}',
         )
       else
         TodayFact(
@@ -142,4 +149,26 @@ Duration _totalOf(List<Nap> naps) {
     total += nap.duration;
   }
   return total;
+}
+
+/// The night bar in the sleep module's colour, toned for the theme.
+class _SleepBar extends StatelessWidget {
+  const _SleepBar({
+    required this.bedtime,
+    required this.wakeUp,
+    required this.base,
+  });
+
+  final SleepMoment bedtime;
+  final SleepMoment wakeUp;
+  final Color base;
+
+  @override
+  Widget build(BuildContext context) {
+    return NightBar(
+      bedtime: bedtime.clock,
+      wakeUp: wakeUp.clock,
+      color: moduleTone(base, Theme.of(context).brightness),
+    );
+  }
 }

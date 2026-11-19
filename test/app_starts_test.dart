@@ -146,6 +146,8 @@ void main() {
     expect(greetingFor(DateTime(2026, 1, 1, 7)), 'Good morning');
     expect(greetingFor(DateTime(2026, 1, 1, 13)), 'Good afternoon');
     expect(greetingFor(DateTime(2026, 1, 1, 21)), 'Good evening');
+    // Before 05:00 it is still the evening before (see dayStartHour).
+    expect(greetingFor(DateTime(2026, 1, 2, 1, 30)), 'Good evening');
   });
 
   testWidgets('dark mode and the accent colour are applied', (tester) async {

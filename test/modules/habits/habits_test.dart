@@ -161,7 +161,7 @@ void main() {
       await actions.recordDay(read, '2026-11-15', done: true);
 
       expect(describeTiles(module.dayFacts(appState, currentDay(now), now)), [
-        'Habits: 1 / 3 | Stretch, Study',
+        'Habits: 1 of 3 | Stretch and Study left',
         'Streaks: 3 days | Read',
       ]);
     });

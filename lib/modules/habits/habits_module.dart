@@ -10,10 +10,11 @@ import '../../core/dates.dart';
 import '../../core/module.dart';
 import 'habit.dart';
 import 'habit_log.dart';
+import 'habit_marks.dart';
 import 'screens/habits_screen.dart';
 
 /// The habits module, as seen by the core app.
-class HabitsModule implements IppoModule {
+class HabitsModule extends IppoModule {
   /// Creates the module.
   const HabitsModule();
 
@@ -25,6 +26,9 @@ class HabitsModule implements IppoModule {
 
   @override
   IconData get icon => Icons.check_circle_outline;
+
+  @override
+  Color get color => const Color(0xFF5E9E72); // sage green
 
   /// Two tiles: how many habits are done today, and which are left.
   @override
@@ -54,15 +58,25 @@ class HabitsModule implements IppoModule {
         if (log.markOn(habit.id, date) == DayMark.none) habit.name,
     ];
     return [
-      // How the day is going, and what is still open.
+      // How the day is going: one dot per habit, and what is still open.
       TodayFact(
         label: 'Habits',
-        value: '$done / ${habits.length}',
-        note: open.isEmpty ? 'Every habit is marked.' : null,
-        details: _openHabitLines(open),
+        value: '$done of ${habits.length}',
+        visual: HabitDots(habits: habits, log: log, date: date),
+        note: _describeOpen(open),
       ),
       _streaksFact(log, habits, day),
     ];
+  }
+
+  @override
+  Widget? weekStrip(AppState appState, DateTime day) {
+    final log = HabitLog.of(appState);
+    final habits = log.shownHabits;
+    if (habits.isEmpty) {
+      return null;
+    }
+    return HabitWeekStrip(habits: habits, log: log, day: day, baseColor: color);
   }
 
   @override
@@ -89,16 +103,19 @@ class HabitsModule implements IppoModule {
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
 }
 
-/// The names of the habits still open today, one per line. Two lines at
-/// most: with more, the second line ends in "+ 2 more".
-List<TileDetail> _openHabitLines(List<String> open) {
-  if (open.length <= 2) {
-    return [for (final name in open) TileDetail(name)];
+/// What is still open, in one short line: "Stretch and Meditate left",
+/// "Stretch and 2 more left", or that every habit is marked.
+String _describeOpen(List<String> open) {
+  if (open.isEmpty) {
+    return 'Every habit is marked.';
   }
-  return [
-    TileDetail(open[0]),
-    TileDetail('${open[1]} + ${open.length - 2} more'),
-  ];
+  if (open.length == 1) {
+    return '${open.single} left';
+  }
+  if (open.length == 2) {
+    return '${open[0]} and ${open[1]} left';
+  }
+  return '${open[0]} and ${open.length - 1} more left';
 }
 
 /// The "Streaks" tile: the longest current streak, and which habit it
@@ -120,6 +137,7 @@ TodayFact _streaksFact(HabitLog log, List<Habit> habits, DateTime day) {
   return TodayFact(
     label: 'Streaks',
     value: _days(best.days),
+    visual: StreakSquares(habit: best.habit, log: log, day: day),
     details: [
       TileDetail(best.habit.name),
       if (second != null)

@@ -85,7 +85,13 @@ modules; the only things on Home to tap are the Settings gear and the
 day bar, which looks back at earlier days ("Looking back" replaces the
 greeting, and times since become clock times).
 
-Top to bottom: a greeting ("Good afternoon"), the date ("Wednesday,
+At the top, a landscape (`SkyHeader`): the icon's mountains under a sky
+that follows the time of day (dawn with a low sun, a blue day, dusk
+with the moon rising, night with stars), fading into the page. The
+greeting and the gear sit on its sky, which is kept clear above the
+mountains. It is decoration: screen readers skip it.
+
+Then: a greeting ("Good afternoon"), the date ("Wednesday,
 18 Nov") beside the day bar, then a grid of `InfoTile`s, two per row (one per row
 with large text, up to four on a wide window), each row as tall as its
 tallest tile. Two notes appear only when needed: for someone who has
@@ -98,6 +104,11 @@ device has not synced for more than a day.
 - Each module may add one number to the wide **Last 7 days** tile at the
   end, through `weekSummary`: sleep per night, energy per day, habits
   done, workout days. A summary, not a chart.
+- A tile can hold a small picture between its value and details
+  (`TodayFact.visual`), drawn by its module: one dot per habit (filled
+  when done), a streak's last seven days as squares, a night as a bar
+  from bedtime to wake-up, and the week's habit days as dots. They are
+  marks that read faster than numbers, never charts.
 - Every tile must earn its place: something a person wants to know at a
   glance. Totals that mix unlike things (all reps of all exercises) do
   not; a best set, a streak or the time since the last meal do.
@@ -343,7 +354,13 @@ module's icon, so a glance says which tab a tile belongs to.
    with `ColorCircle`s, and are shown **exactly as picked** in light and
    dark mode (`Habit.displayColor`): they belong to the habit, not to the
    theme. Nothing else on the screen takes them.
-7. **Flat cards.** Cards have no shadow and sit on a slightly different
+7. **Each module has its own colour** (`IppoModule.color`): habits sage,
+   food amber, exercise coral, sleep lavender. It colours the module's
+   tab icon, and on Home its tiles' icon and label, with a soft tint
+   behind them, so each area is recognised before anything is read.
+   `moduleTone` makes it lighter in dark mode and deeper in light mode.
+   It is used nowhere else: buttons and selections keep the accent.
+8. **Flat cards.** Cards have no shadow and sit on a slightly different
    surface (`surfaceContainer`), the same in light and dark mode.
 
 

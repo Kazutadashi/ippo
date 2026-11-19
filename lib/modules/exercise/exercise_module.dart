@@ -15,7 +15,7 @@ import 'exercise_log.dart';
 import 'screens/exercise_home_screen.dart';
 
 /// The exercise module, as seen by the core app.
-class ExerciseModule implements IppoModule {
+class ExerciseModule extends IppoModule {
   /// Creates the module.
   const ExerciseModule();
 
@@ -27,6 +27,9 @@ class ExerciseModule implements IppoModule {
 
   @override
   IconData get icon => Icons.fitness_center;
+
+  @override
+  Color get color => const Color(0xFFD9694F); // coral
 
   /// Two tiles: today's sets, and the last set.
   @override
@@ -43,7 +46,15 @@ class ExerciseModule implements IppoModule {
       }
       final best = sets.map((set) => set.value).reduce(max);
       final unit = exercise.measuredIn == MeasuredIn.reps ? 'reps' : 's';
-      bestSets.add(TileDetail('$best $unit', label: exercise.name));
+      // A small "+2" when this beats the best set of the session before.
+      final before = _bestBefore(log, exercise.id, day);
+      bestSets.add(
+        TileDetail(
+          '$best $unit',
+          label: exercise.name,
+          badge: before != null && best > before ? '+${best - before}' : null,
+        ),
+      );
     }
     if (bestSets.isEmpty) {
       return [
@@ -119,4 +130,26 @@ String _sinceLastWorkout(
     return isToday ? 'Last workout yesterday' : 'Last workout the day before';
   }
   return 'Last workout $days days ${isToday ? 'ago' : 'before'}';
+}
+
+/// The best set of [exerciseId] on the last day before [day] that it was
+/// done, or null if it never was.
+int? _bestBefore(ExerciseLog log, String exerciseId, DateTime day) {
+  String? lastDate;
+  for (final set in log.sets) {
+    final setDay = parseDate(set.date);
+    if (set.isDeleted ||
+        set.exerciseId != exerciseId ||
+        setDay == null ||
+        !setDay.isBefore(day)) {
+      continue;
+    }
+    if (lastDate == null || set.date.compareTo(lastDate) > 0) {
+      lastDate = set.date;
+    }
+  }
+  if (lastDate == null) {
+    return null;
+  }
+  return log.setsOn(lastDate, exerciseId).map((set) => set.value).reduce(max);
 }
