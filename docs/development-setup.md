@@ -131,6 +131,24 @@ python -m unittest        # run the package's tests
 See `python/README.md` for how to use it.
 
 
+## 10. Building a release
+
+Build with the script, so the About screen (Settings › About Ippo)
+shows which commit the build came from, its date, and the project's
+author:
+
+```bash
+tool/build.sh apk     # Android: build/app/outputs/flutter-apk/app-release.apk
+tool/build.sh linux   # Linux desktop
+```
+
+The script reads these from git and passes them in with
+`--dart-define`, so they are never written in the code. A commit with
+uncommitted changes is shown with `+changes`. Builds made any other
+way (such as `flutter run`) show them as unknown. When you change
+`version` in `pubspec.yaml`, change `appVersion` in
+`lib/core/build_info.dart` to match; a test checks this.
+
 ## Known issue: NVIDIA graphics on the Linux desktop
 
 On computers that draw the screen with an NVIDIA graphics card, the

@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../modules/all_modules.dart';
+import '../about_screen.dart';
 import '../app_state.dart';
 import '../widgets/section_card.dart';
 import 'appearance_section.dart';
@@ -92,6 +93,19 @@ class SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 DevicesSection(appState: appState),
               ],
+            ),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('About Ippo'),
+                subtitle: const Text('The name, the author and this version'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AboutScreen(),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
