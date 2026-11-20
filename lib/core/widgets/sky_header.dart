@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// The landscape at the top of the home screen: a great snowy mountain
-/// range seen across open country, under a sky that follows the time of
+/// range seen from a wooded hilltop, across a valley, under a sky that follows the time of
 /// day.
 ///
 /// The land is made up fresh for each day (the date is the seed of a
@@ -51,7 +51,6 @@ class _Palette {
     required this.shadow,
     required this.rock,
     required this.haze,
-    required this.nearHills,
     required this.forest,
     required this.light,
     required this.isSun,
@@ -73,9 +72,6 @@ class _Palette {
 
   /// The haze at the foot of the range, far away.
   final Color haze;
-
-  /// The valley floor the forest stands on.
-  final Color nearHills;
 
   /// The spruce forest and the tall trees in front.
   final Color forest;
@@ -100,7 +96,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFFA8A4C2),
     rock: Color(0xFF6E6876),
     haze: Color(0xFFD9C4C0),
-    nearHills: Color(0xFF5E463E),
     forest: Color(0xFF243630),
     light: Color(0xFFFFD9A0),
     isSun: true,
@@ -113,7 +108,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFFA3B6CC),
     rock: Color(0xFF66717F),
     haze: Color(0xFFC9D8E6),
-    nearHills: Color(0xFF5F4A3E),
     forest: Color(0xFF1F3A2E),
     light: Color(0xFFFFF4D6),
     isSun: true,
@@ -126,7 +120,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFF7E7B9C),
     rock: Color(0xFF4C4E66),
     haze: Color(0xFF7E6F86),
-    nearHills: Color(0xFF332B38),
     forest: Color(0xFF18222C),
     light: Color(0xFFE9E2CC),
     isSun: false,
@@ -139,7 +132,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFF5F6D86),
     rock: Color(0xFF384459),
     haze: Color(0xFF34435C),
-    nearHills: Color(0xFF1B2330),
     forest: Color(0xFF101922),
     light: Color(0xFFE9E2CC),
     isSun: false,
@@ -259,27 +251,71 @@ class _SkyPainter extends CustomPainter {
       _birds(canvas, size, Random(seed + 3), clearTop * 0.8);
     }
 
-    // A farther range behind, paler and hazier with the distance,
-    // showing between the summits of the near one. Its own random
-    // numbers, so the near range keeps its shape.
-    _farRange(canvas, Random(seed + 7), w, y, land);
+    // A farther range behind, drawn like the near one but faded toward
+    // the sky, as distance does, and a little lower, so it shows in the
+    // gaps between the near summits instead of standing above them.
+    // Its own random numbers, so the near range keeps its shape.
+    _range(
+      canvas,
+      Random(seed + 7),
+      w,
+      y,
+      land,
+      lightCentre.dx,
+      ridgeBase: y(0.60),
+      ridgeHeight: land * 0.46,
+      foot: y(0.80),
+      distance: 0.45,
+    );
 
     // The range: tall, jagged and continuous across the whole view, its
-    // foot running down into the valley, behind the forest.
-    _range(canvas, random, w, y, land, lightCentre.dx);
+    // foot running down into the valley, behind the foothills.
+    _range(
+      canvas,
+      random,
+      w,
+      y,
+      land,
+      lightCentre.dx,
+      ridgeBase: y(0.66),
+      ridgeHeight: land * 0.56,
+      foot: y(0.88),
+      distance: 0,
+    );
     if (palette.mist) {
       _mist(canvas, w, y(0.62), land * 0.25);
     }
 
-    // The valley floor the forest stands on: low and nearly flat, so
-    // nothing hides the foot of the mountains.
-    _hills(canvas, random, w, h, y(0.86), land * 0.04, palette.nearHills);
+    // We look out from the top of a hill: the land drops away in front
+    // of us into a wooded valley, then rises again in forested foothills
+    // to the foot of the mountains. Drawn from far to near.
+    final forestRandom = Random(seed + 5);
+    _woodedHills(
+      canvas,
+      forestRandom,
+      w,
+      h,
+      base: y(0.76),
+      height: land * 0.15,
+      land: land,
+      color: Color.lerp(palette.forest, palette.haze, 0.5)!,
+    );
+    _woodedHills(
+      canvas,
+      forestRandom,
+      w,
+      h,
+      base: y(0.80),
+      height: land * 0.03,
+      land: land,
+      color: Color.lerp(palette.forest, palette.haze, 0.25)!,
+    );
 
-    // A long, dense line of spruce forest on the flats.
-    _forestLine(canvas, Random(seed + 5), w, h, y(0.84), land);
-
-    // A few tall spruces close by, rising high into the view.
-    _nearTrees(canvas, Random(seed + 6), w, h, land);
+    // The hill we stand on, and a few tall spruces on it close by,
+    // rising high into the view.
+    final hill = _hillWeStandOn(Random(seed + 8), w, h, y);
+    canvas.drawPath(hill.shape, Paint()..color = palette.forest);
+    _nearTrees(canvas, Random(seed + 6), w, hill.groundAt, land);
 
     // Fade into the page, so the cards below start on plain ground.
     // It reaches the plain page colour a little before the bottom and
@@ -298,31 +334,40 @@ class _SkyPainter extends CustomPainter {
     );
   }
 
-  /// The great range: a ridge across the whole width with a few clear
+  /// A great range: a ridge across the whole width with a few clear
   /// summits. The mountains are bare rock, with snow only on the tops,
   /// above a ragged snowline, so the tallest peaks carry the most. Each
   /// mountain's face turned from the light is in shadow (darker rock,
   /// grey-blue snow), and haze lies at its foot. [lightX] is where the
   /// sun or moon is across the view.
+  ///
+  /// The ridge rises up to [ridgeHeight] above [ridgeBase], and the
+  /// mountains reach down to [foot]. [distance], from 0 to 1, blends
+  /// every colour toward the sky at the horizon: 0 for the near range,
+  /// more for one farther away.
   void _range(
     Canvas canvas,
     Random random,
     double w,
     double Function(double) y,
     double land,
-    double lightX,
-  ) {
-    final ridge = _rangeRidge(random, w, y(0.66), land * 0.56);
-    // Down to the forest line, so the mountains rise out of the valley.
-    final foot = y(0.88);
+    double lightX, {
+    required double ridgeBase,
+    required double ridgeHeight,
+    required double foot,
+    required double distance,
+  }) {
+    final ridge = _rangeRidge(random, w, ridgeBase, ridgeHeight);
+    final horizon = palette.sky.last;
+    Color faded(Color color) => Color.lerp(color, horizon, distance)!;
     final shape = _pathBelow(ridge, foot);
     final faces = _shadedFaces(ridge, foot, land, lightX);
     canvas
-      ..drawPath(shape, Paint()..color = palette.rock)
+      ..drawPath(shape, Paint()..color = faded(palette.rock))
       ..save()
       ..clipPath(shape);
     final darkRock = Paint()
-      ..color = Color.lerp(palette.rock, Colors.black, 0.3)!;
+      ..color = faded(Color.lerp(palette.rock, Colors.black, 0.3)!);
     for (final face in faces) {
       canvas.drawPath(face, darkRock);
     }
@@ -341,15 +386,15 @@ class _SkyPainter extends CustomPainter {
     canvas
       ..save()
       ..clipPath(snowArea)
-      ..drawPath(shape, Paint()..color = palette.snow);
-    final snowShadow = Paint()..color = palette.shadow;
+      ..drawPath(shape, Paint()..color = faded(palette.snow));
+    final snowShadow = Paint()..color = faded(palette.shadow);
     for (final face in faces) {
       canvas.drawPath(face, snowShadow);
     }
     canvas.restore();
 
     // Haze at the foot, far away.
-    final lower = Rect.fromLTRB(0, y(0.50), w, foot);
+    final lower = Rect.fromLTRB(0, ridgeBase - land * 0.16, w, foot);
     canvas
       ..drawRect(
         lower,
@@ -362,45 +407,6 @@ class _SkyPainter extends CustomPainter {
               palette.haze.withValues(alpha: 0.8),
             ],
           ).createShader(lower),
-      )
-      ..restore();
-  }
-
-  /// A farther range behind the near one: a smooth, higher ridge in the
-  /// colours of the near range blended toward the sky, as distance does,
-  /// with pale snow on its tops and no shading (too far to see).
-  void _farRange(
-    Canvas canvas,
-    Random random,
-    double w,
-    double Function(double) y,
-    double land,
-  ) {
-    final ridge = _rangeRidge(random, w, y(0.58), land * 0.62);
-    final foot = y(0.80);
-    final shape = _pathBelow(ridge, foot);
-    final distance = palette.sky.last;
-    canvas.drawPath(
-      shape,
-      Paint()..color = Color.lerp(palette.rock, distance, 0.45)!,
-    );
-    // Snow on the highest parts only, faded like the rock.
-    final highest = ridge.map((point) => point.dy).reduce(min);
-    final snowline = highest + (foot - highest) * 0.22;
-    // A ragged snowline, as on the near range.
-    final snowArea = Path()
-      ..moveTo(0, 0)
-      ..lineTo(w, 0);
-    for (var x = w; x >= 0; x -= 8) {
-      snowArea.lineTo(x, snowline + (random.nextDouble() - 0.4) * land * 0.06);
-    }
-    snowArea.close();
-    canvas
-      ..save()
-      ..clipPath(snowArea)
-      ..drawPath(
-        shape,
-        Paint()..color = Color.lerp(palette.snow, distance, 0.35)!,
       )
       ..restore();
   }
@@ -479,18 +485,59 @@ class _SkyPainter extends CustomPainter {
     return faces;
   }
 
-  /// A line of rounded hills along [base], rising up to [height], filled
-  /// down to [bottom]: a gentle ridge drawn with curves, not corners.
-  void _hills(
+  /// A line of rounded hills along [base], rising up to [height], with
+  /// spruce forest on them: small trees all along the top of the hills,
+  /// following their rise and fall, filled in below down to [bottom].
+  void _woodedHills(
     Canvas canvas,
     Random random,
     double w,
+    double bottom, {
+    required double base,
+    required double height,
+    required double land,
+    required Color color,
+  }) {
+    final paint = Paint()..color = color;
+    final ground = _curveThrough(
+      _ridge(random, w, base, height, 0.5, count: 9),
+    );
+    canvas.drawPath(_shapeBelow(ground, w, bottom), paint);
+    var x = 0.0;
+    while (x < w) {
+      final tall = land * (0.03 + random.nextDouble() * 0.04);
+      _spruce(canvas, paint, Offset(x, ground.heightAt(x) + 1), tall, random);
+      x += 2 + random.nextDouble() * 3;
+    }
+  }
+
+  /// The hill we look out from: a broad, rounded brow across the bottom
+  /// of the view, highest a little off centre and falling away to both
+  /// sides. The land beyond it is lower, so its top hides the near part
+  /// of the valley. Returns its shape and, for any x, the height of its
+  /// top there, so trees can stand on it.
+  ({Path shape, double Function(double) groundAt}) _hillWeStandOn(
+    Random random,
+    double w,
     double bottom,
-    double base,
-    double height,
-    Color color,
+    double Function(double) y,
   ) {
-    final points = _ridge(random, w, base, height, 0.45, count: 9);
+    final crest = w * (0.3 + random.nextDouble() * 0.4);
+    final top = y(0.80);
+    final ground = _curveThrough([
+      Offset(0, y(0.89)),
+      Offset(crest * 0.5, y(0.82)),
+      Offset(crest, top),
+      Offset(crest + (w - crest) * 0.5, y(0.82)),
+      Offset(w, y(0.89)),
+    ]);
+    return (shape: _shapeBelow(ground, w, bottom), groundAt: ground.heightAt);
+  }
+
+  /// A smooth line through [points] (sorted by x): straight lines between
+  /// them, with the corners rounded off. Its [_Curve.heightAt] says how
+  /// high the line is at any x.
+  static _Curve _curveThrough(List<Offset> points) {
     final path = Path()..moveTo(points.first.dx, points.first.dy);
     for (var index = 1; index < points.length; index++) {
       final previous = points[index - 1];
@@ -501,33 +548,16 @@ class _SkyPainter extends CustomPainter {
       );
       path.quadraticBezierTo(previous.dx, previous.dy, middle.dx, middle.dy);
     }
-    path
-      ..lineTo(points.last.dx, points.last.dy)
+    path.lineTo(points.last.dx, points.last.dy);
+    return _Curve(path, points);
+  }
+
+  /// The area under [curve], from the left edge to [w], down to [bottom].
+  static Path _shapeBelow(_Curve curve, double w, double bottom) {
+    return Path.from(curve.path)
       ..lineTo(w, bottom)
       ..lineTo(0, bottom)
       ..close();
-    canvas.drawPath(path, Paint()..color = color);
-  }
-
-  /// A long, dense line of small spruces along [line]: the far edge of
-  /// a forest, filled in below.
-  void _forestLine(
-    Canvas canvas,
-    Random random,
-    double w,
-    double bottom,
-    double line,
-    double land,
-  ) {
-    final paint = Paint()..color = palette.forest;
-    canvas.drawRect(Rect.fromLTRB(0, line, w, bottom), paint);
-    var x = 0.0;
-    while (x < w) {
-      final tall = land * (0.04 + random.nextDouble() * 0.06);
-      final ground = line + random.nextDouble() * 2;
-      _spruce(canvas, paint, Offset(x, ground), tall, random);
-      x += 2 + random.nextDouble() * 3;
-    }
   }
 
   /// A few tall spruces close by, spread across the view, some of them
@@ -536,7 +566,7 @@ class _SkyPainter extends CustomPainter {
     Canvas canvas,
     Random random,
     double w,
-    double bottom,
+    double Function(double) groundAt,
     double land,
   ) {
     final paint = Paint()..color = palette.forest;
@@ -544,13 +574,15 @@ class _SkyPainter extends CustomPainter {
     for (var tree = 0; tree < count; tree++) {
       final x = w * (tree + random.nextDouble()) / count;
       final tall = land * (0.35 + random.nextDouble() * 0.40);
-      _spruce(canvas, paint, Offset(x, bottom), tall, random);
+      // A little below the top of the hill, so the foot never shows.
+      _spruce(canvas, paint, Offset(x, groundAt(x) + 3), tall, random);
       // Now and then a smaller one beside it.
       if (random.nextDouble() < 0.4) {
+        final beside = x + 6 + random.nextDouble() * 6;
         _spruce(
           canvas,
           paint,
-          Offset(x + 6 + random.nextDouble() * 6, bottom),
+          Offset(beside, groundAt(beside) + 3),
           tall * (0.5 + random.nextDouble() * 0.3),
           random,
         );
@@ -847,4 +879,42 @@ class _SkyPainter extends CustomPainter {
       old.background != background ||
       old.clearTop != clearTop ||
       old.seed != seed;
+}
+
+/// A smooth line across the view, such as the top of a hill, and the
+/// points it was drawn through.
+class _Curve {
+  _Curve(this.path, this.points);
+
+  /// The line itself, from the left edge to the right.
+  final Path path;
+
+  /// The points it rounds off, sorted by x.
+  final List<Offset> points;
+
+  /// How high the line is at [x]. The rounded line runs through the
+  /// middle of each pair of points, bending toward the point itself; so
+  /// following the straight lines between those middles is close enough
+  /// to stand a tree on.
+  double heightAt(double x) {
+    final middles = [
+      points.first,
+      for (var index = 1; index < points.length; index++)
+        Offset(
+          (points[index - 1].dx + points[index].dx) / 2,
+          (points[index - 1].dy + points[index].dy) / 2,
+        ),
+      points.last,
+    ];
+    for (var index = 1; index < middles.length; index++) {
+      final right = middles[index];
+      if (x <= right.dx) {
+        final left = middles[index - 1];
+        final span = right.dx - left.dx;
+        final t = span == 0 ? 0.0 : (x - left.dx) / span;
+        return left.dy + (right.dy - left.dy) * t;
+      }
+    }
+    return points.last.dy;
+  }
 }
