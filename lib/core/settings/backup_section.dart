@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The part of the settings screen for backing up, restoring and
-/// clearing data.
+/// The parts of the settings screen for backing up and restoring data,
+/// and, separately, for clearing it.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -10,7 +10,9 @@ import '../app_state.dart';
 import '../save_or_show_error.dart';
 import '../widgets/section_card.dart';
 
-/// "Back up now", "Restore a backup" and "Clear all data".
+/// "Back up now" and "Restore a backup". "Clear all data" is a card of
+/// its own at the bottom of Settings ([ClearDataSection]), away from
+/// these everyday buttons.
 class BackupSection extends StatelessWidget {
   /// Creates the section.
   const BackupSection({super.key, required this.appState});
@@ -26,48 +28,6 @@ class BackupSection extends StatelessWidget {
     });
     if (saved) {
       messenger.showSnackBar(SnackBar(content: Text('Backed up to $folder.')));
-    }
-  }
-
-  Future<void> _clear(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final colors = Theme.of(context).colorScheme;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: Icon(Icons.warning_amber, color: colors.error),
-        title: const Text('Clear all data?'),
-        content: const Text(
-          'This deletes every habit, food, exercise and sleep entry, from '
-          'every device that uses this folder. Your sync tool will delete '
-          'them on your other devices too.\n\n'
-          'A backup of everything is made first, in the backups folder. '
-          'To get the data back, use "Restore a backup".',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: colors.error),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Back up and clear'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) {
-      return;
-    }
-    String? folder;
-    final cleared = await saveOrShowError(context, () async {
-      folder = await appState.clearAllData();
-    });
-    if (cleared) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('Cleared. The backup is in $folder.')),
-      );
     }
   }
 
@@ -135,6 +95,75 @@ class BackupSection extends StatelessWidget {
           onPressed: () => _restore(context),
           icon: const Icon(Icons.settings_backup_restore),
           label: const Text('Restore a backup'),
+        ),
+      ],
+    );
+  }
+}
+
+/// "Clear all data", with a sentence saying what it does. It sits in its
+/// own card at the very bottom of Settings, so it is never tapped by
+/// mistake on the way to a backup.
+class ClearDataSection extends StatelessWidget {
+  /// Creates the section.
+  const ClearDataSection({super.key, required this.appState});
+
+  /// The app-wide state, holding the data folder.
+  final AppState appState;
+
+  Future<void> _clear(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final colors = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: Icon(Icons.warning_amber, color: colors.error),
+        title: const Text('Clear all data?'),
+        content: const Text(
+          'This deletes every habit, food, exercise and sleep entry, from '
+          'every device that uses this folder. Your sync tool will delete '
+          'them on your other devices too.\n\n'
+          'A backup of everything is made first, in the backups folder. '
+          'To get the data back, use "Restore a backup".',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: colors.error),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Back up and clear'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+    String? folder;
+    final cleared = await saveOrShowError(context, () async {
+      folder = await appState.clearAllData();
+    });
+    if (cleared) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Cleared. The backup is in $folder.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (appState.dataFolder == null) {
+      return const NoteText('Choose a data folder first.');
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const NoteText(
+          'Deletes every entry from every device using this folder, '
+          'after making a backup. Restore a backup to get it back.',
         ),
         DeleteButton(label: 'Clear all data', onPressed: () => _clear(context)),
       ],

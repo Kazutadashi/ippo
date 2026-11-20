@@ -49,18 +49,8 @@ class SettingsScreen extends StatelessWidget {
             SectionCard(
               children: [
                 const CardHeader(
-                  icon: Icons.play_circle_outline,
-                  title: 'Demo',
-                ),
-                const SizedBox(height: 4),
-                _DemoSection(appState: appState),
-              ],
-            ),
-            SectionCard(
-              children: [
-                const CardHeader(
                   icon: Icons.backup_outlined,
-                  title: 'Back up and clear',
+                  title: 'Back up and restore',
                 ),
                 const SizedBox(height: 4),
                 BackupSection(appState: appState),
@@ -73,6 +63,16 @@ class SettingsScreen extends StatelessWidget {
                 const CardHeader(icon: Icons.palette, title: 'Appearance'),
                 const SizedBox(height: 4),
                 AppearanceSection(appState: appState),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(
+                  icon: Icons.play_circle_outline,
+                  title: 'Demo',
+                ),
+                const SizedBox(height: 4),
+                _DemoSection(appState: appState),
               ],
             ),
             SectionCard(
@@ -126,6 +126,17 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+            // Last, on its own: the one button that deletes everything.
+            SectionCard(
+              children: [
+                const CardHeader(
+                  icon: Icons.warning_amber,
+                  title: 'Clear all data',
+                ),
+                const SizedBox(height: 4),
+                ClearDataSection(appState: appState),
+              ],
             ),
           ],
         ),
