@@ -14,6 +14,7 @@ import 'package:ippo/modules/food/food_actions.dart';
 import 'package:ippo/modules/food/food_diary.dart';
 import 'package:ippo/modules/food/food_serving.dart';
 import 'package:ippo/modules/food/nutrients.dart';
+import 'package:ippo/modules/food/screens/choose_food_screen.dart';
 import 'package:ippo/modules/food/screens/food_entry_form_screen.dart';
 import 'package:ippo/modules/food/screens/food_form_screen.dart';
 import 'package:ippo/modules/food/screens/label_paste_screen.dart';
@@ -124,6 +125,64 @@ void main() {
     expect(find.widgetWithText(TextField, 'Rolled oats'), findsOneWidget);
     expect(find.text('Per 100 g'), findsOneWidget);
     expect(find.widgetWithText(TextField, '389'), findsOneWidget);
+  });
+
+  testWidgets('+ logs one serving at once, and Undo takes it back', (
+    tester,
+  ) async {
+    await setUpApp(tester);
+    await tester.runAsync(() async {
+      await FoodActions(appState).createFood(
+        name: 'Potato chips',
+        measuredIn: 'g',
+        nutrientsPer100: const Nutrients({'energy_kcal': 500}),
+        serving: const FoodServing(unit: 'chips', count: 9, amount: 28),
+      );
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => ChooseFoodScreen(
+                    appState: appState,
+                    date: '2026-11-18',
+                    isToday: false,
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    // The row shows what one serving comes to.
+    expect(find.text('9 chips (28 g) · 140 kcal'), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.byTooltip('Log 9 chips now'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pumpAndSettle();
+
+    var diary = FoodDiary.fromEvents(appState.eventLog!.events);
+    final entry = diary.entries.single;
+    expect(entry.amount, 28);
+    expect(entry.date, '2026-11-18');
+    expect(find.text('Logged 9 chips of Potato chips.'), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Undo'));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pump();
+    diary = FoodDiary.fromEvents(appState.eventLog!.events);
+    expect(diary.entries.where((entry) => !entry.isDeleted), isEmpty);
   });
 
   testWidgets('an amount can be typed in pieces or grams', (tester) async {

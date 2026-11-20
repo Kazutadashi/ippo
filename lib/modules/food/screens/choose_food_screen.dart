@@ -7,9 +7,14 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
+import '../../../core/events/event.dart';
+import '../../../core/save_or_show_error.dart';
+import '../../../core/undo_message.dart';
 import '../../../core/widgets/section_card.dart';
 import '../food.dart';
+import '../food_actions.dart';
 import '../food_diary.dart';
+import '../food_serving.dart';
 import '../nutrients.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
@@ -63,6 +68,41 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   }
 
   /// Opens "New food", with [name] already typed, then logs the new food.
+  /// Logs one serving of [food] straight away, with no form: the
+  /// quickest way to log what you eat often. It is timed now (today), or
+  /// left without a time (another day), as the form would start. Then
+  /// back to the diary, with a message to undo it.
+  Future<void> _logOneServing(Food food, FoodServing serving) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final actions = FoodActions(widget.appState);
+    Event? logged;
+    final time = startingEntryTime(
+      entryTime: null,
+      isNew: true,
+      isToday: widget.isToday,
+    );
+    final saved = await saveOrShowError(context, () async {
+      logged = await actions.recordFoodEntry(
+        date: widget.date,
+        time: time?.toString(),
+        food: food,
+        amount: serving.amount,
+        unitCount: serving.count,
+        unitName: serving.unit,
+      );
+    });
+    final event = logged;
+    if (!saved || event == null || !mounted) {
+      return;
+    }
+    Navigator.of(context).pop();
+    showUndoMessage(
+      messenger,
+      message: 'Logged ${writeServingText(serving)} of ${food.name}.',
+      onUndo: () => actions.deleteEntry(event.id),
+    );
+  }
+
   Future<void> _newFood({String name = ''}) async {
     final newFoodId = await Navigator.of(context).push(
       MaterialPageRoute<String>(
@@ -133,13 +173,28 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
                     ),
                   // Tap a food to log it. The food itself can be changed
                   // from the next screen.
+                  // Tap a food to choose the amount; foods with a serving
+                  // size also have a button that logs one serving at once.
                   for (final food in foods)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(food.name),
                       subtitle: _servingText(food),
-                      trailing: _EnergyPer100(food: food),
+                      trailing: food.serving == null
+                          ? _EnergyPer100(food: food)
+                          : IconButton.filledTonal(
+                              tooltip:
+                                  'Log ${writeServingText(food.serving!)} now',
+                              icon: const Icon(Icons.add),
+                              onPressed: () =>
+                                  _logOneServing(food, food.serving!),
+                            ),
                       onTap: () => _logFood(food),
+                    ),
+                  if (foods.any((food) => food.serving != null))
+                    const NoteText(
+                      'Tap a food to choose the amount, or + to log one '
+                      'serving now.',
                     ),
                 ],
               ),
@@ -151,11 +206,15 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
   }
 }
 
-/// The serving size, for example `9 chips (28 g)`, or null if the food
-/// has none.
+/// A food's serving and what it comes to, such as "1 slice (36 g) ·
+/// 89 kcal", or nothing for a food without a serving size.
 Widget? _servingText(Food food) {
   final serving = food.serving;
-  return serving == null ? null : Text(serving.describe(food.measuredIn));
+  if (serving == null) {
+    return null;
+  }
+  final energy = food.nutrientsFor(serving.amount).energyKcal;
+  return Text('${serving.describe(food.measuredIn)} · ${formatEnergy(energy)}');
 }
 
 /// A food's energy per 100 g (or ml), on the right of its row: the
