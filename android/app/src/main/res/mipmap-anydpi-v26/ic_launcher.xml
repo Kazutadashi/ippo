@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- Ippo's launcher icon on Android 8 and later: a flat, poster-style
-     mountain range at night, in front of a large moon. The mountains are
-     the front layer and the sky the back one, so launchers that move the
-     layers apart give it a little depth. Drawn as vectors, so there are
-     no image files. The monochrome layer lets Android 13 and later tint
-     it to match the phone's themed icons. Older Android uses the
-     mipmap-*/ PNGs. -->
+<!-- Ippo's launcher icon on Android 8 and later: the Home header's
+     landscape at night, so the icon and the app look alike. The sky and
+     moon are the back layer and the range, hills and spruces the front
+     one, so launchers that move the layers apart give it a little depth.
+     Drawn as vectors in the header's colours. The monochrome layer lets
+     Android 13 and later tint it to match the phone's themed icons.
+     Older Android uses the mipmap-*/ PNGs, drawn from the same shapes. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@drawable/ic_launcher_background" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />

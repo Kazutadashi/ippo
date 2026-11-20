@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The back of Ippo's launcher icon: a night sky with a few stars and a
-     large moon, which the mountains in ic_launcher_foreground.xml partly
-     hide. Drawn by hand for Ippo, inside the middle area every launcher
-     shape shows. -->
+<!-- The back of Ippo's launcher icon: the Home header's night sky, with its
+     stars and moon (glow, shade and craters). Generated in the header's
+     colours; the range, hills and trees are in ic_launcher_foreground.xml. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The sky, darkest at the top. It fills the whole icon. -->
+    <!-- The night sky of the Home header, darkest at the top. -->
     <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -19,50 +18,49 @@
                 android:startY="0"
                 android:endX="0"
                 android:endY="108">
-                <item android:offset="0" android:color="#FF1B2A41" />
-                <item android:offset="1" android:color="#FF324A5F" />
+                <item android:offset="0" android:color="#FF0B1424" />
+                <item android:offset="0.45" android:color="#FF17243B" />
+                <item android:offset="0.75" android:color="#FF2A3A57" />
+                <item android:offset="1" android:color="#FF2A3A57" />
             </gradient>
         </aapt:attr>
     </path>
-    <!-- A few faint stars. -->
+    <!-- Stars. -->
     <path
         android:fillColor="#8CF2EEE2"
-        android:pathData="M25.55,28 a0.45,0.45 0 1,0 0.9,0 a0.45,0.45 0 1,0 -0.9,0 M33.65,22 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M83.6,26 a0.4,0.4 0 1,0 0.8,0 a0.4,0.4 0 1,0 -0.8,0 M45.7,30 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M27.7,40 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0" />
-    <!-- A soft glow around the moon, in two rings. -->
+        android:pathData="M23.45,30 a0.55,0.55 0 1,0 1.1,0 a0.55,0.55 0 1,0 -1.1,0 M30.55,21 a0.45,0.45 0 1,0 0.9,0 a0.45,0.45 0 1,0 -0.9,0 M39.65,33 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M26.7,44 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M45.7,23 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M35.75,27 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0 M83.5,22 a0.5,0.5 0 1,0 1,0 a0.5,0.5 0 1,0 -1,0 M89.65,34 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M79.75,30 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0 M51.7,31 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M18.7,38 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M87.75,46 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0" />
+    <!-- The moon, as on Home: glow, outer -->
     <path
         android:fillColor="#12E9E2CC"
-        android:pathData="M38,50 a24,24 0 1,0 48,0 a24,24 0 1,0 -48,0" />
+        android:pathData="M43,42 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
+    <!-- The moon, as on Home: glow, inner -->
     <path
-        android:fillColor="#1AE9E2CC"
-        android:pathData="M42,50 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
-    <!-- The moon. -->
+        android:fillColor="#1FE9E2CC"
+        android:pathData="M47.67,42 a12.32,12.32 0 1,0 24.65,0 a12.32,12.32 0 1,0 -24.65,0" />
+    <!-- The moon, as on Home: the moon -->
     <path
         android:fillColor="#FFE9E2CC"
-        android:pathData="M45,50 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" />
-    <!-- A faint shade on one side, so it looks round. -->
+        android:pathData="M51.5,42 a8.5,8.5 0 1,0 17,0 a8.5,8.5 0 1,0 -17,0" />
+    <!-- The moon, as on Home: a faint shade, so it looks round -->
     <path
-        android:fillColor="#2EB9B29C"
-        android:pathData="M51,54 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0" />
-    <!-- Its craters: a few faint darker circles, for a little texture. -->
+        android:fillColor="#33B9B29C"
+        android:pathData="M54.13,43.7 a7.99,7.99 0 1,0 15.98,0 a7.99,7.99 0 1,0 -15.98,0" />
     <path
         android:fillColor="#298F8A78"
-        android:pathData="M52.6,45 a3.4,3.4 0 1,0 6.8,0 a3.4,3.4 0 1,0 -6.8,0" />
+        android:pathData="M55.32,39.45 a1.7,1.7 0 1,0 3.4,0 a1.7,1.7 0 1,0 -3.4,0" />
     <path
         android:fillColor="#218F8A78"
-        android:pathData="M65.0,43 a2.0,2.0 0 1,0 4.0,0 a2.0,2.0 0 1,0 -4.0,0" />
+        android:pathData="M61.53,38.6 a1.02,1.02 0 1,0 2.04,0 a1.02,1.02 0 1,0 -2.04,0" />
     <path
         android:fillColor="#1F8F8A78"
-        android:pathData="M63.8,53 a4.2,4.2 0 1,0 8.4,0 a4.2,4.2 0 1,0 -8.4,0" />
+        android:pathData="M60.77,43.53 a2.12,2.12 0 1,0 4.25,0 a2.12,2.12 0 1,0 -4.25,0" />
     <path
         android:fillColor="#248F8A78"
-        android:pathData="M56.6,56 a2.4,2.4 0 1,0 4.8,0 a2.4,2.4 0 1,0 -4.8,0" />
+        android:pathData="M57.28,45.06 a1.19,1.19 0 1,0 2.38,0 a1.19,1.19 0 1,0 -2.38,0" />
     <path
         android:fillColor="#1F8F8A78"
-        android:pathData="M51.4,52 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0" />
+        android:pathData="M54.56,42.85 a0.77,0.77 0 1,0 1.53,0 a0.77,0.77 0 1,0 -1.53,0" />
     <path
         android:fillColor="#1A8F8A78"
-        android:pathData="M61.8,49 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0" />
-    <path
-        android:fillColor="#1A8F8A78"
-        android:pathData="M69.5,49 a1.5,1.5 0 1,0 3.0,0 a1.5,1.5 0 1,0 -3.0,0" />
+        android:pathData="M59.83,41.58 a0.6,0.6 0 1,0 1.19,0 a0.6,0.6 0 1,0 -1.19,0" />
 </vector>

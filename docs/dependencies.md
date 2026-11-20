@@ -47,6 +47,9 @@ need it.
 
 ## Artwork
 
-The launcher icon (a mountain range in front of the moon) is drawn by
-hand for Ippo, in `android/app/src/main/res/drawable/`. It uses no
-artwork or fonts from other projects.
+The launcher icon is the Home header's landscape at night (a snowy range
+shaded away from the moon, hills and spruces, in the header's colours),
+drawn for Ippo as vectors in `android/app/src/main/res/drawable/`. The
+header itself (`lib/core/widgets/sky_header.dart`) and the dumbbell and
+moon icons are drawn in code. None of it uses artwork or fonts from other
+projects.
