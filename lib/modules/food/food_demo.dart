@@ -173,9 +173,10 @@ const List<_DemoFood> _foods = [
   ),
 ];
 
-/// Ten everyday foods, three meals and a snack a day (a different
-/// breakfast and dinner on alternate days), a calorie limit, a profile,
-/// and a weighing every few mornings.
+/// Ten everyday foods, three meals and a snack or two a day (different
+/// breakfasts and dinners), adding up to about the 2000 kcal limit,
+/// a little over on some days; a profile, and a weighing every few
+/// mornings.
 List<DemoEvent> foodDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
   final first = plan.firstDay;
@@ -253,25 +254,30 @@ List<DemoEvent> foodDemoEvents(DemoPlan plan) {
     double some(double amount) =>
         (amount + plan.wobble(amount * 0.15)).roundToDouble();
     if (ago.isEven) {
-      eat(day, 7.5, 'Rolled oats', some(50));
-      eat(day, 7.52, 'Milk', some(200));
+      eat(day, 7.5, 'Rolled oats', some(80));
+      eat(day, 7.52, 'Milk', some(250));
     } else {
       eat(day, 7.6, 'Greek yogurt', 150);
       eat(day, 7.62, 'Banana', some(120));
+      eat(day, 7.64, 'Wholemeal bread', 72);
     }
-    eat(day, 12.6, 'Rice, cooked', some(180));
-    eat(day, 12.62, 'Chicken breast', some(140));
+    eat(day, 12.6, 'Rice, cooked', some(250));
+    eat(day, 12.62, 'Chicken breast', some(160));
+    eat(day, 12.64, 'Wholemeal bread', 36);
     if (plan.chance(0.3)) {
-      eat(day, 16, 'Potato chips', 28);
+      eat(day, 16, 'Potato chips', 56);
     } else {
       eat(day, 16, 'Apple', some(180));
     }
     if (ago % 3 == 0) {
-      eat(day, 19.2, 'Lentil soup', some(350));
+      eat(day, 19.2, 'Lentil soup', some(450));
       eat(day, 19.22, 'Wholemeal bread', 72);
     } else {
-      eat(day, 19.2, 'Rice, cooked', some(150));
-      eat(day, 19.22, 'Chicken breast', some(120));
+      eat(day, 19.2, 'Rice, cooked', some(220));
+      eat(day, 19.22, 'Chicken breast', some(150));
+    }
+    if (plan.chance(0.5)) {
+      eat(day, 21, 'Greek yogurt', 150);
     }
 
     // A weighing every third morning, slowly going down.
