@@ -138,18 +138,15 @@ void main() {
       },
     );
 
-    // The Food tile shows today's total so far, the week grid a row for
-    // food, and Lately this week's average (also 80 kcal, from one day),
-    // with no usual yet.
+    // The Food tile shows today's total so far and the week grid a row
+    // for food. Lately has a Food row too, but empty: today is not over,
+    // so it is not counted yet.
     expect(find.text('FOOD'), findsOneWidget);
+    expect(find.text('80 kcal'), findsOneWidget);
     expect(
-      find.descendant(
-        of: find.byType(LatelyCard),
-        matching: find.text('80 kcal'),
-      ),
+      find.descendant(of: find.byType(LatelyCard), matching: find.text('Food')),
       findsOneWidget,
     );
-    expect(find.text('80 kcal'), findsNWidgets(2));
     expect(find.text('so far'), findsOneWidget);
     expect(find.byType(WeekGrid), findsOneWidget);
     expect(find.textContaining('Your usual shows here'), findsOneWidget);

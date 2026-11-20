@@ -73,7 +73,8 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
       for (final module in allModules) ...module.datesLogged(appState),
     };
     var daysLogged = 0;
-    for (var back = 0; back < trendRecentDays + trendUsualDays; back++) {
+    // The same days Lately compares: before the day shown, not on it.
+    for (var back = 1; back <= trendRecentDays + trendUsualDays; back++) {
       if (loggedDates.contains(formatDate(addDays(day, -back)))) {
         daysLogged++;
       }
@@ -201,7 +202,11 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   // Lately: the last week against the weeks before.
                   if (trends.isNotEmpty) ...[
                     const SizedBox(height: tileGap),
-                    LatelyCard(trends: trends, daysLogged: daysLogged),
+                    LatelyCard(
+                      trends: trends,
+                      daysLogged: daysLogged,
+                      isToday: day == today(),
+                    ),
                   ],
                 ],
               ),

@@ -130,12 +130,14 @@ anything today, does not belong on Home.
   table (`IppoModule.weekRows`). A day without data shows a quiet dash.
   A module without any data yet has no row.
 - **Lately** (`LatelyCard`), at the bottom: one row per measure
-  (`IppoModule.trendMeasures`): this week's average (the last 7 days),
-  your usual (the 28 days before), and an arrow for which way it moved,
-  never coloured, since up or down is not good or bad in itself. Only
-  days with something logged count, so a gap never looks like a zero;
-  the usual waits for 7 days of data, and a change within 5 % is shown
-  as steady. A last line says on how many of those 35 days anything was
+  (`IppoModule.trendMeasures`): the average of the 7 days before the
+  day shown (not the day itself, which is not over: half a day would
+  pull every average down; so these match the tiles' "Avg (7 days)"),
+  your usual (the 28 days before those), and an arrow for which way it
+  moved, never coloured, since up or down is not good or bad in itself.
+  Only days with something logged count, so a gap never looks like a
+  zero; the usual waits for 7 days of data, and a change within 5 % (1 %
+  for weight, which moves slowly) is shown as steady. A last line says on how many of those 35 days anything was
   logged, since gaps make a week say less. It replaced a "days logged"
   calendar, which looked the same every day for anyone logging daily.
 - **One tile per module** (`IppoModule.homeTile`, drawn by

@@ -174,6 +174,8 @@ class FoodModule extends IppoModule {
           label: 'Weight',
           valueOn: (date) => body.weightOn(date)?.weightKg,
           format: formatWeight,
+          // Weight moves slowly: 1 % (about 0.7 kg) is already a change.
+          steadyWithin: 0.01,
         ),
     ];
   }

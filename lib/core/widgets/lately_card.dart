@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Home's "Lately" card: this week against your usual, measure by
+/// Home's "Lately" card: the last 7 days against your usual, measure by
 /// measure.
 library;
 
@@ -9,7 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../trends.dart';
 import 'info_tile.dart';
 
-/// One row per measure: its name, this week's average, the usual over
+/// One row per measure: its name, the last 7 days' average, the usual over
 /// the four weeks before, and an arrow for which way it moved. The arrow
 /// only says up or down, never good or bad: more sleep or less food can
 /// be either, depending on the person.
@@ -18,14 +18,23 @@ import 'info_tile.dart';
 /// says less.
 class LatelyCard extends StatelessWidget {
   /// Creates the card.
-  const LatelyCard({super.key, required this.trends, required this.daysLogged});
+  const LatelyCard({
+    super.key,
+    required this.trends,
+    required this.daysLogged,
+    required this.isToday,
+  });
 
   /// One trend per measure, in the order to show them.
   final List<Trend> trends;
 
-  /// On how many of the last [trendRecentDays] + [trendUsualDays] days anything was
-  /// logged.
+  /// On how many of the [trendRecentDays] + [trendUsualDays] days
+  /// compared anything was logged.
   final int daysLogged;
+
+  /// Whether the day shown is today, for the wording: "before today" or
+  /// "before this day".
+  final bool isToday;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +46,7 @@ class LatelyCard extends StatelessWidget {
       letterSpacing: 0.8,
     );
     final hasUsual = trends.any((trend) => trend.usual != null);
+    final shownDay = isToday ? 'today' : 'this day';
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -58,7 +68,7 @@ class LatelyCard extends StatelessWidget {
                 SizedBox(
                   width: _valueWidth,
                   child: Text(
-                    'THIS WEEK',
+                    'LAST 7 DAYS',
                     textAlign: TextAlign.end,
                     style: heading,
                   ),
@@ -79,8 +89,8 @@ class LatelyCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               hasUsual
-                  ? 'This week (the last 7 days) against your usual (the 4 '
-                        'weeks before). Logged on $daysLogged of those '
+                  ? 'The 7 days before $shownDay, against your usual (the 4 '
+                        'weeks before them). Logged on $daysLogged of those '
                         '${trendRecentDays + trendUsualDays} days.'
                   : 'Your usual shows here after about two weeks of '
                         'logging. Logged on $daysLogged of the last '
@@ -94,7 +104,7 @@ class LatelyCard extends StatelessWidget {
   }
 }
 
-/// The width of the "this week" and "usual" columns.
+/// The width of the "last 7 days" and "usual" columns.
 const double _valueWidth = 92;
 
 /// The width of the arrow column.
@@ -123,7 +133,7 @@ class _TrendRow extends StatelessWidget {
     final style = theme.textTheme.bodyMedium;
     return Semantics(
       label:
-          '${trend.measure.label}: this week '
+          '${trend.measure.label}: the last 7 days '
           '${recent == null ? 'nothing logged' : format(recent)}, usually '
           '${usual == null ? 'not known yet' : format(usual)}, $said',
       excludeSemantics: true,
