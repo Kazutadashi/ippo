@@ -12,6 +12,7 @@ import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
+import '../../../core/widgets/sky_band.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
 import '../habit_log.dart';
@@ -62,7 +63,7 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Habits')),
+      appBar: SkyAppBar(title: const Text('Habits')),
       floatingActionButton: FloatingActionButton.extended(
         // Every floating button needs its own tag: all tabs stay alive at
         // once, and Flutter cannot animate two buttons with one tag.

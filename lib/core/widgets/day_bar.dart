@@ -56,7 +56,9 @@ class DayBar extends StatelessWidget {
             onPressed: () => _pickDay(context),
             style: TextButton.styleFrom(
               backgroundColor: isToday ? null : colors.secondaryContainer,
-              foregroundColor: colors.onSurface,
+              // The colour of the bar it sits in: white on a sky band,
+              // the text colour on a plain page.
+              foregroundColor: IconTheme.of(context).color ?? colors.onSurface,
             ),
             // The arrow says the day opens a calendar.
             icon: const Icon(Icons.arrow_drop_down),

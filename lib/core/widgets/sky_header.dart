@@ -140,6 +140,25 @@ const Map<SkyPhase, _Palette> _palettes = {
   ),
 };
 
+/// The colours of [phase]'s sky, from the top down. The tabs' header
+/// band (`sky_band.dart`) uses them, so every screen shares the sky.
+List<Color> skyColorsFor(SkyPhase phase) => _palettes[phase]!.sky;
+
+/// The colour of [phase]'s bare rock, for distant mountains.
+Color rockColorFor(SkyPhase phase) => _palettes[phase]!.rock;
+
+/// Whether [phase]'s sky has stars.
+bool hasStarsAt(SkyPhase phase) => _palettes[phase]!.starCount > 0;
+
+/// A mountain ridge across [width], as the Home landscape draws its
+/// ranges: up to [height] above [base], made from [random].
+List<Offset> mountainRidge(
+  Random random,
+  double width,
+  double base,
+  double height,
+) => _SkyPainter._rangeRidge(random, width, base, height);
+
 /// The landscape: the sky for [phase], its sun or moon, stars at dusk
 /// and night, and a mountain range across open country made up from
 /// [seed], fading into the page below. Decoration only, so screen
