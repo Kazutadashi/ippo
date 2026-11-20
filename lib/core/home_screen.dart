@@ -193,8 +193,10 @@ class _ChooseDataFolderFirst extends StatelessWidget {
   }
 }
 
-/// The strip shown above the tabs during the demo: what it is, and a
-/// button to leave it.
+/// The strip shown above the tabs during the demo: a quiet line saying
+/// what it is, and a small button to leave. It uses the bar's own colours
+/// and small text, so it does not pull the eye (screen recordings of the
+/// demo stay about the app, not the strip).
 class _DemoStrip extends StatelessWidget {
   const _DemoStrip({required this.onLeave});
 
@@ -202,27 +204,33 @@ class _DemoStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
+    final small = theme.textTheme.labelMedium;
     return Material(
-      color: colors.tertiaryContainer,
+      // The navigation bar's colour, so the two read as one.
+      color:
+          theme.navigationBarTheme.backgroundColor ??
+          theme.colorScheme.surfaceContainer,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
+        padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
         child: Row(
           children: [
-            Icon(Icons.play_circle_outline, color: colors.onTertiaryContainer),
-            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Demo: made-up data, not saved',
-                style: TextStyle(color: colors.onTertiaryContainer),
+                'Demo data, not saved',
+                style: small?.copyWith(color: muted),
               ),
             ),
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor: colors.onTertiaryContainer,
+                foregroundColor: muted,
+                textStyle: small,
+                visualDensity: VisualDensity.compact,
+                minimumSize: const Size(48, 32),
               ),
               onPressed: onLeave,
-              child: const Text('Leave demo'),
+              child: const Text('Leave'),
             ),
           ],
         ),
