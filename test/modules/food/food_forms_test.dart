@@ -16,6 +16,7 @@ import 'package:ippo/modules/food/food_serving.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/food/screens/food_entry_form_screen.dart';
 import 'package:ippo/modules/food/screens/food_form_screen.dart';
+import 'package:ippo/modules/food/screens/label_paste_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -57,17 +58,21 @@ void main() {
       MaterialApp(home: FoodFormScreen.add(appState: appState)),
     );
 
-    await tester.tap(find.text('Paste nutrition label'));
+    await tester.tap(find.text('Fill in from a label'));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(LabelPasteScreen),
         matching: find.byType(TextField),
       ),
       'name: Potato chips\nserving: 9 chips = 28 g\ncalories: 150\n'
       'fat: 9 g\nprotein: 2 g',
     );
-    await tester.tap(find.text('Fill in'));
+    await tester.pump();
+    // What was read is shown before filling in.
+    expect(find.text('9 chips = 28 g'), findsOneWidget);
+    expect(find.text('150 kcal'), findsOneWidget);
+    await tester.tap(find.text('Fill in 5 values'));
     await tester.pumpAndSettle();
 
     expect(find.widgetWithText(TextField, 'Potato chips'), findsOneWidget);
@@ -91,6 +96,34 @@ void main() {
       'proteins_g': 7.1,
       'fat_g': 32.1,
     });
+  });
+
+  testWidgets('pasted JSON fills in the form, wrapped or not', (tester) async {
+    await setUpApp(tester);
+    await tester.pumpWidget(
+      MaterialApp(home: FoodFormScreen.add(appState: appState)),
+    );
+
+    await tester.tap(find.text('Fill in from a label'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.descendant(
+        of: find.byType(LabelPasteScreen),
+        matching: find.byType(TextField),
+      ),
+      'Here is the label:\n```json\n'
+      '{"name": "Rolled oats", "measured_in": "g", "per": "100", '
+      '"nutrients": {"energy_kcal": 389, "proteins_g": 13.2, '
+      '"protien_g": 1}}\n```',
+    );
+    await tester.pump();
+    expect(find.text('Not used (unknown names): protien_g'), findsOneWidget);
+    await tester.tap(find.text('Fill in 3 values'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextField, 'Rolled oats'), findsOneWidget);
+    expect(find.text('Per 100 g'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '389'), findsOneWidget);
   });
 
   testWidgets('an amount can be typed in pieces or grams', (tester) async {
@@ -262,7 +295,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: FoodFormScreen.add(appState: appState)),
     );
-    await tester.tap(find.text('Paste nutrition label'));
+    await tester.tap(find.text('Fill in from a label'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });

@@ -17,8 +17,7 @@
 /// Protein 2g                        Salt 1.2 g
 /// ```
 ///
-/// and the simple format in `docs/food-labels.md`, which an assistant can
-/// write from a photo of a label:
+/// and the simple `name: value` format in `docs/food-labels.md`:
 ///
 /// ```
 /// name: Potato chips
@@ -27,51 +26,18 @@
 /// fat: 9 g
 /// ```
 ///
-/// It reads line by line and never guesses: a line it does not
-/// recognise is ignored.
+/// JSON (see `label_json.dart`) is tried first; this reader is for
+/// everything else. It reads line by line and never guesses: a line it
+/// does not recognise is ignored.
 library;
 
 import '../../core/number_input.dart';
 import 'food_serving.dart';
+import 'label_json.dart';
+import 'label_reading.dart';
 import 'nutrients.dart';
 
-/// What was read from a label's text.
-class LabelReading {
-  /// Creates a reading.
-  const LabelReading({
-    required this.name,
-    required this.serving,
-    required this.measuredIn,
-    required this.isPer100,
-    required this.nutrients,
-    this.ingredients,
-  });
-
-  /// The food's name, if the text gave one (`name: ...`).
-  final String? name;
-
-  /// The serving size, if the text gave one.
-  final FoodServing? serving;
-
-  /// `g` or `ml`.
-  final String measuredIn;
-
-  /// Whether the values are per 100 g (or ml) rather than per serving.
-  final bool isPer100;
-
-  /// The values found, by nutrient field name (see `nutrients.dart`).
-  final Map<String, double> nutrients;
-
-  /// The ingredients, as written after "Ingredients:", if given.
-  final String? ingredients;
-
-  /// Whether anything useful was found.
-  bool get isEmpty =>
-      serving == null &&
-      nutrients.isEmpty &&
-      name == null &&
-      ingredients == null;
-}
+export 'label_reading.dart';
 
 /// Which words on a line mean which nutrient, and the unit its field
 /// is in. Checked in this order, so the more specific words come first:
@@ -133,8 +99,13 @@ final RegExp _servingGramsOnly = RegExp(
   caseSensitive: false,
 );
 
-/// Reads [text], the words of a nutrition label.
+/// Reads [text]: a label as JSON (see [readLabelJson]), or else the
+/// words of a nutrition label, line by line.
 LabelReading readNutritionLabel(String text) {
+  final fromJson = readLabelJson(text);
+  if (fromJson != null) {
+    return fromJson;
+  }
   String? name;
   FoodServing? serving;
   var measuredIn = 'g';

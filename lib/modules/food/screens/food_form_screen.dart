@@ -21,7 +21,7 @@ import '../food_actions.dart';
 import '../food_serving.dart';
 import '../nutrients.dart';
 import '../nutrition_label.dart';
-import 'label_paste_dialog.dart';
+import 'label_paste_screen.dart';
 import 'nutrition_fields.dart';
 
 /// The form for a food. When adding, closes with the new food's id.
@@ -152,9 +152,11 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
   }
 
   Future<void> _pasteLabel() async {
-    final reading = await showDialog<LabelReading>(
-      context: context,
-      builder: (context) => const LabelPasteDialog(),
+    final reading = await Navigator.of(context).push<LabelReading>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => const LabelPasteScreen(),
+      ),
     );
     if (reading == null || !mounted) {
       return;
@@ -372,8 +374,8 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
             // Tonal, so it reads as a button, never as an empty field.
             FilledButton.tonalIcon(
               onPressed: _pasteLabel,
-              icon: const Icon(Icons.content_paste),
-              label: const Text('Paste nutrition label'),
+              icon: const Icon(Icons.document_scanner_outlined),
+              label: const Text('Fill in from a label'),
             ),
             SectionCard(
               children: [
