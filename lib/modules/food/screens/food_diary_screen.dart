@@ -221,7 +221,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                         onPressed: _openBody,
                         icon: const Icon(Icons.tune),
                         label: Text(
-                          energyTarget == null ? 'Set limit' : 'Limit',
+                          energyTarget == null
+                              ? 'Set daily limit'
+                              : 'Daily limit',
                         ),
                       ),
                     ),
