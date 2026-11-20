@@ -75,7 +75,7 @@ class ExerciseCard extends StatelessWidget {
         ),
         if (hasTable) ...[
           _SetTable(
-            unit: exercise.measuredIn == MeasuredIn.reps ? 'reps' : 'seconds',
+            unit: exercise.measuredIn == MeasuredIn.reps ? 'Reps' : 'Seconds',
             dayLabel: describeDay(day),
             daySets: daySets,
             previousLabel: previousDate == null

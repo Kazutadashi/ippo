@@ -121,7 +121,7 @@ class _NapFormScreenState extends State<NapFormScreen> {
             // Through the discard guard, like the back button.
             onPressed: () => Navigator.of(context).maybePop(),
           ),
-          title: const Text('Nap'),
+          title: Text(widget.nap == null ? 'New nap' : 'Edit nap'),
           actions: [
             AppBarSaveButton(onPressed: problem == null ? _save : null),
           ],

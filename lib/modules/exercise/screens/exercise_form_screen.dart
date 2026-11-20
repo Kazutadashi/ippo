@@ -142,6 +142,11 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
                 onSelectionChanged: (choice) =>
                     setState(() => _measuredIn = choice.single),
               ),
+              const SizedBox(height: Spacing.tight),
+              const NoteText(
+                'Reps for push-ups or squats, seconds for a plank or a '
+                'hang. This cannot be changed later.',
+              ),
             ],
             if (isEditing)
               DeleteButton(label: 'Delete this exercise', onPressed: _delete),

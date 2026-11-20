@@ -47,7 +47,7 @@ const List<NutrientKind> allNutrientKinds = [
   NutrientKind('carbohydrates_g', 'Carbohydrates', 'g'),
   NutrientKind('sugars_g', '  of which sugars', 'g'),
   NutrientKind('added_sugars_g', '  of which added sugars', 'g'),
-  NutrientKind('fiber_g', 'Fiber', 'g'),
+  NutrientKind('fiber_g', 'Fibre', 'g'),
   NutrientKind('fat_g', 'Fat', 'g'),
   NutrientKind('saturated_fat_g', '  of which saturated', 'g'),
   NutrientKind('monounsaturated_fat_g', '  of which monounsaturated', 'g'),
