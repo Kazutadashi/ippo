@@ -88,11 +88,14 @@ greeting, and times since become clock times).
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
 of day (dawn with a low sun and mist, a blue day with a few birds, dusk
 with the moon rising, night with stars and now and then a shooting
-star), fading into the page. The landscape is a great mountain range seen
-across open country, made up fresh each day from the date: a tall,
-continuous range of bare rock with snow only on its tops (broad massifs
-with a few summits, each with one shaded face, and haze at its foot), rounded foothills,
-a long line of spruce forest, and a few tall spruces close by. So Home looks a
+star), fading into the page. The landscape is seen from a forested
+valley, made up fresh each day from the date: a tall, continuous range
+of bare rock with snow only on its tops (broad massifs with a few
+summits, each shaded on the face turned from the sun or moon), rising
+straight out of the valley with haze at its foot; a farther range
+behind it, paler with the distance; a long line of spruce forest on the
+valley floor; and a few tall spruces close by. The launcher icon is the
+same scene at night, simplified to one bold mountain. So Home looks a
 little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.

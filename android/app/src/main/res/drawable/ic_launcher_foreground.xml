@@ -1,83 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The front of Ippo's launcher icon: the Home header's landscape at night.
-     A snowy range shaded on the faces turned from the moon, haze at its
-     foot, rolling hills, a spruce forest and near spruces, in the
-     header's colours. -->
+<!-- The front of Ippo's launcher icon, in the Home header's style and
+     colours: one bold snowy mountain, lit on the side toward the moon
+     and shaded on the other, a paler peak behind it, haze at their
+     foot, and a spruce forest in the valley. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The range: bare rock below the snow. -->
+    <!-- A paler peak behind, faded by the distance. -->
+    <path
+        android:fillColor="#FF3E4C66"
+        android:pathData="M80,44 L112,84 L46,84 Z" />
+    <path
+        android:fillColor="#FF8E9BB0"
+        android:pathData="M80,44 L88.5,53 L85,51.5 L82,55 L78.5,51.5 L75,54.5 L71.5,53 Z" />
+    <!-- The mountain: its face turned from the moon, in shadow. -->
+    <path
+        android:fillColor="#FF272F3E"
+        android:pathData="M50,26 L6,84 L55,84 Z" />
+    <!-- Its face toward the moon. -->
     <path
         android:fillColor="#FF384459"
-        android:pathData="M0,70 L9,63 L19,54 L26,58 L35,43 L43,51 L51,47 L59,56 L70,46 L78,53 L88,44 L98,56 L108,51 L108,108 L0,108 Z" />
-    <!-- Everything on the range stays inside its outline. -->
-    <group>
-        <clip-path android:pathData="M0,70 L9,63 L19,54 L26,58 L35,43 L43,51 L51,47 L59,56 L70,46 L78,53 L88,44 L98,56 L108,51 L108,108 L0,108 Z" />
-        <path
-            android:fillColor="#FF272F3E"
-            android:pathData="M19,54 L9,63 L0,70 L-3.8,80 L7.6,80 Z" />
-        <path
-            android:fillColor="#FF272F3E"
-            android:pathData="M35,43 L26,58 L23.6,80 L27.8,80 Z" />
-        <path
-            android:fillColor="#FF272F3E"
-            android:pathData="M51,47 L43,51 L40.6,80 L43.8,80 Z" />
-        <path
-            android:fillColor="#FF272F3E"
-            android:pathData="M70,46 L78,53 L80.4,80 L77.2,80 Z" />
-        <path
-            android:fillColor="#FF272F3E"
-            android:pathData="M88,44 L98,56 L100.4,80 L95.2,80 Z" />
-        <!-- Snow only on the tops, above a ragged snowline. -->
-        <group>
-            <clip-path android:pathData="M0,0 L108,0 L108,54.32 L102,55.3 L96,54.74 L90,55.49 L84,55.56 L78,53.77 L72,53.6 L66,56.24 L60,54.39 L54,54.31 L48,56.75 L42,55.06 L36,56.24 L30,55.08 L24,55.61 L18,54.04 L12,55.59 L6,56.34 L0,55.23 Z" />
-            <path android:fillColor="#FFB4C0CF" android:pathData="M0,70 L9,63 L19,54 L26,58 L35,43 L43,51 L51,47 L59,56 L70,46 L78,53 L88,44 L98,56 L108,51 L108,108 L0,108 Z" />
-            <path android:fillColor="#FF5F6D86" android:pathData="M19,54 L9,63 L0,70 L-3.8,80 L7.6,80 Z" />
-            <path android:fillColor="#FF5F6D86" android:pathData="M35,43 L26,58 L23.6,80 L27.8,80 Z" />
-            <path android:fillColor="#FF5F6D86" android:pathData="M51,47 L43,51 L40.6,80 L43.8,80 Z" />
-            <path android:fillColor="#FF5F6D86" android:pathData="M70,46 L78,53 L80.4,80 L77.2,80 Z" />
-            <path android:fillColor="#FF5F6D86" android:pathData="M88,44 L98,56 L100.4,80 L95.2,80 Z" />
-        </group>
-        <!-- Haze at the foot, far away. -->
-        <path android:pathData="M0,54.84 L108,54.84 L108,80 L0,80 Z">
-            <aapt:attr name="android:fillColor">
-                <gradient
-                    android:type="linear"
-                    android:startX="0"
-                    android:startY="54.84"
-                    android:endX="0"
-                    android:endY="80">
-                    <item android:offset="0" android:color="#0034435C" />
-                    <item android:offset="1" android:color="#CC34435C" />
-                </gradient>
-            </aapt:attr>
-        </path>
-    </group>
-    <!-- Rolling hills, then nearer ones. -->
+        android:pathData="M50,26 L55,84 L94,84 Z" />
+    <!-- Snow on the top only: in shadow, then lit. -->
     <path
-        android:fillColor="#FF242E3D"
-        android:pathData="M0,71 Q12,65 24,69 Q38,74 52,67 Q66,61 80,68 Q94,74 108,67 L108,108 L0,108 Z" />
+        android:fillColor="#FF5F6D86"
+        android:pathData="M50,26 L51,43 L46.5,47 L42.5,43.5 L38,47.5 L34.5,44 Z" />
+    <path
+        android:fillColor="#FFB4C0CF"
+        android:pathData="M50,26 L64.5,44 L60,46.5 L56.5,42.5 L51,43 Z" />
+    <!-- Haze at the foot. -->
+    <path android:pathData="M0,60 L108,60 L108,84 L0,84 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="60"
+                android:endX="0"
+                android:endY="84">
+                <item android:offset="0" android:color="#0034435C" />
+                <item android:offset="1" android:color="#CC34435C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- The valley floor. -->
     <path
         android:fillColor="#FF1B2330"
-        android:pathData="M0,79 Q16,73 32,78 Q50,83 66,77 Q84,71 108,78 L108,108 L0,108 Z" />
+        android:pathData="M0,85 Q20,82 40,84.5 Q60,87 80,83.5 Q96,81 108,84 L108,108 L0,108 Z" />
     <!-- A line of spruce forest, and a few spruces close by. -->
     <path
         android:fillColor="#FF101922"
-        android:pathData="M0,108 L0,85 L1.2,80.78 L2.4,85 L3.6,80.99 L4.8,85 L6,82.81 L7.2,85 L8.4,80.73 L9.6,85 L10.8,81.23 L12,85 L13.2,82.1 L14.4,85 L15.6,82.91 L16.8,85 L18,80.4 L19.2,85 L20.4,81.58 L21.6,85 L22.8,80.84 L24,85 L25.2,80.36 L26.4,85 L27.6,80.86 L28.8,85 L30,80.24 L31.2,85 L32.4,81.82 L33.6,85 L34.8,80.6 L36,85 L37.2,81.67 L38.4,85 L39.6,80.19 L40.8,85 L42,80.36 L43.2,85 L44.4,82.71 L45.6,85 L46.8,82.59 L48,85 L49.2,82.35 L50.4,85 L51.6,80.1 L52.8,85 L54,81.69 L55.2,85 L56.4,81.12 L57.6,85 L58.8,82.1 L60,85 L61.2,81.48 L62.4,85 L63.6,81.84 L64.8,85 L66,81.95 L67.2,85 L68.4,81.24 L69.6,85 L70.8,81.25 L72,85 L73.2,80.29 L74.4,85 L75.6,80.95 L76.8,85 L78,80.21 L79.2,85 L80.4,80.43 L81.6,85 L82.8,80.03 L84,85 L85.2,80.99 L86.4,85 L87.6,82.51 L88.8,85 L90,80.42 L91.2,85 L92.4,80.11 L93.6,85 L94.8,80.29 L96,85 L97.2,81.29 L98.4,85 L99.6,80.86 L100.8,85 L102,82.37 L103.2,85 L104.4,80.51 L105.6,85 L106.8,81.28 L108,85 L108,85 L108,108 Z" />
+        android:pathData="M0,108 L0,87 L1.2,84.41 L2.4,87 L3.6,83.64 L4.8,87 L6,84.08 L7.2,87 L8.4,83.49 L9.6,87 L10.8,83.44 L12,87 L13.2,84.84 L14.4,87 L15.6,84.97 L16.8,87 L18,82.91 L19.2,87 L20.4,84.35 L21.6,87 L22.8,84.41 L24,87 L25.2,82.51 L26.4,87 L27.6,83.82 L28.8,87 L30,82.91 L31.2,87 L32.4,83.81 L33.6,87 L34.8,83.4 L36,87 L37.2,84.62 L38.4,87 L39.6,83.41 L40.8,87 L42,82.83 L43.2,87 L44.4,83.69 L45.6,87 L46.8,83.15 L48,87 L49.2,83.32 L50.4,87 L51.6,84.84 L52.8,87 L54,83.1 L55.2,87 L56.4,83.52 L57.6,87 L58.8,84.25 L60,87 L61.2,84.92 L62.4,87 L63.6,82.84 L64.8,87 L66,83.82 L67.2,87 L68.4,83.2 L69.6,87 L70.8,82.8 L72,87 L73.2,83.21 L74.4,87 L75.6,82.7 L76.8,87 L78,84.01 L79.2,87 L80.4,83 L81.6,87 L82.8,83.89 L84,87 L85.2,82.66 L86.4,87 L87.6,82.8 L88.8,87 L90,84.76 L91.2,87 L92.4,84.66 L93.6,87 L94.8,84.46 L96,87 L97.2,82.59 L98.4,87 L99.6,83.91 L100.8,87 L102,83.43 L103.2,87 L104.4,84.25 L105.6,87 L106.8,83.73 L108,87 L108,87 L108,108 Z" />
     <path
         android:fillColor="#FF101922"
-        android:pathData="M29,56 L29.87,61.14 L29.39,60.42 L30.92,66.29 L29.87,65.57 L31.36,71.43 L30.06,70.71 L32.5,76.57 L30.57,75.85 L33.81,81.71 L31.16,80.99 L33.72,86.86 L31.12,86.14 L35.12,92 L31.75,91.28 L29.4,92 L28.6,92 L26.25,91.28 L22.88,92 L26.88,86.14 L24.28,86.86 L26.84,80.99 L24.19,81.71 L27.43,75.85 L25.5,76.57 L27.94,70.71 L26.64,71.43 L28.13,65.57 L27.08,66.29 L28.61,60.42 L28.13,61.14 Z" />
+        android:pathData="M28,59 L28.83,63.86 L28.37,63.18 L29.82,68.71 L28.82,68.03 L30.23,73.57 L29,72.89 L31.3,78.43 L29.49,77.75 L32.54,83.29 L30.04,82.61 L32.46,88.14 L30.01,87.46 L33.78,93 L30.6,92.32 L28.4,93 L27.6,93 L25.4,92.32 L22.22,93 L25.99,87.46 L23.54,88.14 L25.96,82.61 L23.46,83.29 L26.51,77.75 L24.7,78.43 L27,72.89 L25.77,73.57 L27.18,68.03 L26.18,68.71 L27.63,63.18 L27.17,63.86 Z" />
     <path
         android:fillColor="#FF101922"
-        android:pathData="M35.5,71 L36.01,74 L35.73,73.58 L36.62,77 L36,76.58 L36.88,80 L36.12,79.58 L37.54,83 L36.42,82.58 L38.3,86 L36.76,85.58 L38.25,89 L36.74,88.58 L39.07,92 L37.11,91.58 L35.9,92 L35.1,92 L33.89,91.58 L31.93,92 L34.26,88.58 L32.75,89 L34.24,85.58 L32.7,86 L34.58,82.58 L33.46,83 L34.88,79.58 L34.12,80 L35,76.58 L34.38,77 L35.27,73.58 L34.99,74 Z" />
+        android:pathData="M34.5,73 L34.99,75.86 L34.72,75.46 L35.57,78.71 L34.98,78.31 L35.81,81.57 L35.09,81.17 L36.44,84.43 L35.37,84.03 L37.17,87.29 L35.7,86.89 L37.12,90.14 L35.68,89.74 L37.9,93 L36.03,92.6 L34.9,93 L34.1,93 L32.97,92.6 L31.1,93 L33.32,89.74 L31.88,90.14 L33.3,86.89 L31.83,87.29 L33.63,84.03 L32.56,84.43 L33.91,81.17 L33.19,81.57 L34.02,78.31 L33.43,78.71 L34.28,75.46 L34.01,75.86 Z" />
     <path
         android:fillColor="#FF101922"
-        android:pathData="M77,60 L77.78,64.57 L77.35,63.93 L78.71,69.14 L77.77,68.5 L79.1,73.71 L77.94,73.07 L80.11,78.29 L78.4,77.65 L81.27,82.86 L78.92,82.22 L81.2,87.43 L78.89,86.79 L82.44,92 L79.45,91.36 L77.4,92 L76.6,92 L74.55,91.36 L71.56,92 L75.11,86.79 L72.8,87.43 L75.08,82.22 L72.73,82.86 L75.6,77.65 L73.89,78.29 L76.06,73.07 L74.9,73.71 L76.23,68.5 L75.29,69.14 L76.65,63.93 L76.22,64.57 Z" />
-    <path
-        android:fillColor="#FF101922"
-        android:pathData="M83.5,73 L83.96,75.71 L83.71,75.33 L84.52,78.43 L83.96,78.05 L84.75,81.14 L84.06,80.76 L85.35,83.86 L84.33,83.48 L86.04,86.57 L84.64,86.19 L85.99,89.29 L84.62,88.91 L86.73,92 L84.95,91.62 L83.9,92 L83.1,92 L82.05,91.62 L80.27,92 L82.38,88.91 L81.01,89.29 L82.36,86.19 L80.96,86.57 L82.67,83.48 L81.65,83.86 L82.94,80.76 L82.25,81.14 L83.04,78.05 L82.48,78.43 L83.29,75.33 L83.04,75.71 Z" />
+        android:pathData="M80,65 L80.68,69 L80.31,68.44 L81.5,73 L80.67,72.44 L81.84,77 L80.83,76.44 L82.72,81 L81.22,80.44 L83.74,85 L81.68,84.44 L83.67,89 L81.65,88.44 L84.76,93 L82.14,92.44 L80.4,93 L79.6,93 L77.86,92.44 L75.24,93 L78.35,88.44 L76.33,89 L78.32,84.44 L76.26,85 L78.78,80.44 L77.28,81 L79.17,76.44 L78.16,77 L79.33,72.44 L78.5,73 L79.69,68.44 L79.32,69 Z" />
 </vector>

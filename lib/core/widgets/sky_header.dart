@@ -51,7 +51,6 @@ class _Palette {
     required this.shadow,
     required this.rock,
     required this.haze,
-    required this.hills,
     required this.nearHills,
     required this.forest,
     required this.light,
@@ -75,10 +74,7 @@ class _Palette {
   /// The haze at the foot of the range, far away.
   final Color haze;
 
-  /// The rounded foothills in front of the range.
-  final Color hills;
-
-  /// The nearer foothills, a little darker.
+  /// The valley floor the forest stands on.
   final Color nearHills;
 
   /// The spruce forest and the tall trees in front.
@@ -104,7 +100,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFFA8A4C2),
     rock: Color(0xFF6E6876),
     haze: Color(0xFFD9C4C0),
-    hills: Color(0xFF7A5C50),
     nearHills: Color(0xFF5E463E),
     forest: Color(0xFF243630),
     light: Color(0xFFFFD9A0),
@@ -118,7 +113,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFFA3B6CC),
     rock: Color(0xFF66717F),
     haze: Color(0xFFC9D8E6),
-    hills: Color(0xFF7B6050),
     nearHills: Color(0xFF5F4A3E),
     forest: Color(0xFF1F3A2E),
     light: Color(0xFFFFF4D6),
@@ -132,7 +126,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFF7E7B9C),
     rock: Color(0xFF4C4E66),
     haze: Color(0xFF7E6F86),
-    hills: Color(0xFF453A48),
     nearHills: Color(0xFF332B38),
     forest: Color(0xFF18222C),
     light: Color(0xFFE9E2CC),
@@ -146,7 +139,6 @@ const Map<SkyPhase, _Palette> _palettes = {
     shadow: Color(0xFF5F6D86),
     rock: Color(0xFF384459),
     haze: Color(0xFF34435C),
-    hills: Color(0xFF242E3D),
     nearHills: Color(0xFF1B2330),
     forest: Color(0xFF101922),
     light: Color(0xFFE9E2CC),
@@ -267,15 +259,21 @@ class _SkyPainter extends CustomPainter {
       _birds(canvas, size, Random(seed + 3), clearTop * 0.8);
     }
 
-    // The range: tall, jagged and continuous across the whole view.
-    _range(canvas, random, w, y, land, lightCentre.dx);
+    // A farther range behind, paler and hazier with the distance,
+    // showing between the summits of the near one. Its own random
+    // numbers, so the near range keeps its shape.
+    _farRange(canvas, Random(seed + 7), w, y, land);
 
-    // Rounded foothills in front of its foot, two layers.
-    _hills(canvas, random, w, h, y(0.66), land * 0.20, palette.hills);
+    // The range: tall, jagged and continuous across the whole view, its
+    // foot running down into the valley, behind the forest.
+    _range(canvas, random, w, y, land, lightCentre.dx);
     if (palette.mist) {
-      _mist(canvas, w, y(0.58), land * 0.25);
+      _mist(canvas, w, y(0.62), land * 0.25);
     }
-    _hills(canvas, random, w, h, y(0.76), land * 0.16, palette.nearHills);
+
+    // The valley floor the forest stands on: low and nearly flat, so
+    // nothing hides the foot of the mountains.
+    _hills(canvas, random, w, h, y(0.86), land * 0.04, palette.nearHills);
 
     // A long, dense line of spruce forest on the flats.
     _forestLine(canvas, Random(seed + 5), w, h, y(0.84), land);
@@ -315,7 +313,8 @@ class _SkyPainter extends CustomPainter {
     double lightX,
   ) {
     final ridge = _rangeRidge(random, w, y(0.66), land * 0.56);
-    final foot = y(0.80);
+    // Down to the forest line, so the mountains rise out of the valley.
+    final foot = y(0.88);
     final shape = _pathBelow(ridge, foot);
     final faces = _shadedFaces(ridge, foot, land, lightX);
     canvas
@@ -350,7 +349,7 @@ class _SkyPainter extends CustomPainter {
     canvas.restore();
 
     // Haze at the foot, far away.
-    final lower = Rect.fromLTRB(0, y(0.45), w, foot);
+    final lower = Rect.fromLTRB(0, y(0.50), w, foot);
     canvas
       ..drawRect(
         lower,
@@ -363,6 +362,45 @@ class _SkyPainter extends CustomPainter {
               palette.haze.withValues(alpha: 0.8),
             ],
           ).createShader(lower),
+      )
+      ..restore();
+  }
+
+  /// A farther range behind the near one: a smooth, higher ridge in the
+  /// colours of the near range blended toward the sky, as distance does,
+  /// with pale snow on its tops and no shading (too far to see).
+  void _farRange(
+    Canvas canvas,
+    Random random,
+    double w,
+    double Function(double) y,
+    double land,
+  ) {
+    final ridge = _rangeRidge(random, w, y(0.58), land * 0.62);
+    final foot = y(0.80);
+    final shape = _pathBelow(ridge, foot);
+    final distance = palette.sky.last;
+    canvas.drawPath(
+      shape,
+      Paint()..color = Color.lerp(palette.rock, distance, 0.45)!,
+    );
+    // Snow on the highest parts only, faded like the rock.
+    final highest = ridge.map((point) => point.dy).reduce(min);
+    final snowline = highest + (foot - highest) * 0.22;
+    // A ragged snowline, as on the near range.
+    final snowArea = Path()
+      ..moveTo(0, 0)
+      ..lineTo(w, 0);
+    for (var x = w; x >= 0; x -= 8) {
+      snowArea.lineTo(x, snowline + (random.nextDouble() - 0.4) * land * 0.06);
+    }
+    snowArea.close();
+    canvas
+      ..save()
+      ..clipPath(snowArea)
+      ..drawPath(
+        shape,
+        Paint()..color = Color.lerp(palette.snow, distance, 0.35)!,
       )
       ..restore();
   }
