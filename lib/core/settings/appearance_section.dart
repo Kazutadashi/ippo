@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../app_state.dart';
 import '../theme.dart';
 import '../widgets/color_circles.dart';
+import '../widgets/color_wheel.dart';
 import '../widgets/section_card.dart';
 
 /// Lets the user pick light, dark or system mode, and an accent colour.
@@ -48,6 +49,12 @@ class AppearanceSection extends StatelessWidget {
               !isSystemChosen && choice.color.toARGB32() == accent.toARGB32(),
           onTap: () => appState.setAccentColor(accentColorToHex(choice.color)),
         ),
+      // Any other colour, from a wheel.
+      CustomColorCircle(
+        color: isSystemChosen || isPresetColor(accent) ? null : accent,
+        purpose: 'accent colour',
+        onPicked: (color) => appState.setAccentColor(accentColorToHex(color)),
+      ),
     ];
 
     return Column(

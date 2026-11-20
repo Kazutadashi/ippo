@@ -17,20 +17,31 @@ class AccentChoice {
   final Color color;
 }
 
-/// The accent colours offered in settings.
+/// The colours offered for the accent and for habits, around the colour
+/// wheel from red to pink, then brown and grey. Any other colour can be
+/// picked from the wheel (see `color_wheel.dart`).
 const List<AccentChoice> accentChoices = [
   AccentChoice('Red', Color(0xFFE53935)),
+  AccentChoice('Deep orange', Color(0xFFF4511E)),
   AccentChoice('Orange', Color(0xFFFB8C00)),
   AccentChoice('Amber', Color(0xFFFFB300)),
+  AccentChoice('Lime', Color(0xFFC0CA33)),
+  AccentChoice('Light green', Color(0xFF7CB342)),
   AccentChoice('Green', Color(0xFF43A047)),
   AccentChoice('Teal', Color(0xFF00897B)),
+  AccentChoice('Cyan', Color(0xFF00ACC1)),
   AccentChoice('Blue', Color(0xFF1E88E5)),
   AccentChoice('Indigo', Color(0xFF3949AB)),
+  AccentChoice('Deep purple', Color(0xFF5E35B1)),
   AccentChoice('Purple', Color(0xFF8E24AA)),
   AccentChoice('Pink', Color(0xFFD81B60)),
   AccentChoice('Brown', Color(0xFF6D4C41)),
   AccentChoice('Grey', Color(0xFF757575)),
 ];
+
+/// Whether [color] is one of [accentChoices].
+bool isPresetColor(Color color) =>
+    accentChoices.any((choice) => choice.color.toARGB32() == color.toARGB32());
 
 /// The accent colour until the user picks one, when the phone has no
 /// system colour (Linux, or Android before version 12).

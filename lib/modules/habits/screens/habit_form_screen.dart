@@ -10,6 +10,7 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/theme.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/color_circles.dart';
+import '../../../core/widgets/color_wheel.dart';
 import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
@@ -84,7 +85,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   }
 
   /// "Default" (the accent colour) first, then the same colours as the
-  /// accent colours in Settings.
+  /// accent colours in Settings, then any colour from a wheel.
   List<Widget> _colorCircles(BuildContext context) {
     final picked = _color?.toARGB32();
     return [
@@ -102,6 +103,12 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
           isSelected: picked == choice.color.toARGB32(),
           onTap: () => setState(() => _color = choice.color),
         ),
+      // Any other colour, from a wheel.
+      CustomColorCircle(
+        color: _color == null || isPresetColor(_color!) ? null : _color,
+        purpose: 'habit colour',
+        onPicked: (color) => setState(() => _color = color),
+      ),
     ];
   }
 
