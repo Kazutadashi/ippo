@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
+import 'package:ippo/modules/sleep/screens/nap_form_screen.dart';
 import 'package:ippo/modules/sleep/screens/sleep_screen.dart';
 import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_log.dart';
@@ -153,5 +154,19 @@ void main() {
 
     // An overflow would make the test framework report an error.
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a nap length sets the start, keeping the end', (tester) async {
+    await openSleepScreen(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: NapFormScreen.addNap(appState: appState, day: today()),
+      ),
+    );
+
+    await tester.tap(find.text('30 min'));
+    await tester.pump();
+
+    expect(find.text('30 min of sleep'), findsOneWidget);
   });
 }

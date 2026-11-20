@@ -45,6 +45,9 @@ class NapFormScreen extends StatefulWidget {
   State<NapFormScreen> createState() => _NapFormScreenState();
 }
 
+/// The nap lengths offered as one-tap choices, in minutes.
+const List<int> _napLengths = [15, 20, 30, 45, 60, 90];
+
 class _NapFormScreenState extends State<NapFormScreen> {
   late ClockTime _start = widget.nap?.startClock ?? _napStartGuess();
   late ClockTime _end = widget.nap?.endClock ?? _napEndGuess();
@@ -58,6 +61,14 @@ class _NapFormScreenState extends State<NapFormScreen> {
   static ClockTime _napEndGuess() {
     final now = DateTime.now();
     return ClockTime(now.hour, now.minute);
+  }
+
+  /// Sets the start [minutes] before the end, which stays: a nap is
+  /// mostly logged just after waking, when only its length is unknown.
+  void _setLength(int minutes) {
+    final end = DateTime(2000, 1, 1, _end.hour, _end.minute);
+    final start = end.subtract(Duration(minutes: minutes));
+    setState(() => _start = ClockTime(start.hour, start.minute));
   }
 
   /// The nap's day.
@@ -146,6 +157,23 @@ class _NapFormScreenState extends State<NapFormScreen> {
                     onChanged: (time) => setState(() => _end = time),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Common lengths, ending at the end time: one tap instead of
+            // picking a start time.
+            const FieldLabel('Length'),
+            Wrap(
+              spacing: Spacing.tight,
+              runSpacing: Spacing.tight,
+              children: [
+                for (final minutes in _napLengths)
+                  ChoiceChip(
+                    label: Text(formatDuration(Duration(minutes: minutes))),
+                    selected:
+                        problem == null && period.duration.inMinutes == minutes,
+                    onSelected: (_) => _setLength(minutes),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
