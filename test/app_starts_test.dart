@@ -13,6 +13,7 @@ import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/today_screen.dart';
 import 'package:ippo/core/widgets/day_bar.dart';
 import 'package:ippo/core/widgets/info_tile.dart';
+import 'package:ippo/core/widgets/lately_card.dart';
 import 'package:ippo/core/widgets/week_grid.dart';
 import 'package:ippo/main.dart';
 import 'package:material_ui/material_ui.dart';
@@ -137,12 +138,21 @@ void main() {
       },
     );
 
-    // The Food tile shows today's total so far, and the week grid a
-    // row for food.
+    // The Food tile shows today's total so far, the week grid a row for
+    // food, and Lately this week's average (also 80 kcal, from one day),
+    // with no usual yet.
     expect(find.text('FOOD'), findsOneWidget);
-    expect(find.text('80 kcal'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(LatelyCard),
+        matching: find.text('80 kcal'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('80 kcal'), findsNWidgets(2));
     expect(find.text('so far'), findsOneWidget);
     expect(find.byType(WeekGrid), findsOneWidget);
+    expect(find.textContaining('Your usual shows here'), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

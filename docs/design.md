@@ -118,8 +118,8 @@ never left for the reader to guess.
 
 **Anyone must understand it without asking.** Imagine someone who has
 never opened the app: every label says plainly what its number is,
-every picture is explained on the spot (the logging calendar says in a
-sentence what a square is), and nothing is shown just because it can
+every picture is explained on the spot (Lately says in a sentence
+what its two columns are), and nothing is shown just because it can
 be. A number that needs explaining, or that does not help decide
 anything today, does not belong on Home.
 
@@ -129,12 +129,15 @@ anything today, does not belong on Home.
   "Steps (k)", "Sleep (h)"), with one short value per day, like a small
   table (`IppoModule.weekRows`). A day without data shows a quiet dash.
   A module without any data yet has no row.
-- **The logging calendar** ("Days logged", `LoggingCalendar`), at the
-  bottom: one square per day for as many weeks as fit, like a
-  contribution graph, darker the more areas were logged that day
-  (`IppoModule.datesLogged`), with a sentence saying so and a legend
-  from "None" to "All 4". Days still to come are empty outlines. The
-  data is the point of Ippo, so this shows which days have gaps.
+- **Lately** (`LatelyCard`), at the bottom: one row per measure
+  (`IppoModule.trendMeasures`): this week's average (the last 7 days),
+  your usual (the 28 days before), and an arrow for which way it moved,
+  never coloured, since up or down is not good or bad in itself. Only
+  days with something logged count, so a gap never looks like a zero;
+  the usual waits for 7 days of data, and a change within 5 % is shown
+  as steady. A last line says on how many of those 35 days anything was
+  logged, since gaps make a week say less. It replaced a "days logged"
+  calendar, which looked the same every day for anyone logging daily.
 - **One tile per module** (`IppoModule.homeTile`, drawn by
   `HomeTileCard`). Every tile has the same four parts, in the same
   places, so tiles side by side line up:
@@ -565,7 +568,9 @@ and shares it, which keeps every screen fast as years of data build up.
 A new module also needs:
 
 - `homeTile` (its tile on Home), and if it has them, `weekRows` (its
-  rows of the week grid), `datesLogged` (for the logging calendar) and
+  rows of the week grid), `trendMeasures` (its rows of Lately),
+  `datesLogged` (days with anything logged, for Lately's last line),
+  `demoEvents` (its demo data) and
   `buildSettingsCard` (a card in Settings), from `IppoModule`;
 - an entry in `lib/modules/all_modules.dart`;
 - its screens in `test/screens_fit_test.dart`, with long sample data.

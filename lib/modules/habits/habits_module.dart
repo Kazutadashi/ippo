@@ -100,6 +100,30 @@ class HabitsModule extends IppoModule {
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
 
+  /// The share of habits done, on days with any habit marked.
+  @override
+  List<TrendMeasure> trendMeasures(AppState appState) {
+    final log = HabitLog.of(appState);
+    final habits = log.shownHabits;
+    if (habits.isEmpty) {
+      return const [];
+    }
+    return [
+      TrendMeasure(
+        label: 'Habits done',
+        valueOn: (date) {
+          final anyMarked = habits.any(
+            (habit) => log.markOn(habit.id, date) != DayMark.none,
+          );
+          return anyMarked
+              ? 100 * _doneOn(log, habits, date) / habits.length
+              : null;
+        },
+        format: (percent) => '${percent.round()} %',
+      ),
+    ];
+  }
+
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => habitsDemoEvents(plan);
 }

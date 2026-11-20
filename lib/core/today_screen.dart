@@ -11,13 +11,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../modules/all_modules.dart';
 import 'app_state.dart';
-import 'module.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
+import 'module.dart';
+import 'trends.dart';
 import 'widgets/day_bar.dart';
 import 'widgets/follows_today.dart';
-import 'widgets/logging_calendar.dart';
 import 'widgets/info_tile.dart';
+import 'widgets/lately_card.dart';
 import 'widgets/section_card.dart';
 import 'widgets/sky_header.dart';
 import 'widgets/week_grid.dart';
@@ -61,11 +62,20 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
         for (final row in module.weekRows(appState, day))
           (title: module.title, icon: module.icon, row: row),
     ];
-    // How many areas have data on each day, for the logging calendar.
-    final loggedAreas = <String, int>{};
-    for (final module in allModules) {
-      for (final date in module.datesLogged(appState)) {
-        loggedAreas[date] = (loggedAreas[date] ?? 0) + 1;
+    // Lately: each module's measures, this week against the usual.
+    final trends = [
+      for (final module in allModules)
+        for (final measure in module.trendMeasures(appState))
+          trendOf(measure, day),
+    ];
+    // On how many of those days anything at all was logged.
+    final loggedDates = {
+      for (final module in allModules) ...module.datesLogged(appState),
+    };
+    var daysLogged = 0;
+    for (var back = 0; back < trendRecentDays + trendUsualDays; back++) {
+      if (loggedDates.contains(formatDate(addDays(day, -back)))) {
+        daysLogged++;
       }
     }
     final eventLog = appState.eventLog;
@@ -188,16 +198,10 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     const SizedBox(height: tileGap),
                   ],
                   _TileGrid(tiles: tiles),
-                  // The last months: which days have gaps in the data.
-                  if (loggedAreas.isNotEmpty) ...[
+                  // Lately: the last week against the weeks before.
+                  if (trends.isNotEmpty) ...[
                     const SizedBox(height: tileGap),
-                    LoggingCalendar(
-                      day: day,
-                      loggedAreas: loggedAreas,
-                      areaNames: [
-                        for (final module in allModules) module.title,
-                      ],
-                    ),
+                    LatelyCard(trends: trends, daysLogged: daysLogged),
                   ],
                 ],
               ),

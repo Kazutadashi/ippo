@@ -8,7 +8,8 @@ import '../../core/module.dart';
 import 'exercise_log.dart';
 
 /// Four bodyweight exercises, trained every other day and slowly
-/// getting better, and the day's steps typed in each evening.
+/// getting better, and the day's steps typed in each evening, slowly
+/// going up.
 List<DemoEvent> exerciseDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
   // Each exercise: its name, reps or seconds, and the best set on the
@@ -70,9 +71,10 @@ List<DemoEvent> exerciseDemoEvents(DemoPlan plan) {
         'steps_recorded',
         {
           'date': date,
+          // Slowly walking more over the weeks, so Lately shows a rise.
           'steps': isToday
               ? 4200 + plan.random.nextInt(1500)
-              : 5500 + plan.random.nextInt(6500),
+              : (6000 + 3500 * progress + plan.wobble(1500)).round(),
         },
       ),
     );

@@ -9,7 +9,7 @@ import '../../core/module.dart';
 import 'sleep_log.dart';
 
 /// Getting up around 07:00 and to bed around 23:15, a little later at
-/// weekends, with a nap on Saturday afternoons.
+/// weekends and later this week, with a nap on Saturday afternoons.
 List<DemoEvent> sleepDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
   for (final day in plan.days) {
@@ -27,7 +27,13 @@ List<DemoEvent> sleepDemoEvents(DemoPlan plan) {
     );
     // Hours past 24 are after midnight; the night still belongs to
     // [day]. Tonight's bedtime is left out by the plan until it happens.
-    final bedtime = plan.at(day, (isWeekend ? 23.8 : 23.2) + plan.wobble(0.5));
+    // This week, bedtimes slip about 40 minutes later, so Lately shows
+    // less sleep than usual.
+    final later = plan.daysAgo(day) < 7 ? 0.7 : 0.0;
+    final bedtime = plan.at(
+      day,
+      (isWeekend ? 23.8 : 23.2) + later + plan.wobble(0.5),
+    );
     events.add(
       plan.event(
         bedtime.add(const Duration(minutes: 1)),

@@ -116,6 +116,25 @@ class SleepModule extends IppoModule {
   @override
   Widget buildScreen(AppState appState) => SleepScreen(appState: appState);
 
+  /// Hours slept each night.
+  @override
+  List<TrendMeasure> trendMeasures(AppState appState) {
+    final log = SleepLog.of(appState);
+    if (log.moments.every((moment) => moment.isDeleted)) {
+      return const [];
+    }
+    return [
+      TrendMeasure(
+        label: 'Sleep',
+        valueOn: (date) {
+          final minutes = log.sleepBefore(date)?.inMinutes;
+          return minutes?.toDouble();
+        },
+        format: (minutes) => formatDuration(Duration(minutes: minutes.round())),
+      ),
+    ];
+  }
+
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => sleepDemoEvents(plan);
 }

@@ -120,6 +120,41 @@ class ExerciseModule extends IppoModule {
   Widget buildScreen(AppState appState) =>
       ExerciseHomeScreen(appState: appState);
 
+  /// Workout days a week (from the first day with a set) and steps, on
+  /// days with steps typed in.
+  @override
+  List<TrendMeasure> trendMeasures(AppState appState) {
+    final log = ExerciseLog.of(appState);
+    final workoutDates = {
+      for (final set in log.sets)
+        if (!set.isDeleted) set.date,
+    };
+    // Before the first workout ever, a day without one says nothing.
+    final firstWorkout = workoutDates.isEmpty
+        ? null
+        : workoutDates.reduce((a, b) => a.compareTo(b) < 0 ? a : b);
+    return [
+      if (firstWorkout != null)
+        TrendMeasure(
+          label: 'Workouts',
+          valueOn: (date) => date.compareTo(firstWorkout) < 0
+              ? null
+              : (workoutDates.contains(date) ? 1 : 0),
+          format: (days) {
+            final shown = roundToTenth(days);
+            return '${formatAmount(shown)} ${shown == 1 ? 'day' : 'days'}';
+          },
+          isPerWeek: true,
+        ),
+      if (log.steps.any((count) => !count.isDeleted))
+        TrendMeasure(
+          label: 'Steps',
+          valueOn: (date) => log.stepsOn(date)?.steps.toDouble(),
+          format: (steps) => formatThousands(steps.round()),
+        ),
+    ];
+  }
+
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => exerciseDemoEvents(plan);
 }

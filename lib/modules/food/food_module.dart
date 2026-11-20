@@ -17,6 +17,8 @@ import 'food_diary.dart';
 import 'food_entry.dart';
 import 'screens/food_diary_screen.dart';
 import 'food_demo.dart';
+import '../../core/number_input.dart';
+import '../../core/units.dart';
 
 /// The food module, as seen by the core app.
 class FoodModule extends IppoModule {
@@ -151,6 +153,30 @@ class FoodModule extends IppoModule {
 
   @override
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);
+
+  /// Energy eaten, on days with food logged, and weight, on days
+  /// weighed (the body details live with Food).
+  @override
+  List<TrendMeasure> trendMeasures(AppState appState) {
+    final diary = FoodDiary.of(appState);
+    final body = BodyLog.of(appState);
+    return [
+      if (diary.entries.isNotEmpty)
+        TrendMeasure(
+          label: 'Food',
+          valueOn: (date) => diary.entriesOn(date).isEmpty
+              ? null
+              : diary.totalOn(date).energyKcal,
+          format: (kcal) => '${formatThousands(kcal.round())} kcal',
+        ),
+      if (body.weights.any((weight) => !weight.isDeleted))
+        TrendMeasure(
+          label: 'Weight',
+          valueOn: (date) => body.weightOn(date)?.weightKg,
+          format: formatWeight,
+        ),
+    ];
+  }
 
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => foodDemoEvents(plan);

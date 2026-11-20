@@ -12,9 +12,11 @@ import 'package:material_ui/material_ui.dart';
 import 'app_state.dart';
 import 'dates.dart';
 import 'demo/demo_plan.dart';
+import 'trends.dart';
 import 'widgets/info_tile.dart';
 
 export 'demo/demo_plan.dart' show DemoEvent, DemoPlan;
+export 'trends.dart' show TrendMeasure;
 export 'widgets/info_tile.dart' show LabelledValues, TileDetail, TileRow;
 
 /// A module: one area of the app, such as the food diary.
@@ -66,6 +68,11 @@ abstract class IppoModule {
   /// Every day (`YYYY-MM-DD`) with anything logged in this module, for
   /// Home's logging calendar, which shows days with gaps in the data.
   Set<String> datesLogged(AppState appState) => const {};
+
+  /// The module's measures on Home's "Lately" card, such as steps or
+  /// hours slept: each compares this week with the four weeks before.
+  /// Empty for none.
+  List<TrendMeasure> trendMeasures(AppState appState) => const [];
 
   /// Made-up events for the demo (Settings › Try the demo): a few weeks
   /// of everyday use of this module, made with [plan]. Empty for none.
