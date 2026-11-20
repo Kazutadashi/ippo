@@ -12,20 +12,19 @@ import 'package:material_ui/material_ui.dart';
 import '../dates.dart';
 import 'sky_header.dart';
 
-/// How tall the ridge along the band's bottom edge is.
-const double _ridgeHeight = 16;
+/// How much taller than a plain top bar the band is, for its fade.
+const double _fadeHeight = 16;
 
 /// A tab's top bar on a band of sky: the colours of the sky at this
-/// hour, a few stars at dusk and night, faint mountains far off, and a
-/// ridge in the page's colour along the bottom, so the band flows into
-/// the page as the Home landscape does. The title and buttons are white
+/// hour, a few stars at dusk and night, and faint mountains far off,
+/// all fading into the page at the bottom, as the Home landscape does. The title and buttons are white
 /// on it, whatever the theme.
 ///
 /// It is a plain [AppBar] otherwise, with the same [title] and
 /// [actions].
 class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Creates the bar.
-  const SkyAppBar({super.key, required this.title, this.actions});
+  const SkyAppBar({super.key, required this.title, this.actions, this.phase});
 
   /// The tab's name.
   final Widget title;
@@ -33,8 +32,12 @@ class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Buttons on the right, such as the day picker.
   final List<Widget>? actions;
 
+  /// The sky to draw, or null for the sky at this hour (always, in the
+  /// app; tests set it to look at each sky).
+  final SkyPhase? phase;
+
   @override
-  Size get preferredSize => const Size.fromHeight(52 + _ridgeHeight);
+  Size get preferredSize => const Size.fromHeight(52 + _fadeHeight);
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +49,15 @@ class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
       // White on the sky; white icons in the phone's status bar too.
       foregroundColor: Colors.white,
       systemOverlayStyle: SystemUiOverlayStyle.light,
-      // Room below the buttons for the ridge, so nothing sits on it.
+      // Room below the buttons for the fade, so nothing sits on it.
       bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(_ridgeHeight),
+        preferredSize: Size.fromHeight(_fadeHeight),
         child: SizedBox.shrink(),
       ),
       flexibleSpace: ExcludeSemantics(
         child: CustomPaint(
           painter: _BandPainter(
-            phase: SkyPhase.of(now),
+            phase: phase ?? SkyPhase.of(now),
             page: page,
             // The same mountains all day, new ones each day, as on Home.
             seed: SkyHeader.seedFor(currentDay(now)),
@@ -107,16 +110,25 @@ class _BandPainter extends CustomPainter {
     }
 
     // Faint mountains far off, in the rock colour faded into the sky.
-    final far = mountainRidge(random, w, h - 2, h * 0.5);
+    final far = mountainRidge(random, w, h * 0.95, h * 0.45);
     canvas.drawPath(
       _below(far, h),
-      Paint()..color = Color.lerp(rockColorFor(phase), sky[1], 0.55)!,
+      Paint()..color = Color.lerp(rockColorFor(phase), sky[1], 0.45)!,
     );
 
-    // A low ridge in the page's own colour along the bottom: the page
-    // rises into the band like land into the sky.
-    final near = mountainRidge(random, w, h + 1, _ridgeHeight);
-    canvas.drawPath(_below(near, h + 1), Paint()..color = page);
+    // Then the whole lower half fades into the page, as the Home
+    // landscape does: no hard edge where the band ends, and the
+    // mountains sink into the page instead of standing on it.
+    final fade = Rect.fromLTRB(0, h * 0.4, w, h + 1);
+    canvas.drawRect(
+      fade,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [page.withValues(alpha: 0), page],
+        ).createShader(fade),
+    );
   }
 
   /// The area under [ridge], down to [bottom].
