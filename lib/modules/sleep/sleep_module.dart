@@ -42,7 +42,7 @@ class SleepModule extends IppoModule {
     final average = _averageSleep(log, day);
     final averageRow = average == null
         ? null
-        : TileRow('Nightly avg (7 days)', formatDuration(average));
+        : TileRow('Avg (7 nights)', formatDuration(average));
     if (sleptBefore == null || bedtimeBefore == null || wakeUp == null) {
       return HomeTile(
         value: HomeTile.unknownValue,

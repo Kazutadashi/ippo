@@ -22,6 +22,7 @@ class AppSettings {
     required this.accentColor,
     required this.clockStyle,
     this.usesTrueBlack = false,
+    this.units,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -61,6 +62,7 @@ class AppSettings {
       accentColor: _textOrNull(json['accent_color']),
       clockStyle: _textOrNull(json['clock_style']),
       usesTrueBlack: json['true_black'] == true,
+      units: _textOrNull(json['units']),
     );
   }
 
@@ -91,6 +93,14 @@ class AppSettings {
   /// on OLED screens and has the strongest contrast.
   final bool usesTrueBlack;
 
+  /// How measurements are shown: `metric` (kg, cm) or `imperial` (lb,
+  /// feet and inches), or null for the default (metric). The data is
+  /// always metric.
+  final String? units;
+
+  /// Whether measurements are shown in imperial units.
+  bool get usesImperialUnits => units == 'imperial';
+
   /// Whether times are shown on a 12-hour clock.
   bool get uses12HourClock => clockStyle == '12h';
 
@@ -102,6 +112,7 @@ class AppSettings {
     String? accentColor,
     String? clockStyle,
     bool? usesTrueBlack,
+    String? units,
   }) {
     return AppSettings(
       deviceId: deviceId,
@@ -111,6 +122,7 @@ class AppSettings {
       accentColor: accentColor ?? this.accentColor,
       clockStyle: clockStyle ?? this.clockStyle,
       usesTrueBlack: usesTrueBlack ?? this.usesTrueBlack,
+      units: units ?? this.units,
     );
   }
 
@@ -123,6 +135,7 @@ class AppSettings {
     'accent_color': accentColor,
     'clock_style': clockStyle,
     'true_black': usesTrueBlack,
+    'units': units,
   };
 }
 

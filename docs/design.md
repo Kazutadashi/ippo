@@ -110,53 +110,59 @@ than a day.
 The page follows the way Apple's Weather app makes numbers easy to
 read: one tile per subject, every tile built the same way, and **no
 number without its context**. Today's value is large; the usual is
-always written out next to it ("7-day avg 1326 kcal"), never left for
-the reader to guess.
+always in a row of its own with a plain label ("Avg (7 days)"),
+never left for the reader to guess.
+
+**Anyone must understand it without asking.** Imagine someone who has
+never opened the app: every label says plainly what its number is,
+every picture is explained on the spot (the logging calendar says in a
+sentence what a square is), and nothing is shown just because it can
+be. A number that needs explaining, or that does not help decide
+anything today, does not belong on Home.
 
 - **The week grid** ("Last 7 days", `WeekGrid`): the days across the
   top, today's in the accent colour, and one row per module, named with
   its unit on the left ("Habits (%)", "Food (kcal)", "Exercises",
-  "Sleep (h)"), with one short value per day, like a small table
-  (`IppoModule.weekRow`). A day without data shows a quiet dash. A
-  module without any data yet has no row.
+  "Steps (k)", "Sleep (h)"), with one short value per day, like a small
+  table (`IppoModule.weekRows`). A day without data shows a quiet dash.
+  A module without any data yet has no row.
 - **The logging calendar** ("Days logged", `LoggingCalendar`), at the
   bottom: one square per day for as many weeks as fit, like a
   contribution graph, darker the more areas were logged that day
-  (`IppoModule.datesLogged`). The data is the point of Ippo, so this
-  shows at a glance which days have gaps to fill in.
+  (`IppoModule.datesLogged`), with a sentence saying so and a legend
+  from "None" to "All 4". Days still to come are empty outlines. The
+  data is the point of Ippo, so this shows which days have gaps.
 - **One tile per module** (`IppoModule.homeTile`, drawn by
   `HomeTileCard`). Every tile has the same four parts, in the same
   places, so tiles side by side line up:
   1. the header: the module's icon in the accent colour and its title
      in small grey capitals ("FOOD");
   2. **today's value**, large (digits large, units small and grey:
-     `ValueText`), with a word after it that says what it is: "4 of 5
-     done", "1007 kcal so far", "7 h 8 min slept";
+     `ValueText`), with a word after it that says what it is: "4 of 8
+     done", "1267 kcal of 2000", "6,390 steps", "7 h 8 min slept";
   3. **one mark**, in a row of fixed height: one dot per habit in its
-     own colour; protein, carbs and fat as labelled numbers; one arrow
-     per exercise (up: beat last time, dash: the same, down: less, in
-     grey, never red; a dot: done for the first time; a faint ring: not
-     done yet); last night as a bar from bedtime to wake-up over a
-     faint bar of the usual night;
-  4. **one or two short grey lines**: one fact ("Last meal 8 h ago",
-     "Read 10 pages: 30 days", "Awake 20 h 41 min", "4 beat last
-     time"), then the comparison with the usual, **always last and
-     always written out**: "7-day avg 3.9 of 5", "Trained 3 of the last
-     7 days".
+     own colour; protein, carbs and fat with bars against their daily
+     amounts (red past them); a badge for the day's workout ("4
+     exercises today" or "Rest day"); last night as one bar from
+     bedtime to waking up. With nothing logged, a short note takes its
+     place, saying exactly what is missing ("Bedtime not logged");
+  4. **one or two rows** (`TileRow`): a grey label at the left and its
+     number at the right edge, so numbers line up down a tile and
+     across a row of tiles: "Best streak 30 days", "Left today 733
+     kcal" (or "Over the limit", in red), "Awake for 8 h 52 min", then
+     the usual, last: "Avg (7 days)", "Avg (7 nights)".
+     Never loose sentences.
 - **The usual** is the 7 days before the day shown, not counting days
   with nothing logged (a day not logged is not a day without food).
   The day shown is left out: it is usually not over yet.
-- Every tile must earn its place: something a person wants to know at a
-  glance. Totals that mix unlike things (all reps of all exercises) do
-  not; a streak, what beat last time or the time since the last meal
-  do. A mark must work with any number of things: dots and arrows wrap.
+- Every tile must earn its place: something a person wants to know at
+  a glance and can act on. Totals that mix unlike things (all reps of
+  all exercises) do not; steps, a streak, calories left do. A mark
+  must work with any number of things: dots wrap.
 - Facts are **never joined into one line** with "·" or commas.
 - Durations ago are rounded for a glance: "25 min ago", then whole
   hours, "8 h ago". Home redraws every minute so they stay current.
-- Tiles keep their shape before anything is logged, showing a quiet
-  grey "–", and say exactly what is missing ("Bedtime not logged").
-  The note takes the mark's place, so an empty tile has no hole.
-  Screen readers read a tile as one item.
+- Screen readers read a tile as one item.
 
 ### Daily amounts and the calorie limit
 
@@ -174,6 +180,15 @@ from the Food page's Total card and from Settings: sex, year of birth
 and height, weight logged over time, and from them the BMR
 (Mifflin-St Jeor) with the energy used at each activity level, which
 help choose a limit. A new limit counts from the day it is set.
+
+**Every formula is open.** An ⓘ on the Body screen opens "How these are
+worked out" (`SourcesScreen`): each number Ippo works out, its formula
+typeset in LaTeX, what each letter means, why that formula, and full
+citations. A rule of thumb is called one.
+
+Body measurements are shown in **metric or imperial** units (Settings,
+metric by default; `units.dart`); the data is always metric. Food
+amounts stay in grams and millilitres, as on labels everywhere.
 
 ### Forms (adding or changing one thing)
 

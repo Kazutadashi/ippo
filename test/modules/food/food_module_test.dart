@@ -325,7 +325,7 @@ void main() {
     final tile = module.homeTile(appState, currentDay(now), now);
     expect(
       describeTile(tile),
-      '689 kcal so far | Last meal 3 h ago, Daily avg (7 days) 900 kcal',
+      '689 kcal so far | Last meal 3 h ago, Avg (7 days) 900 kcal',
     );
     // Protein, carbs and fat are the mark, each against its daily amount.
     expect(tile.mark, isA<NutrientBars>());

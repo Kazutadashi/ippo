@@ -118,11 +118,11 @@ class AllNutrientsList extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     const shownAbove = {energyKey, 'proteins_g', 'carbohydrates_g', 'fat_g'};
+    // Every nutrient any food gave, including ones Ippo does not list
+    // yet, so a new nutrient shows up the day it is first logged.
     final kinds = [
-      for (final kind in allNutrientKinds)
-        if (!shownAbove.contains(kind.key) &&
-            nutrients.values.containsKey(kind.key))
-          kind,
+      for (final key in orderedNutrientKeys(nutrients.values.keys))
+        if (!shownAbove.contains(key)) nutrientKindOf(key)!,
     ];
     if (kinds.isEmpty) {
       return const NoteText('No other nutrients are known for this day.');

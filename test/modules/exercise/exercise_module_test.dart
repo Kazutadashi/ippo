@@ -284,7 +284,7 @@ void main() {
     await actions.saveSteps(date: '2026-11-16', steps: 8000, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '– steps | Last workout 2 days ago, Daily avg (7 days) 8,000',
+      '– steps | Last workout 2 days ago, Avg (7 days) 8,000 steps',
     );
 
     await addSets(pushUp, '2026-11-18', 20, 1);
@@ -292,7 +292,7 @@ void main() {
     await actions.saveSteps(date: '2026-11-18', steps: 10500, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '10,500 steps | Workouts (7 days) 1 day, Daily avg (7 days) 8,000',
+      '10,500 steps | Workouts (7 days) 1 day, Avg (7 days) 8,000 steps',
     );
     expect(module.weekRows(appState, day).first.cells, [
       null,

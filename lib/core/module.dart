@@ -71,7 +71,7 @@ abstract class IppoModule {
 /// (from the module), then [value], then [mark], then [rows].
 ///
 /// For example, Food: "1007 kcal" "so far", Protein / Carbs / Fat as the
-/// mark, then the rows "Left today 993 kcal" and "Daily avg (7 days)
+/// mark, then the rows "Left today 993 kcal" and "Avg (7 days)
 /// 1326 kcal".
 class HomeTile {
   /// Creates a tile's content.

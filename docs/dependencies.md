@@ -12,6 +12,15 @@ The exact versions in use are pinned in `pubspec.lock`.
 | --- | --- | --- | --- |
 | `flutter` | Flutter team | The UI framework the whole app is built on. | It is the app's foundation. |
 | `material_ui` | Flutter team | Material Design widgets (buttons, lists, app bars, themes). Newer Flutter versions moved these out of the core framework into this package. | Building these standard widgets ourselves would add a lot of code with no benefit. |
+| `flutter_math_fork` | Community (a maintained fork of `flutter_math`) | Draws LaTeX formulas natively, in Dart, without a web view. | The "How these are worked out" screen shows every formula Ippo uses (BMR, daily amounts) typeset as in the papers it cites, so the numbers can be checked. |
+
+`flutter_math_fork` brings in other packages: `flutter_svg` and the
+`vector_graphics` packages (drawing), `provider`, `tuple`, `xml`,
+`petitparser`, `path_parsing`, `typed_data` and `http` with
+`http_parser` (which `flutter_svg` uses to load pictures from the
+web). Ippo never loads anything from the web, and its release build has
+no `INTERNET` permission (see `docs/permissions.md`), so that code can
+never reach the network.
 
 ## Development-only dependencies
 

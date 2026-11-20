@@ -10,10 +10,12 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
+import '../../../core/units.dart';
 import '../../../core/widgets/section_card.dart';
 import '../body_actions.dart';
 import '../body_log.dart';
 import '../bmr.dart';
+import 'sources_screen.dart';
 
 /// Three cards, top to bottom: about you (sex, year of birth, height);
 /// your weight today, with the last few weighings; and the daily
@@ -49,6 +51,20 @@ class BodyScreen extends StatelessWidget {
   }
 }
 
+/// An ⓘ that opens how the numbers are worked out, with sources.
+class _SourcesButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'How these are worked out',
+      icon: const Icon(Icons.info_outline),
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (context) => const SourcesScreen()),
+      ),
+    );
+  }
+}
+
 /// Reads a positive number typed in [field], or null.
 double? _positive(TextEditingController field) {
   final value = double.tryParse(field.text.trim().replaceAll(',', '.'));
@@ -71,8 +87,19 @@ class _ProfileCardState extends State<_ProfileCard> {
   late final TextEditingController _birthYear = TextEditingController(
     text: widget.log.birthYear?.toString() ?? '',
   );
+  // Height in cm, or in feet and inches with imperial units.
   late final TextEditingController _height = TextEditingController(
     text: widget.log.heightCm == null ? '' : formatAmount(widget.log.heightCm!),
+  );
+  late final TextEditingController _feet = TextEditingController(
+    text: widget.log.heightCm == null
+        ? ''
+        : '${feetAndInches(widget.log.heightCm!).$1}',
+  );
+  late final TextEditingController _inches = TextEditingController(
+    text: widget.log.heightCm == null
+        ? ''
+        : '${feetAndInches(widget.log.heightCm!).$2}',
   );
   String? _problem;
 
@@ -80,13 +107,36 @@ class _ProfileCardState extends State<_ProfileCard> {
   void dispose() {
     _birthYear.dispose();
     _height.dispose();
+    _feet.dispose();
+    _inches.dispose();
     super.dispose();
+  }
+
+  /// The height typed in feet and inches, in centimetres, or null.
+  double? _imperialHeight() {
+    final feet = int.tryParse(_feet.text.trim()) ?? 0;
+    final inches =
+        double.tryParse(_inches.text.trim().replaceAll(',', '.')) ?? 0;
+    if (feet <= 0 && inches <= 0) {
+      return null;
+    }
+    return centimetresFrom(feet, inches);
+  }
+
+  /// A number field with a [label] and a [unit] after the number.
+  Widget _number(TextEditingController field, String label, String unit) {
+    return TextField(
+      controller: field,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(labelText: label, suffixText: unit),
+    );
   }
 
   Future<void> _save() async {
     final sex = _sex;
     final year = int.tryParse(_birthYear.text.trim());
-    final height = _positive(_height);
+    final height = showImperialUnits ? _imperialHeight() : _positive(_height);
     final thisYear = DateTime.now().year;
     if (sex == null ||
         year == null ||
@@ -95,8 +145,8 @@ class _ProfileCardState extends State<_ProfileCard> {
         height == null ||
         height > 300) {
       setState(
-        () => _problem =
-            'Choose a sex, and enter a year of birth and a height in cm.',
+        () =>
+            _problem = 'Choose a sex, and enter a year of birth and a height.',
       );
       return;
     }
@@ -114,8 +164,12 @@ class _ProfileCardState extends State<_ProfileCard> {
   Widget build(BuildContext context) {
     return SectionCard(
       children: [
-        const CardHeader(icon: Icons.person_outline, title: 'About you'),
-        const FieldLabel('Sex (the BMR formula differs)'),
+        CardHeader(
+          icon: Icons.person_outline,
+          title: 'About you',
+          action: _SourcesButton(),
+        ),
+        const FieldLabel('Sex'),
         SegmentedButton<Sex>(
           expandedInsets: EdgeInsets.zero,
           emptySelectionAllowed: true,
@@ -140,19 +194,12 @@ class _ProfileCardState extends State<_ProfileCard> {
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: _height,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  labelText: 'Height',
-                  suffixText: 'cm',
-                ),
-              ),
-            ),
+            if (showImperialUnits) ...[
+              Expanded(child: _number(_feet, 'Height', 'ft')),
+              const SizedBox(width: 12),
+              Expanded(child: _number(_inches, '', 'in')),
+            ] else
+              Expanded(child: _number(_height, 'Height', 'cm')),
           ],
         ),
         if (_problem != null) ...[
@@ -188,9 +235,12 @@ class _WeightCardState extends State<_WeightCard> {
   );
   String? _problem;
 
+  /// Today's weight as typed: in kg, or in lb with imperial units.
   String get _todaysText {
     final today = widget.log.weightOn(widget.date);
-    return today == null ? '' : formatAmount(today.weightKg);
+    return today == null
+        ? ''
+        : formatAmount(roundToTenth(weightInShownUnit(today.weightKg)));
   }
 
   @override
@@ -209,9 +259,10 @@ class _WeightCardState extends State<_WeightCard> {
   }
 
   Future<void> _save() async {
-    final weight = _positive(_weight);
+    final shown = _positive(_weight);
+    final weight = shown == null ? null : kilogramsFromShown(shown);
     if (weight == null || weight > 500) {
-      setState(() => _problem = 'Enter your weight in kg.');
+      setState(() => _problem = 'Enter your weight in $weightUnit.');
       return;
     }
     setState(() => _problem = null);
@@ -246,7 +297,7 @@ class _WeightCardState extends State<_WeightCard> {
                 ),
                 decoration: InputDecoration(
                   labelText: 'Today',
-                  suffixText: 'kg',
+                  suffixText: weightUnit,
                   errorText: _problem,
                 ),
                 onChanged: (_) => setState(() {}),
@@ -274,7 +325,7 @@ class _WeightCardState extends State<_WeightCard> {
                   ),
                 ),
                 Text(
-                  '${formatAmount(weight.weightKg)} kg',
+                  formatWeight(weight.weightKg),
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ],
@@ -365,9 +416,10 @@ class _CaloriesCardState extends State<_CaloriesCard> {
     final isSaved = _limit.text.trim() == _currentText;
     return SectionCard(
       children: [
-        const CardHeader(
+        CardHeader(
           icon: Icons.local_fire_department,
           title: 'Daily calories',
+          action: _SourcesButton(),
         ),
         if (bmr == null)
           const NoteText(

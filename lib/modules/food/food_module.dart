@@ -43,7 +43,7 @@ class FoodModule extends IppoModule {
     final average = _averageEnergy(diary, day);
     final averageRow = average == null
         ? null
-        : TileRow('Daily avg (7 days)', formatEnergy(average));
+        : TileRow('Avg (7 days)', formatEnergy(average));
     if (entries.isEmpty) {
       return HomeTile(
         value: HomeTile.unknownValue,

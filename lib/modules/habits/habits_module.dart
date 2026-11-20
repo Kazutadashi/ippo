@@ -54,7 +54,7 @@ class HabitsModule extends IppoModule {
         if (streak.days >= 2) TileRow('Best streak', '${streak.days} days'),
         if (average != null)
           TileRow(
-            'Daily avg (7 days)',
+            'Avg (7 days)',
             '${formatAmount(average)} of ${habits.length}',
           ),
       ],

@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Tables for the food module ("Module: food" in the data format)."""
 
+import re
+
 import pandas as pd
 
 from .things import as_dates, collect_things, table
@@ -41,6 +43,21 @@ NUTRIENTS = [
 ]
 
 
+#: A nutrient field name: words joined by ``_``, ending in its unit.
+_NUTRIENT_NAME = re.compile(r"^[a-z][a-z0-9_]*_(g|mg|ug|kcal)$")
+
+
+def nutrient_columns(nutrient_dicts):
+    """The nutrient columns for a table: every field in :data:`NUTRIENTS`,
+    then any other nutrient found in ``nutrient_dicts`` (for example
+    added by a newer app version), alphabetically. So a nutrient that
+    first appears later in the data gets its own column, empty before."""
+    found = set()
+    for nutrients in nutrient_dicts:
+        found.update(key for key in nutrients if _NUTRIENT_NAME.match(key))
+    return NUTRIENTS + sorted(found - set(NUTRIENTS))
+
+
 def foods(events):
     """One row per food in your list, including deleted ones.
 
@@ -50,8 +67,10 @@ def foods(events):
     column per nutrient, ``ingredients`` (as on the label), ``deleted``,
     ``recorded_utc``.
     """
+    things = collect_things(events, "food", "food_created", "food")
+    nutrients_list = nutrient_columns(_dict(food.get("nutrients_per_100")) for food in things)
     rows = []
-    for food in collect_things(events, "food", "food_created", "food"):
+    for food in things:
         row = {
             "food_id": food["id"],
             "name": food.get("name"),
@@ -66,12 +85,12 @@ def foods(events):
             row["serving_count"] = _number(serving.get("count"))
             row["serving_amount"] = _number(serving.get("amount"))
         per_100 = _dict(food.get("nutrients_per_100"))
-        for nutrient in NUTRIENTS:
+        for nutrient in nutrients_list:
             row[f"{nutrient}_per_100"] = _number(per_100.get(nutrient))
         rows.append(row)
     columns = (
         ["food_id", "name", "measured_in", "serving_unit", "serving_count", "serving_amount"]
-        + [f"{nutrient}_per_100" for nutrient in NUTRIENTS]
+        + [f"{nutrient}_per_100" for nutrient in nutrients_list]
         + ["ingredients", "deleted", "recorded_utc"]
     )
     return table(rows, columns)
@@ -90,10 +109,12 @@ def food_entries(events):
     Columns: ``entry_id``, ``date``, ``time`` (``"HH:MM"`` or empty),
     ``name``, ``food_id``, ``quick``, ``amount``, ``measured_in``,
     ``unit_count``, ``unit_name``, one column per nutrient (for this
-    amount), ``note``, ``recorded_utc``.
+    amount; see :func:`nutrient_columns`), ``note``, ``recorded_utc``.
     """
+    things = collect_things(events, "food", "food_entry_recorded", "food_entry")
+    nutrients_list = nutrient_columns(_dict(entry.get("nutrients")) for entry in things)
     rows = []
-    for entry in collect_things(events, "food", "food_entry_recorded", "food_entry"):
+    for entry in things:
         if entry["deleted"]:
             continue
         row = {
@@ -111,13 +132,13 @@ def food_entries(events):
             "recorded_utc": entry["recorded_utc"],
         }
         nutrients = _dict(entry.get("nutrients"))
-        for nutrient in NUTRIENTS:
+        for nutrient in nutrients_list:
             row[nutrient] = _number(nutrients.get(nutrient))
         rows.append(row)
     columns = (
         ["entry_id", "date", "time", "name", "food_id", "quick", "amount",
          "measured_in", "unit_count", "unit_name"]
-        + NUTRIENTS
+        + nutrients_list
         + ["note", "recorded_utc"]
     )
     result = table(rows, columns)
@@ -142,7 +163,8 @@ def food_days(events):
     entries = food_entries(events)
     grouped = entries.groupby("date")
     result = pd.DataFrame({"food_entries": grouped.size()})
-    for nutrient in NUTRIENTS:
+    nutrients_list = [column for column in entries.columns if _NUTRIENT_NAME.match(column)]
+    for nutrient in nutrients_list:
         # min_count=1: a day where no entry knows the nutrient is empty,
         # not zero.
         result[nutrient] = grouped[nutrient].sum(min_count=1)

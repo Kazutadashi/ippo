@@ -177,6 +177,12 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
   }
 
   /// The nutrients for [amount] grams, for the live preview.
+  /// A whole day's normal amounts, for the day of this entry.
+  Map<String, double> get _references => dailyReferencesOn(
+    BodyLog.of(widget.appState),
+    widget.entry?.date ?? widget.date ?? formatDate(today()),
+  );
+
   Nutrients _nutrientsFor(double amount) {
     final food = widget.food;
     if (food != null) {
@@ -333,12 +339,28 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               onChanged: (time) => setState(() => _time = time),
             ),
             const SizedBox(height: 16),
-            // This amount against a whole day's normal amounts.
+            // This amount against a whole day's normal amounts, then every
+            // other nutrient the food has, folded away until asked for.
             NutrientInfoRow(
               nutrients: _nutrientsFor(grams),
-              references: dailyReferencesOn(
-                BodyLog.of(widget.appState),
-                widget.entry?.date ?? widget.date ?? formatDate(today()),
+              references: _references,
+            ),
+            Theme(
+              data: Theme.of(context)
+                  .copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                childrenPadding: EdgeInsets.zero,
+                title: Text(
+                  'All nutrients',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                children: [
+                  AllNutrientsList(
+                    nutrients: _nutrientsFor(grams),
+                    references: _references,
+                  ),
+                ],
               ),
             ),
             if (widget.entry != null)

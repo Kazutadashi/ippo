@@ -70,7 +70,7 @@ class ExerciseModule extends IppoModule {
             trainedDays == 1 ? '1 day' : '$trainedDays days',
           ),
         if (averageSteps != null)
-          TileRow('Daily avg (7 days)', formatThousands(averageSteps)),
+          TileRow('Avg (7 days)', '${formatThousands(averageSteps)} steps'),
       ],
     );
   }

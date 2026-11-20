@@ -75,14 +75,52 @@ const List<NutrientKind> allNutrientKinds = [
   NutrientKind('vitamin_b12_ug', 'Vitamin B12', 'µg'),
 ];
 
-/// The kind of nutrient with field name [key], or null if unknown.
+/// Matches a nutrient field name: words joined by `_`, ending in a unit
+/// (`_g`, `_mg`, `_ug` or `_kcal`), such as `vitamin_b5_mg`.
+final RegExp _nutrientKeyPattern = RegExp(r'^[a-z][a-z0-9_]*_(g|mg|ug|kcal)$');
+
+/// Whether [key] looks like a nutrient field name, known or not.
+bool isNutrientKey(String key) => _nutrientKeyPattern.hasMatch(key);
+
+/// The kind of nutrient with field name [key], or null if [key] is not a
+/// nutrient field name.
+///
+/// A nutrient Ippo does not list yet (from a newer version, or another
+/// tool) still gets a kind, named from its field: `vitamin_b5_mg` is
+/// "Vitamin b5" in mg. So such data is kept, shown and added up, and an
+/// analysis over time simply sees it start on the day it first appears.
 NutrientKind? nutrientKindOf(String key) {
   for (final kind in allNutrientKinds) {
     if (kind.key == key) {
       return kind;
     }
   }
-  return null;
+  final match = _nutrientKeyPattern.firstMatch(key);
+  if (match == null) {
+    return null;
+  }
+  final unit = match.group(1)!;
+  final words = key.substring(0, key.length - unit.length - 1).split('_');
+  final name = words.join(' ');
+  return NutrientKind(
+    key,
+    name[0].toUpperCase() + name.substring(1),
+    unit == 'ug' ? 'µg' : unit,
+  );
+}
+
+/// The nutrient field names in [keys], in the order to show them: those
+/// Ippo lists in label order, then any others alphabetically.
+List<String> orderedNutrientKeys(Iterable<String> keys) {
+  final present = keys.toSet();
+  return [
+    for (final kind in allNutrientKinds)
+      if (present.contains(kind.key)) kind.key,
+    ...(present
+        .where((key) => !allNutrientKinds.any((kind) => kind.key == key))
+        .toList()
+      ..sort()),
+  ];
 }
 
 /// A set of nutrient values. Nutrients that are not known are missing,
@@ -104,22 +142,28 @@ class Nutrients {
   /// Reads nutrients from event data.
   ///
   /// Returns null if [json] is not an object, has no energy, or has a
-  /// known nutrient that is not a non-negative number. Unknown fields are
-  /// ignored, so data from newer app versions still loads.
+  /// known nutrient that is not a non-negative number. Fields that are
+  /// not nutrient names are ignored; nutrients Ippo does not list yet are
+  /// kept (see [nutrientKindOf]).
   static Nutrients? fromJson(Object? json) {
     if (json is! Map<String, Object?>) {
       return null;
     }
     final values = <String, double>{};
-    for (final kind in allNutrientKinds) {
-      final value = json[kind.key];
-      if (value == null) {
+    for (final entry in json.entries) {
+      final value = entry.value;
+      if (value == null || !isNutrientKey(entry.key)) {
         continue;
       }
+      final isKnown = allNutrientKinds.any((kind) => kind.key == entry.key);
       if (value is! num || value < 0) {
-        return null;
+        // A known nutrient must be valid; an unknown one is skipped.
+        if (isKnown) {
+          return null;
+        }
+        continue;
       }
-      values[kind.key] = value.toDouble();
+      values[entry.key] = value.toDouble();
     }
     if (!values.containsKey(energyKey)) {
       return null;
@@ -131,9 +175,8 @@ class Nutrients {
   /// without `.0`, so files stay easy to read.
   Map<String, Object?> toJson() {
     return {
-      for (final kind in allNutrientKinds)
-        if (values.containsKey(kind.key))
-          kind.key: jsonNumber(values[kind.key]!),
+      for (final key in orderedNutrientKeys(values.keys))
+        key: jsonNumber(values[key]!),
     };
   }
 

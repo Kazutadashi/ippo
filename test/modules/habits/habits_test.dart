@@ -165,7 +165,7 @@ void main() {
       // The week before: 2 done on the 16th and 1 on the 15th.
       expect(
         describeTile(module.homeTile(appState, currentDay(now), now)),
-        '1 of 3 done | Best streak 3 days, Daily avg (7 days) 1.5 of 3',
+        '1 of 3 done | Best streak 3 days, Avg (7 days) 1.5 of 3',
       );
       final row = module.weekRows(appState, currentDay(now)).single;
       expect(row.label, 'Habits (%)');

@@ -21,6 +21,8 @@ import '../sleep_moment.dart';
 import '../sleep_times.dart';
 import 'nap_form_screen.dart';
 import '../../../core/widgets/time_fields.dart';
+import '../../../core/widgets/value_text.dart';
+import '../time_span_bar.dart';
 
 /// The wake-up time suggested until the first wake-up is logged.
 const ClockTime _firstWakeGuess = ClockTime(7, 0);
@@ -80,6 +82,15 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
                     '${log.invalidCount} entries in the data could not be '
                     'read and are not shown.',
                   ),
+                // The night before the day, large: the number that
+                // matters most here.
+                _LastNightCard(
+                  slept: sleptBefore,
+                  bedtime: log.bedtimeOf(formatDate(addDays(shownDay, -1))),
+                  wakeUp: wakeUp,
+                  average: _averageBefore(log, shownDay),
+                  isToday: showsToday,
+                ),
                 SectionCard(
                   children: [
                     CardHeader(
@@ -105,13 +116,6 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
                           log.latest(MomentKind.wentToBed)?.clock ??
                           _firstBedGuess,
                     ),
-                    if (sleptBefore != null) ...[
-                      const SizedBox(height: 12),
-                      NoteText(
-                        'Slept ${formatDuration(sleptBefore)} the night '
-                        'before.',
-                      ),
-                    ],
                   ],
                 ),
                 SectionCard(
@@ -148,8 +152,14 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
       for (final nap in naps)
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text('${nap.startClock.shown} – ${nap.endClock.shown}'),
-          subtitle: Text(formatDuration(nap.duration)),
+          // The nap's length first and large, with an icon; when it was,
+          // under it.
+          leading: _NapIcon(),
+          title: Text(
+            formatDuration(nap.duration),
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          subtitle: Text('${nap.startClock.shown} – ${nap.endClock.shown}'),
           trailing: IconButton(
             tooltip: 'Edit nap',
             icon: const Icon(Icons.edit_outlined),
@@ -344,6 +354,136 @@ class _DayEntryState extends State<_DayEntry> {
         if (_hasSomethingSaved)
           DeleteButton(label: 'Clear this day', onPressed: _clear),
       ],
+    );
+  }
+}
+
+/// The average sleep a night over the week before [day], counting only
+/// nights logged; null without any.
+Duration? _averageBefore(SleepLog log, DateTime day) {
+  var total = Duration.zero;
+  var nights = 0;
+  for (var back = 1; back <= 7; back++) {
+    final slept = log.sleepBefore(formatDate(addDays(day, -back)));
+    if (slept != null) {
+      total += slept;
+      nights++;
+    }
+  }
+  return nights == 0 ? null : total ~/ nights;
+}
+
+/// Last night, large: the hours slept with a moon, the night as a bar
+/// from bedtime to waking up, and the nightly average under it.
+class _LastNightCard extends StatelessWidget {
+  const _LastNightCard({
+    required this.slept,
+    required this.bedtime,
+    required this.wakeUp,
+    required this.average,
+    required this.isToday,
+  });
+
+  final Duration? slept;
+  final SleepMoment? bedtime;
+  final SleepMoment? wakeUp;
+  final Duration? average;
+  final bool isToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
+    final muted = colors.onSurfaceVariant;
+    final slept = this.slept;
+    final bedtime = this.bedtime;
+    final wakeUp = this.wakeUp;
+    final average = this.average;
+    return SectionCard(
+      children: [
+        CardHeader(
+          icon: Icons.bedtime_outlined,
+          title: isToday ? 'Last night' : 'The night before',
+        ),
+        if (slept == null)
+          const NoteText('Log the bedtime and the wake-up below to see it.')
+        else ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // A soft moon, so the card reads as "night" at a glance.
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.nightlight_round, color: colors.primary),
+              ),
+              const SizedBox(width: Spacing.medium),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: ValueText(
+                    formatDuration(slept),
+                    style: textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                    unitStyle: textTheme.titleMedium?.copyWith(color: muted),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (bedtime != null && wakeUp != null) ...[
+            const SizedBox(height: Spacing.medium),
+            TimeSpanBar(
+              start: bedtime.clock,
+              end: wakeUp.clock,
+              trackStartHour: TimeSpanBar.nightStartHour,
+              trackHours: TimeSpanBar.nightHours,
+              startLabel: bedtime.clock.shown,
+              endLabel: wakeUp.clock.shown,
+              description:
+                  'Bed at ${bedtime.clock.shown}, woke at '
+                  '${wakeUp.clock.shown}',
+            ),
+          ],
+        ],
+        if (average != null) ...[
+          const SizedBox(height: Spacing.medium),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Avg (7 nights)',
+                  style: textTheme.bodyMedium?.copyWith(color: muted),
+                ),
+              ),
+              Text(formatDuration(average), style: textTheme.titleSmall),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// A nap's icon: a lying figure on a soft circle in the accent colour.
+class _NapIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.airline_seat_flat, color: colors.primary, size: 22),
     );
   }
 }

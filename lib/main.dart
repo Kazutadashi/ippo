@@ -18,6 +18,7 @@ import 'core/storage/data_folder.dart';
 import 'core/storage/settings_file.dart';
 import 'core/system_colors.dart';
 import 'core/theme.dart';
+import 'core/units.dart';
 
 /// Starts the app.
 Future<void> main() async {
@@ -125,6 +126,9 @@ class _IppoAppState extends State<IppoApp> {
         final uses12Hours = widget.appState.settings?.uses12HourClock ?? false;
         // Every screen shows times in the chosen style (see dates.dart).
         showTimesIn24Hours = !uses12Hours;
+        // Body measurements in the chosen units (see units.dart).
+        showImperialUnits =
+            widget.appState.settings?.usesImperialUnits ?? false;
         return MaterialApp(
           title: 'Ippo',
           theme: _lightTheme,

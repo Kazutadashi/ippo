@@ -189,6 +189,19 @@ class StepsAndBodyTest(unittest.TestCase):
         self.assertEqual(milk["ingredients"], "Milk, vitamin D3.")
 
 
+class NewNutrientsTest(unittest.TestCase):
+    def test_a_nutrient_not_listed_yet_gets_its_own_column(self):
+        events = ippo.load(EXAMPLE, now=NOW).events.copy()
+        extra = events.iloc[[0]].copy()
+        extra["module"] = "food"
+        extra["type"] = "food_entry_recorded"
+        extra["id"] = "019c0099-0000-7000-8000-000000000099"
+        extra["data"] = [{"date": "2026-03-03", "name": "Yeast", "nutrients": {"energy_kcal": 20, "biotin_ug": 9}}]
+        days = ippo.food.food_days(pd.concat([events, extra], ignore_index=True))
+        self.assertEqual(days.loc["2026-03-03", "biotin_ug"], 9)
+        self.assertTrue(pd.isna(days.loc["2026-03-01", "biotin_ug"]))
+
+
 class DailyTest(unittest.TestCase):
     def setUp(self):
         self.data = ippo.load(EXAMPLE, now=NOW)

@@ -505,6 +505,14 @@ micrograms, `_kcal` kilocalories.
 Salt is 2.5 times sodium. Labels that give only sodium (as in the US)
 get both fields: the app works out salt from sodium.
 
+**New nutrients can be added at any time.** Any field whose name is
+lower-case words joined by `_` and ending in a unit (`_g`, `_mg`, `_ug`
+or `_kcal`), such as `vitamin_b5_mg`, is a nutrient, even one not in the
+table above. Readers keep it rather than drop it: the app shows and adds
+it up, and the Python package gives it a column of its own, empty on
+days before it first appears. So a time series of a nutrient simply
+starts when it was first logged.
+
 Only `energy_kcal` is required. The others are optional.
 
 **A missing nutrient means "not known", never zero.** A quick entry

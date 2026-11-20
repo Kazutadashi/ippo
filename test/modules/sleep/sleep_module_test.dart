@@ -182,7 +182,7 @@ void main() {
       final tile = module.homeTile(appState, currentDay(morning), morning);
       expect(
         describeTile(tile),
-        '7 h 30 min slept | Awake for 2 h 45 min, Nightly avg (7 days) 8 h',
+        '7 h 30 min slept | Awake for 2 h 45 min, Avg (7 nights) 8 h',
       );
       // The night is drawn as a bar.
       expect(tile.mark, isNotNull);

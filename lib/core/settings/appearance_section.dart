@@ -88,6 +88,19 @@ class AppearanceSection extends StatelessWidget {
           onChanged: appState.setTrueBlack,
         ),
         const SizedBox(height: 20),
+        const FieldLabel('Units for body measurements'),
+        SegmentedButton<bool>(
+          expandedInsets: EdgeInsets.zero,
+          segments: const [
+            ButtonSegment(value: false, label: Text('Metric (kg, cm)')),
+            ButtonSegment(value: true, label: Text('Imperial (lb, ft)')),
+          ],
+          selected: {settings?.usesImperialUnits ?? false},
+          showSelectedIcon: false,
+          onSelectionChanged: (choice) =>
+              appState.setUnits(choice.single ? 'imperial' : 'metric'),
+        ),
+        const SizedBox(height: 20),
         const FieldLabel('Clock'),
         SegmentedButton<bool>(
           expandedInsets: EdgeInsets.zero,

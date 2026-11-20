@@ -24,7 +24,7 @@ class TileDetail {
 }
 
 /// One row under a tile's mark: a label at the left and its number at
-/// the right edge, such as "Daily avg (7 days)" and "1326 kcal".
+/// the right edge, such as "Avg (7 days)" and "1326 kcal".
 class TileRow {
   /// Creates a row.
   const TileRow(this.label, this.value, {this.isWarning = false});

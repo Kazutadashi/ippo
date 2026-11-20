@@ -324,6 +324,10 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(clockStyle: clockStyle),
   );
 
+  /// Shows measurements in `metric` or `imperial` units.
+  Future<void> setUnits(String units) =>
+      _changeDisplaySetting((settings) => settings.copyWith(units: units));
+
   /// Turns the true black dark mode on or off.
   Future<void> setTrueBlack(bool isOn) => _changeDisplaySetting(
     (settings) => settings.copyWith(usesTrueBlack: isOn),

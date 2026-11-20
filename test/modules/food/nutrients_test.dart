@@ -7,15 +7,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 
 void main() {
-  test('reads known nutrients and ignores unknown ones', () {
+  test('keeps nutrients it does not list yet, and skips non-nutrients', () {
     final nutrients = Nutrients.fromJson({
       'energy_kcal': 389,
       'proteins_g': 13.2,
-      'added_in_a_later_version_g': 1,
+      // A nutrient from a later version: kept, so it can be added up.
+      'vitamin_b5_mg': 1.5,
+      // Not a nutrient name, or not a number: ignored.
+      'brand': 'Oats Co',
+      'biotin_ug': 'lots',
     })!;
 
-    expect(nutrients.energyKcal, 389);
-    expect(nutrients.values, {'energy_kcal': 389.0, 'proteins_g': 13.2});
+    expect(nutrients.values, {
+      'energy_kcal': 389.0,
+      'proteins_g': 13.2,
+      'vitamin_b5_mg': 1.5,
+    });
+    final kind = nutrientKindOf('vitamin_b5_mg')!;
+    expect(kind.label, 'Vitamin b5');
+    expect(kind.unit, 'mg');
+    // Listed nutrients first, in label order, then the others.
+    expect(nutrients.toJson().keys.toList(), [
+      'energy_kcal',
+      'proteins_g',
+      'vitamin_b5_mg',
+    ]);
   });
 
   test('energy is required', () {
