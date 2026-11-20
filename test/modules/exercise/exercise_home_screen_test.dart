@@ -65,14 +65,13 @@ void main() {
     );
   }
 
-  testWidgets('shows today\'s sets in numbered columns', (tester) async {
+  testWidgets('shows today\'s sets as chips, in order', (tester) async {
     await setUpPushUps(tester, [10, 7]);
 
     expect(find.text('Push-up'), findsOneWidget);
-    expect(find.text('Set 1'), findsOneWidget);
-    expect(find.text('Set 2'), findsOneWidget);
-    expect(find.text('10'), findsOneWidget);
-    expect(find.text('7'), findsWidgets);
+    // Each set is a tappable chip, named for screen readers.
+    expect(find.bySemanticsLabel('Set 1: 10 Reps'), findsOneWidget);
+    expect(find.bySemanticsLabel('Set 2: 7 Reps'), findsOneWidget);
     // There is nothing about progressions or statistics.
     expect(find.textContaining('rogression'), findsNothing);
     expect(find.text('History'), findsNothing);
@@ -92,9 +91,11 @@ void main() {
     });
     await tester.pump();
 
+    // The last session on one quiet line, under today's (none yet).
     expect(find.text('Yesterday'), findsOneWidget);
-    expect(find.text('12'), findsNWidgets(2));
-    // Once in the table, once in the day bar at the top.
+    expect(find.text('12 · 12 reps'), findsOneWidget);
+    expect(find.text('No sets yet'), findsOneWidget);
+    // Once in the card, once in the day bar at the top.
     expect(find.text('Today'), findsNWidgets(2));
   });
 
@@ -135,7 +136,9 @@ void main() {
     final log = ExerciseLog.fromEvents(appState.eventLog!.events);
     final sets = log.setsOn(formatDate(today()), pushUpId);
     expect(sets.map((set) => set.value), [20]);
-    expect(find.text('Set 1'), findsOneWidget);
+    // Today's line now has a set: the chips and their unit, no "No sets".
+    expect(find.text('No sets yet'), findsNothing);
+    expect(find.text('reps'), findsOneWidget);
     // A mistaken tap is easy to take back.
     expect(find.text('Set added to Push-up'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
