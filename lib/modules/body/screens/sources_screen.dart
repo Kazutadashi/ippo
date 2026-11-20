@@ -46,10 +46,14 @@ class SourcesScreen extends StatelessWidget {
               r'\mathrm{BMR}_{\text{women}} = 10\,m + 6.25\,h - 5\,a - 161',
             ],
             symbols: [
-              (tex: r'm', meaning: 'Weight, the latest you logged', unit: 'kg'),
-              (tex: r'h', meaning: 'Height', unit: 'cm'),
               (
-                tex: r'a',
+                tex: r'\mathit{m}',
+                meaning: 'Weight, the latest you logged',
+                unit: 'kg',
+              ),
+              (tex: r'\mathit{h}', meaning: 'Height', unit: 'cm'),
+              (
+                tex: r'\mathit{a}',
                 meaning: 'Age: this year minus your year of birth',
                 unit: 'years',
               ),
@@ -133,7 +137,11 @@ class SourcesScreen extends StatelessWidget {
                 meaning: 'Your daily calorie limit, if set (else 2000)',
                 unit: 'kcal',
               ),
-              (tex: r'm', meaning: 'Your weight, if logged', unit: 'kg'),
+              (
+                tex: r'\mathit{m}',
+                meaning: 'Your weight, if logged',
+                unit: 'kg',
+              ),
             ],
             valuesTitle: 'Amounts for 2000 kcal a day',
             values: [
@@ -297,8 +305,8 @@ class _Heading extends StatelessWidget {
   }
 }
 
-/// A formula, typeset, centred on a soft panel, scrolling sideways if it
-/// is too wide for the screen.
+/// A formula, typeset, on a soft panel; shrunk to fit if it is too wide
+/// for the screen.
 class _FormulaPanel extends StatelessWidget {
   const _FormulaPanel({required this.tex});
 
@@ -318,8 +326,10 @@ class _FormulaPanel extends StatelessWidget {
         color: colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+      // Too wide for the screen: shrunk to fit, so it is read whole.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
         child: Math.tex(
           tex,
           textStyle: Theme.of(context).textTheme.titleLarge
