@@ -69,28 +69,58 @@ class WeekGrid extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            // The days, over their columns.
-            Row(
-              children: [
-                const SizedBox(width: _nameWidth),
-                for (final column in days)
-                  Expanded(
-                    child: Text(
-                      letters[column.weekday - 1],
-                      textAlign: TextAlign.center,
-                      style: column == day
-                          // The day shown stands out, as the newest.
-                          ? theme.textTheme.labelMedium?.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.bold,
-                            )
-                          : theme.textTheme.labelMedium?.copyWith(color: muted),
+            // The day shown has a soft column behind it, top to bottom,
+            // as on the Habits grid, so the newest day is easy to find.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columnWidth = (constraints.maxWidth - _nameWidth) / 7;
+                return Stack(
+                  children: [
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      right: 0,
+                      width: columnWidth,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
-                  ),
-              ],
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // The days, over their columns.
+                        Row(
+                          children: [
+                            const SizedBox(width: _nameWidth),
+                            for (final column in days)
+                              Expanded(
+                                child: Text(
+                                  letters[column.weekday - 1],
+                                  textAlign: TextAlign.center,
+                                  style: column == day
+                                      // The day shown stands out, as the newest.
+                                      ? theme.textTheme.labelMedium?.copyWith(
+                                          color: colors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        )
+                                      : theme.textTheme.labelMedium?.copyWith(
+                                          color: muted,
+                                        ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        for (final row in rows) _row(context, row),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 6),
-            for (final row in rows) _row(context, row),
           ],
         ),
       ),
@@ -147,6 +177,8 @@ class WeekGrid extends StatelessWidget {
       fit: BoxFit.scaleDown,
       child: Text(
         value ?? '–',
+        // No data: a quiet dash. The day shown: bold, in the accent.
+        // Other days: a little quieter, so the day shown stands out.
         style: value == null
             ? style?.copyWith(color: colors.onSurfaceVariant)
             : isDayShown
@@ -154,7 +186,10 @@ class WeekGrid extends StatelessWidget {
                 color: colors.primary,
                 fontWeight: FontWeight.bold,
               )
-            : style,
+            : style?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w400,
+              ),
       ),
     );
   }
