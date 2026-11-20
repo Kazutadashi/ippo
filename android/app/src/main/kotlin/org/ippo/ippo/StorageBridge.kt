@@ -42,6 +42,9 @@ import java.util.concurrent.Executors
  *   that one file directly, because private folders need no picker.
  * - `listFiles(folderUri, path)`: names of the files (not folders) directly
  *   inside `path`. Returns an empty list if `path` does not exist.
+ * - `listFolders(folderUri, path)`: names of the folders directly inside
+ *   `path`, without hidden ones. Returns an empty list if `path` does not
+ *   exist. Used to list the backups.
  * - `readText(folderUri, path)`: the whole file as UTF-8 text.
  * - `appendText(folderUri, path, text)`: adds `text` to the end of the file,
  *   creating the file and its parent folders if needed.
@@ -89,6 +92,9 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
             "privateFolderPath" -> result.success(activity.filesDir.absolutePath)
             "listFiles" -> runInBackground(result) {
                 listFiles(folderUriArgument(call), pathArgument(call))
+            }
+            "listFolders" -> runInBackground(result) {
+                listFolders(folderUriArgument(call), pathArgument(call))
             }
             "readText" -> runInBackground(result) {
                 readText(folderUriArgument(call), pathArgument(call))
@@ -174,6 +180,13 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
         val folderId = findDocumentId(folderUri, splitPath(path)) ?: return emptyList()
         return listChildren(folderUri, folderId)
             .filter { child -> !child.isFolder }
+            .map { child -> child.name }
+    }
+
+    private fun listFolders(folderUri: Uri, path: String): List<String> {
+        val folderId = findDocumentId(folderUri, splitPath(path)) ?: return emptyList()
+        return listChildren(folderUri, folderId)
+            .filter { child -> child.isFolder && !child.name.startsWith(".") }
             .map { child -> child.name }
     }
 

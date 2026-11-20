@@ -193,6 +193,21 @@ class AppState extends ChangeNotifier {
     return backUpAllEvents(_requireDataFolder(), now: DateTime.now());
   }
 
+  /// The backups that can be restored, newest first: see
+  /// [listManualBackups].
+  Future<List<String>> manualBackups() {
+    return listManualBackups(_requireDataFolder());
+  }
+
+  /// Adds the events in [backupFolder] back into the event files, and
+  /// shows them. Returns how many were added; nothing is replaced (see
+  /// [restoreBackup]). Throws [DataFolderException] on failure.
+  Future<int> restoreFrom(String backupFolder) async {
+    final added = await restoreBackup(_requireDataFolder(), backupFolder);
+    await reloadEvents();
+    return added;
+  }
+
   /// Deletes every event file, from every device, after a full backup,
   /// and shows the app empty. Returns the backup folder's path. Throws
   /// [DataFolderException] on failure; nothing is deleted unless the

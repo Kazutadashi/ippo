@@ -44,6 +44,32 @@ class LocalDataFolder implements DataFolder {
   }
 
   @override
+  Future<List<String>> listFolderNames(String folderPath) async {
+    checkRelativePath(folderPath);
+    final folder = Directory(_fullPath(folderPath));
+    if (!folder.existsSync()) {
+      return [];
+    }
+    try {
+      final names = <String>[];
+      for (final entry in folder.listSync(followLinks: false)) {
+        // A folder's last path part is its name. (A folder's URI ends
+        // in "/", which makes an empty last part, hence the path.)
+        final name = entry.path.split(Platform.pathSeparator).last;
+        if (entry is Directory && !name.startsWith('.')) {
+          names.add(name);
+        }
+      }
+      names.sort();
+      return names;
+    } on FileSystemException catch (error) {
+      throw DataFolderException(
+        'Could not list "$folderPath": ${error.message}',
+      );
+    }
+  }
+
+  @override
   Future<String> readTextFile(String filePath) async {
     checkRelativePath(filePath);
     try {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Tests for [backUpAllEvents] and [clearAllEvents].
+/// Tests for [backUpAllEvents] and [clearAllEvents]; restoring is in
+/// `restore_backup_test.dart`.
 library;
 
 import 'dart:io';

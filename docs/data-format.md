@@ -71,9 +71,12 @@ inside it. The layout is:
 │   ├── 019a8f3c-0000-7000-8000-000000000001.jsonl   one file per device
 │   └── 019a8f3c-0000-7000-8000-000000000002.jsonl
 └── backups/
-    └── 019a8f3c-0000-7000-8000-000000000001/
-        ├── 2026-10-01.jsonl                         monthly snapshots
-        └── 2026-11-01.jsonl
+    ├── 019a8f3c-0000-7000-8000-000000000001/
+    │   ├── 2026-10-01.jsonl                         monthly snapshots
+    │   └── 2026-11-01.jsonl
+    └── manual-2026-11-19-080530/                    "Back up now"
+        ├── 019a8f3c-0000-7000-8000-000000000001.jsonl
+        └── 019a8f3c-0000-7000-8000-000000000002.jsonl
 ```
 
 ### `events/<device id>.jsonl`
@@ -84,7 +87,10 @@ the app is first set up. It is not the device's name: two phones can
 both be called "my-phone", but their ids never clash.
 
 - A device **only appends** to its own file. It never changes or removes
-  existing lines, and never writes to another device's file.
+  existing lines, and never writes to another device's file (except
+  when you restore a backup, which only appends that device's own
+  lines back: see `backups/manual-…` below). "Clear all data" is the
+  only thing that deletes event files, after a backup.
 - A device **reads every file** in `events/`, so it sees the data from
   all your devices.
 - Each file is **one continuous log for all time**. It is never split
@@ -105,6 +111,27 @@ Backups are only a safety net. **The app never reads them.** If an
 event file is ever damaged, you can restore it from the latest backup by
 hand. Backups contain events that are also in `events/`, so do not load
 both into an analysis, or you will count things twice.
+
+### `backups/manual-<YYYY-MM-DD>-<HHMMSS>/`
+
+"Back up now" in Settings copies **every** event file, from every
+device, into a new folder named by the local date and time. "Clear all
+data" makes one of these first, then deletes the event files.
+
+"Restore a backup" in Settings lists these folders, newest first, and
+adds a chosen one's events back. Each backed-up file goes back to the
+file of the same name in `events/`, and only lines whose event `id` is
+not already there are appended. So nothing is replaced or deleted,
+events written since the backup stay, and restoring twice adds nothing
+the second time. Everything (habits, foods, meals, sets, sleep, settings
+written as events) comes back, because it is all events. Lines that
+cannot be read stay in the backup and are not copied.
+
+Restoring appends to other devices' files too. That is the one time a
+device writes to a file that is not its own; it only adds lines the
+other device already wrote once. If that device writes at the same
+moment, the sync tool may make a conflict copy; readers read those too
+and remove duplicates by id, so nothing is lost.
 
 ### `README.txt`
 

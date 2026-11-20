@@ -23,6 +23,7 @@ import '../daily_references.dart';
 import 'nutrient_bars.dart';
 import 'choose_food_screen.dart';
 import 'food_entry_form_screen.dart';
+import 'foods_screen.dart';
 import 'nutrient_summary.dart';
 import 'quick_entry_form_screen.dart';
 
@@ -137,7 +138,19 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Food'),
-        actions: [DayBar(day: shownDay, onChanged: showDay)],
+        actions: [
+          // Every saved food, to look over and change.
+          IconButton(
+            tooltip: 'Your foods',
+            icon: const Icon(Icons.list_alt),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => FoodsScreen(appState: widget.appState),
+              ),
+            ),
+          ),
+          DayBar(day: shownDay, onChanged: showDay),
+        ],
       ),
       // Adding to the whole day: buttons at the bottom right, as on the
       // other screens. Each needs its own hero tag, because Flutter

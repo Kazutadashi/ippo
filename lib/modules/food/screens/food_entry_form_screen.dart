@@ -317,28 +317,45 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            TextField(
-              controller: _amountField,
-              autofocus: widget.entry == null,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                suffixText: _inPieces ? pieceName : _unit,
-                helperText: serving == null
-                    ? null
-                    : 'One serving is ${serving.describe(_unit)}.',
-                errorText: _amountProblem,
-              ),
-              // Redraw so the preview below follows the typed amount.
-              onChanged: (_) => setState(() => _amountProblem = null),
-              onSubmitted: (_) => _save(),
+            // The amount, with what it comes to beside it ("= 81 g").
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _amountField,
+                    autofocus: widget.entry == null,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      suffixText: _inPieces ? pieceName : _unit,
+                      helperText: serving == null
+                          ? null
+                          : 'One serving is ${serving.describe(_unit)}.',
+                      errorText: _amountProblem,
+                    ),
+                    // Redraw so the preview below follows the typed amount.
+                    onChanged: (_) => setState(() => _amountProblem = null),
+                    onSubmitted: (_) => _save(),
+                  ),
+                ),
+                if (conversion != null) ...[
+                  const SizedBox(width: 12),
+                  // Level with the number in the field.
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Text(
+                      conversion,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (conversion != null) ...[
-              const SizedBox(height: 8),
-              NoteText(conversion),
-            ],
             const SizedBox(height: 16),
             TimeField(
               label: 'Eaten at',

@@ -37,6 +37,15 @@ class AndroidDataFolder implements DataFolder {
   }
 
   @override
+  Future<List<String>> listFolderNames(String folderPath) async {
+    checkRelativePath(folderPath);
+    final names = await _call<List<Object?>>('listFolders', {
+      'path': folderPath,
+    });
+    return names.whereType<String>().toList()..sort();
+  }
+
+  @override
   Future<String> readTextFile(String filePath) async {
     checkRelativePath(filePath);
     return _call<String>('readText', {'path': filePath});
