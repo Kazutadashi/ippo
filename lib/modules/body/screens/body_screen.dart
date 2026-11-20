@@ -40,7 +40,7 @@ class BodyScreen extends StatelessWidget {
           return ListView(
             padding: belowNavigationBar(
               context,
-              const EdgeInsets.fromLTRB(12, 4, 12, 24),
+              const EdgeInsets.fromLTRB(16, 4, 16, 24),
             ),
             children: [
               _ProfileCard(appState: appState, log: log),

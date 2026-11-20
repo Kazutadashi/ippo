@@ -210,7 +210,7 @@ ThemeData buildTheme(
 
 /// Gives every text style digits of equal width, so numbers line up in
 /// columns and a value that changes ("25 min ago") does not shift
-/// sideways.
+/// sideways; and small labels normal letter spacing.
 TextTheme _withTabularDigits(TextTheme textTheme) {
   TextStyle? tabular(TextStyle? style) =>
       style?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
@@ -228,8 +228,11 @@ TextTheme _withTabularDigits(TextTheme textTheme) {
     bodyMedium: tabular(textTheme.bodyMedium),
     bodySmall: tabular(textTheme.bodySmall),
     labelLarge: tabular(textTheme.labelLarge),
-    labelMedium: tabular(textTheme.labelMedium),
-    labelSmall: tabular(textTheme.labelSmall),
+    // Material spaces these small labels out (0.5), which looks forced
+    // on ordinary words ("Counted in", "Space used"). Nearly normal
+    // spacing here; headings in capitals set their own, wider.
+    labelMedium: tabular(textTheme.labelMedium)?.copyWith(letterSpacing: 0.1),
+    labelSmall: tabular(textTheme.labelSmall)?.copyWith(letterSpacing: 0.1),
   );
 }
 

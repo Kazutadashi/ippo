@@ -62,7 +62,7 @@ class _FoodsScreenState extends State<FoodsScreen> {
             // Room at the bottom, so the button never hides a food.
             padding: belowNavigationBar(
               context,
-              const EdgeInsets.fromLTRB(12, 4, 12, 96),
+              const EdgeInsets.fromLTRB(16, 4, 16, 96),
             ),
             children: [
               SectionCard(

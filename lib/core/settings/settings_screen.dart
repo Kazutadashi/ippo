@@ -378,7 +378,8 @@ class _DemoSection extends StatelessWidget {
             'you leave.',
           ),
           const SizedBox(height: 12),
-          FilledButton.icon(
+          // Tonal, like the main button of every other card.
+          FilledButton.tonalIcon(
             onPressed: appState.endDemo,
             icon: const Icon(Icons.logout),
             label: const Text('Leave the demo'),

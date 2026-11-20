@@ -302,9 +302,19 @@ class _HowToDialog extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Solid accent with dark numerals: readable, unlike the pale
+          // default.
           CircleAvatar(
             radius: 12,
-            child: Text(number, style: theme.textTheme.labelMedium),
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: theme.colorScheme.onPrimary,
+            child: Text(
+              number,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(text)),
