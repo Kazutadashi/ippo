@@ -130,7 +130,13 @@ class SleepModule extends IppoModule {
           final minutes = log.sleepBefore(date)?.inMinutes;
           return minutes?.toDouble();
         },
-        format: (minutes) => formatDuration(Duration(minutes: minutes.round())),
+        // The exact average, written as the tile writes its average, so
+        // the two always show the same minutes.
+        format: (minutes) => formatDuration(
+          Duration(
+            microseconds: (minutes * Duration.microsecondsPerMinute).round(),
+          ),
+        ),
       ),
     ];
   }
