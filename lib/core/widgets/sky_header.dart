@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// The landscape at the top of the home screen: a great snowy mountain
-/// range seen from a wooded hilltop, across a valley, under a sky that follows the time of
-/// day.
+/// range seen from a wooded hilltop, across a valley, under a sky that
+/// follows the time of day.
 ///
 /// The land is made up fresh for each day (the date is the seed of a
 /// random number generator), so Home looks a little different every day,
