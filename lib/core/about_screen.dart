@@ -6,6 +6,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import 'build_info.dart';
+import 'dates.dart';
 import 'events/event.dart';
 import 'widgets/section_card.dart';
 
@@ -124,19 +125,14 @@ class AboutScreen extends StatelessWidget {
   }
 }
 
-/// The commit date for people, such as "2026-11-19 at 14:05", in the
-/// time zone it was committed in; or unknown.
+/// The commit date for people, as the app writes dates and times
+/// (`Fri 20 Nov, 12:28 am`); or unknown.
 String _describeCommitDate(String isoDate) {
   if (isoDate.isEmpty) {
     return _unknownBuild;
   }
-  // The written date and time, before the offset: "2026-11-19T14:05:31".
-  final match = RegExp(r'^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})')
-      .firstMatch(isoDate);
-  if (match == null) {
-    return isoDate;
-  }
-  return '${match[1]} at ${match[2]}';
+  final moment = DateTime.tryParse(isoDate);
+  return moment == null ? isoDate : formatDateAndTime(moment);
 }
 
 /// One fact about the build: its name on the left, the value on the

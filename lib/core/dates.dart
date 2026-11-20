@@ -181,3 +181,11 @@ String formatTimeAgo(Duration elapsed) {
 
 /// Writes [number] with leading zeros up to [width] digits.
 String _digits(int number, int width) => number.toString().padLeft(width, '0');
+
+/// A moment as this device's local day and time, the way the app writes
+/// both everywhere: `Thu 19 Nov, 11:58 pm` (or `23:58` with the 24-hour
+/// clock).
+String formatDateAndTime(DateTime moment) {
+  final local = moment.toLocal();
+  return '${formatShortDate(local)}, ${showTimeOfDay(local)}';
+}

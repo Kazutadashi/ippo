@@ -66,7 +66,7 @@ class _DevicesSectionState extends State<DevicesSection> {
                 ),
                 NoteText(
                   'Last event '
-                  '${formatLocalDateTime(device.latestRecordedAtUtc)}',
+                  '${formatDateAndTime(device.latestRecordedAtUtc)}',
                 ),
               ],
             ),
@@ -133,12 +133,3 @@ class _DevicesSectionState extends State<DevicesSection> {
 /// Puts a little space above a warning.
 Widget _spaced(Widget child) =>
     Padding(padding: const EdgeInsets.only(top: 12), child: child);
-
-/// Writes a moment as this device's local date and time, for example
-/// `2026-11-17 21:04`.
-String formatLocalDateTime(DateTime moment) {
-  final local = moment.toLocal();
-  String twoDigits(int number) => number.toString().padLeft(2, '0');
-  return '${local.year}-${twoDigits(local.month)}-${twoDigits(local.day)} '
-      '${showTimeOfDay(local)}';
-}
