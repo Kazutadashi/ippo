@@ -139,17 +139,13 @@ void main() {
     );
 
     // The Food tile shows today's total so far and the week grid a row
-    // for food. Lately has a Food row too, but empty: today is not over,
-    // so it is not counted yet.
+    // for food. Lately is not shown: it leaves out today, which is not
+    // over, so with only today logged it has nothing to say yet.
     expect(find.text('FOOD'), findsOneWidget);
     expect(find.text('80 kcal'), findsOneWidget);
-    expect(
-      find.descendant(of: find.byType(LatelyCard), matching: find.text('Food')),
-      findsOneWidget,
-    );
     expect(find.text('so far'), findsOneWidget);
     expect(find.byType(WeekGrid), findsOneWidget);
-    expect(find.textContaining('Your usual shows here'), findsOneWidget);
+    expect(find.byType(LatelyCard), findsNothing);
   });
 
   test('the greeting follows the time of day', () {

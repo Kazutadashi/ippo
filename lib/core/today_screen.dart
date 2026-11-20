@@ -63,11 +63,13 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
           (title: module.title, icon: module.icon, row: row),
     ];
     // Lately: each module's measures, this week against the usual.
+    // Measures with nothing in either column are left out: a row of
+    // dashes says nothing. With none left, there is no card.
     final trends = [
       for (final module in allModules)
         for (final measure in module.trendMeasures(appState))
           trendOf(measure, day),
-    ];
+    ].where((trend) => trend.recent != null || trend.usual != null).toList();
     // On how many of those days anything at all was logged.
     final loggedDates = {
       for (final module in allModules) ...module.datesLogged(appState),
