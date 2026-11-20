@@ -133,7 +133,24 @@ class _ProfileCardState extends State<_ProfileCard> {
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(labelText: label, suffixText: unit),
+      // Redraw, so the button turns from "Saved" back to "Save".
+      onChanged: (_) => setState(() {}),
     );
+  }
+
+  /// Whether what is on screen is what was last saved, so the button
+  /// can say "Saved", as the weight and limit buttons do.
+  bool get _isSaved {
+    final log = widget.log;
+    final heightCm = log.heightCm;
+    if (log.sex == null || log.birthYear == null || heightCm == null) {
+      return false;
+    }
+    final height = showImperialUnits ? _imperialHeight() : _positive(_height);
+    return _sex == log.sex &&
+        int.tryParse(_birthYear.text.trim()) == log.birthYear &&
+        height != null &&
+        (height - heightCm).abs() < 0.05;
   }
 
   Future<void> _save() async {
@@ -194,6 +211,7 @@ class _ProfileCardState extends State<_ProfileCard> {
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(labelText: 'Year of birth'),
+                onChanged: (_) => setState(() {}),
               ),
             ),
             const SizedBox(width: 12),
@@ -210,7 +228,10 @@ class _ProfileCardState extends State<_ProfileCard> {
           ProblemText(_problem!),
         ],
         const SizedBox(height: 12),
-        FilledButton.tonal(onPressed: _save, child: const Text('Save')),
+        FilledButton.tonal(
+          onPressed: _isSaved ? null : _save,
+          child: Text(_isSaved ? 'Saved' : 'Save'),
+        ),
       ],
     );
   }
