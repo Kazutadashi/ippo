@@ -22,6 +22,6 @@ const String buildCommit = String.fromEnvironment('IPPO_COMMIT');
 /// empty if unknown.
 const String buildCommitDate = String.fromEnvironment('IPPO_COMMIT_DATE');
 
-/// Who started the project: the author of the repository's first
-/// commit; empty if unknown.
+/// The project's author: the git setting `ippo.author` if set, else the
+/// author of the repository's first commit; empty if unknown.
 const String buildAuthor = String.fromEnvironment('IPPO_AUTHOR');

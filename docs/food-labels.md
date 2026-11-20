@@ -108,7 +108,8 @@ Details:
 ## Entering amounts in pieces
 
 Once a food has a serving size, logging it offers a choice between its
-pieces and grams: type **9 chips** and Ippo shows "= 28 g" and the
-calories; type **40 g** and it shows "≈ 12.9 chips". The entry always
+pieces and grams: type **9 chips** and Ippo shows "That is 28 g." under
+the field, and the calories; type **40 g** and it shows "That is about
+12.9 chips". The entry always
 stores the grams, plus the number of pieces if you typed pieces (see
 `unit_count` in `docs/data-format.md`).

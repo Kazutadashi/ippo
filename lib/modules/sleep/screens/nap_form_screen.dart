@@ -127,7 +127,7 @@ class _NapFormScreenState extends State<NapFormScreen> {
           ],
         ),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: belowNavigationBar(context, const EdgeInsets.all(16)),
           children: [
             Row(
               children: [

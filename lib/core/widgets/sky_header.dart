@@ -243,8 +243,15 @@ class _SkyPainter extends CustomPainter {
     );
     final radius = land * 0.13;
     _stars(canvas, size, Random(seed + 1), lightCentre, radius * 1.8);
-    if (phase == SkyPhase.night && random.nextInt(3) == 0) {
+    // A shooting star every night and every dusk.
+    if (phase == SkyPhase.night || phase == SkyPhase.dusk) {
       _shootingStar(canvas, size, Random(seed + 2));
+    }
+    if (phase == SkyPhase.night) {
+      // Once, only one night in three had a shooting star, and choosing
+      // that used up a random number. It is still drawn and thrown away,
+      // so the mountains made from the numbers after it keep their shape.
+      random.nextInt(3);
     }
     _sunOrMoon(canvas, lightCentre, radius);
     if (phase == SkyPhase.day || phase == SkyPhase.dawn) {

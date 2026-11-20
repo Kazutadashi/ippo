@@ -3,8 +3,13 @@
 #
 # Builds Ippo with the facts the About screen shows, read from git:
 # the commit it was built from, that commit's date, and the project's
-# author (whoever made the first commit). Nothing personal is stored in
-# the code; it comes from the git history at build time.
+# author. Nothing personal is stored in the code; it comes from git at
+# build time.
+#
+# The author is the git setting "ippo.author" if you set one (it stays in
+# your own .git/config and is never committed), for example
+#   git config ippo.author "your-name"
+# and otherwise whoever made the repository's first commit.
 #
 # Usage, from the repository's top folder:
 #   tool/build.sh apk          # Android release APK (release is the default)
@@ -25,7 +30,7 @@ if [ -n "$(git status --porcelain)" ]; then
   commit="$commit+changes"
 fi
 commit_date="$(git log -1 --format=%cI)"
-author="$(git log --reverse --format=%an | head -n 1)"
+author="$(git config --get ippo.author || git log --reverse --format=%an | head -n 1)"
 
 flutter build "$target" \
   --dart-define=IPPO_COMMIT="$commit" \

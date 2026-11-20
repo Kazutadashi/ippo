@@ -203,8 +203,8 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         : entry.nutrients.scaledBy(amount / oldAmount);
   }
 
-  /// The other unit, worked out from what is typed: "= 28 g" or
-  /// "≈ 12.9 chips".
+  /// The other unit, worked out from what is typed: "That is 28 g." or
+  /// "That is about 12.9 chips."
   String? _conversionNote(double grams) {
     final perPiece = _amountPerPiece;
     final pieceName = _pieceName;
@@ -212,9 +212,9 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
       return null;
     }
     if (_inPieces) {
-      return '= ${formatAmount(grams)} $_unit';
+      return 'That is ${formatAmount(grams)} $_unit.';
     }
-    return '≈ ${formatAmount(grams / perPiece)} $pieceName';
+    return 'That is about ${formatAmount(grams / perPiece)} $pieceName.';
   }
 
   Future<void> _save() async {
@@ -301,7 +301,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
           actions: [AppBarSaveButton(onPressed: _save)],
         ),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: belowNavigationBar(context, const EdgeInsets.all(16)),
           children: [
             if (pieceName != null) ...[
               const FieldLabel('Amount in'),
@@ -317,44 +317,27 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               ),
               const SizedBox(height: 16),
             ],
-            // The amount, with what it comes to beside it ("= 81 g").
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _amountField,
-                    autofocus: widget.entry == null,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      suffixText: _inPieces ? pieceName : _unit,
-                      helperText: serving == null
-                          ? null
-                          : 'One serving is ${serving.describe(_unit)}.',
-                      errorText: _amountProblem,
-                    ),
-                    // Redraw so the preview below follows the typed amount.
-                    onChanged: (_) => setState(() => _amountProblem = null),
-                    onSubmitted: (_) => _save(),
-                  ),
-                ),
-                if (conversion != null) ...[
-                  const SizedBox(width: 12),
-                  // Level with the number in the field.
-                  Padding(
-                    padding: const EdgeInsets.only(top: 14),
-                    child: Text(
-                      conversion,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+            // Under the amount: what it comes to in the other unit, then
+            // the serving size, as the field's own help line.
+            TextField(
+              controller: _amountField,
+              autofocus: widget.entry == null,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Amount',
+                suffixText: _inPieces ? pieceName : _unit,
+                helperText: [
+                  if (conversion != null) conversion,
+                  if (serving != null)
+                    'One serving is ${serving.describe(_unit)}.',
+                ].join(' '),
+                errorText: _amountProblem,
+              ),
+              // Redraw so the help line and nutrients follow the amount.
+              onChanged: (_) => setState(() => _amountProblem = null),
+              onSubmitted: (_) => _save(),
             ),
             const SizedBox(height: 16),
             TimeField(

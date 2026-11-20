@@ -38,7 +38,10 @@ class BodyScreen extends StatelessWidget {
           final log = BodyLog.of(appState);
           final date = formatDate(today());
           return ListView(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+            padding: belowNavigationBar(
+              context,
+              const EdgeInsets.fromLTRB(12, 4, 12, 24),
+            ),
             children: [
               _ProfileCard(appState: appState, log: log),
               _WeightCard(appState: appState, log: log, date: date),

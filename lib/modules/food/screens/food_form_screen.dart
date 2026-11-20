@@ -369,7 +369,10 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
           actions: [AppBarSaveButton(onPressed: _save)],
         ),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: belowNavigationBar(
+            context,
+            const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          ),
           children: [
             // Tonal, so it reads as a button, never as an empty field.
             FilledButton.tonalIcon(

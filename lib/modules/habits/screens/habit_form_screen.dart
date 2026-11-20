@@ -125,7 +125,10 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
           actions: [AppBarSaveButton(onPressed: _save)],
         ),
         body: ListView(
-          padding: const EdgeInsets.all(Spacing.screen),
+          padding: belowNavigationBar(
+            context,
+            const EdgeInsets.all(Spacing.screen),
+          ),
           children: [
             TextField(
               controller: _nameField,

@@ -144,7 +144,10 @@ tool/build.sh linux   # Linux desktop
 
 The script reads these from git and passes them in with
 `--dart-define`, so they are never written in the code. A commit with
-uncommitted changes is shown with `+changes`. Builds made any other
+uncommitted changes is shown with `+changes`. The author is the
+name of the first commit's author, unless you set another in your own
+copy of the repository with `git config ippo.author "your-name"` (kept
+in `.git/config`, never committed). Builds made any other
 way (such as `flutter run`) show them as unknown. When you change
 `version` in `pubspec.yaml`, change `appVersion` in
 `lib/core/build_info.dart` to match; a test checks this.

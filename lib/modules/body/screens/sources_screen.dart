@@ -33,7 +33,10 @@ class SourcesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('How these are worked out')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+        padding: belowNavigationBar(
+          context,
+          const EdgeInsets.fromLTRB(12, 4, 12, 24),
+        ),
         children: const [
           _Source(
             icon: Icons.local_fire_department,

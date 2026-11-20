@@ -103,7 +103,7 @@ class _ExerciseFormScreenState extends State<ExerciseFormScreen> {
           actions: [AppBarSaveButton(onPressed: _save)],
         ),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: belowNavigationBar(context, const EdgeInsets.all(16)),
           children: [
             TextField(
               controller: _nameField,

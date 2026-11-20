@@ -153,18 +153,18 @@ void main() {
     // Pieces first, because the food has a serving size.
     await tester.enterText(find.widgetWithText(TextField, 'Amount'), '9');
     await tester.pump();
-    expect(find.text('= 28 g'), findsOneWidget);
+    expect(find.textContaining('That is 28 g.'), findsOneWidget);
     expect(find.text('150 kcal'), findsOneWidget);
 
     // Switching to grams converts what was typed.
     await tester.tap(find.text('g'));
     await tester.pump();
     expect(find.widgetWithText(TextField, '28'), findsOneWidget);
-    expect(find.text('≈ 9 chips'), findsOneWidget);
+    expect(find.textContaining('That is about 9 chips.'), findsOneWidget);
 
     await tester.enterText(find.widgetWithText(TextField, 'Amount'), '56');
     await tester.pump();
-    expect(find.text('≈ 18 chips'), findsOneWidget);
+    expect(find.textContaining('That is about 18 chips.'), findsOneWidget);
   });
 
   testWidgets('a new entry starts with the amount logged last time', (

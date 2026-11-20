@@ -104,7 +104,10 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
               .toList();
           return ListView(
             // Room at the bottom, so the button never hides a food.
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+            padding: belowNavigationBar(
+              context,
+              const EdgeInsets.fromLTRB(16, 4, 16, 96),
+            ),
             children: [
               SectionCard(
                 children: [

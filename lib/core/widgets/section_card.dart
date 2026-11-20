@@ -386,3 +386,14 @@ class AppBarSaveButton extends StatelessWidget {
     );
   }
 }
+
+/// [padding] for a scrolling screen, with room added at the bottom for
+/// the phone's own navigation bar. The app draws behind that bar (edge
+/// to edge), so without this the last card would sit under its buttons.
+/// Where a screen has no such bar (or a bottom bar of its own), it adds
+/// nothing.
+EdgeInsets belowNavigationBar(BuildContext context, EdgeInsets padding) {
+  return padding.copyWith(
+    bottom: padding.bottom + MediaQuery.paddingOf(context).bottom,
+  );
+}

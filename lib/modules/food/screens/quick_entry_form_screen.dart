@@ -200,7 +200,10 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         ),
         // The same cards and fields as "New food", so both read the same.
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: belowNavigationBar(
+            context,
+            const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          ),
           children: [
             SectionCard(
               children: [

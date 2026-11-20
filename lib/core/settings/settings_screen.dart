@@ -32,7 +32,10 @@ class SettingsScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: appState,
         builder: (context, _) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          padding: belowNavigationBar(
+            context,
+            const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          ),
           children: [
             if (appState.errorMessage != null)
               _ErrorBanner(message: appState.errorMessage!),
@@ -94,8 +97,15 @@ class SettingsScreen extends StatelessWidget {
                 DevicesSection(appState: appState),
               ],
             ),
+            // Like a SectionCard, but the whole card is one tap target.
             Card(
+              margin: const EdgeInsets.only(top: Spacing.small),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.medium,
+                  vertical: 4,
+                ),
                 leading: const Icon(Icons.info_outline),
                 title: const Text('About Ippo'),
                 subtitle: const Text('The name, the author and this version'),
