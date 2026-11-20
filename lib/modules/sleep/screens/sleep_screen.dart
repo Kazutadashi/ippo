@@ -182,6 +182,9 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
 /// Woke up starts at what is saved, or the usual wake-up time. Went to
 /// bed starts at what is saved, or "Not set", so saving in the morning
 /// never records a bedtime that has not happened.
+/// From this hour on, the day entry offers "Going to bed now".
+const int _eveningHour = 18;
+
 class _DayEntry extends StatefulWidget {
   const _DayEntry({
     super.key,
@@ -245,8 +248,10 @@ class _DayEntryState extends State<_DayEntry> {
       _wokeUp == wakeUpMoment(widget.day, widget.wakeGuess);
 
   /// The one-tap button for right now, if there is one: "Woke up now"
-  /// until the wake-up is saved, then "Going to bed now" until the
-  /// bedtime is. Only for today: other days are logged after the fact.
+  /// until the wake-up is saved, then, in the evening and night (from
+  /// [_eveningHour] until the day ends at [dayStartHour]), "Going to bed
+  /// now" until the bedtime is. Only for today: other days are logged
+  /// after the fact.
   MomentKind? get _nowKind {
     if (widget.day != today()) {
       return null;
@@ -254,7 +259,9 @@ class _DayEntryState extends State<_DayEntry> {
     if (widget.wakeUp == null) {
       return MomentKind.wokeUp;
     }
-    if (widget.bedtime == null) {
+    final hour = DateTime.now().hour;
+    final isEvening = hour >= _eveningHour || hour < dayStartHour;
+    if (widget.bedtime == null && isEvening) {
       return MomentKind.wentToBed;
     }
     return null;

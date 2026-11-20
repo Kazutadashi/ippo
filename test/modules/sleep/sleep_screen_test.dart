@@ -80,7 +80,7 @@ void main() {
     expect(find.text('Clear this day'), findsOneWidget);
   });
 
-  testWidgets('one tap saves waking up now, then offers going to bed', (
+  testWidgets('one tap saves waking up now; going to bed in the evening', (
     tester,
   ) async {
     await openSleepScreen(tester);
@@ -96,10 +96,15 @@ void main() {
     var log = SleepLog.fromEvents(appState.eventLog!.events);
     final wakeUp = log.wakeUpOn(date)!;
     expect(wakeUp.clock, ClockTime(before.hour, before.minute));
-    // Next comes the bedtime, also in one tap.
     expect(find.text('Woke up now'), findsNothing);
+    // Next comes the bedtime, also in one tap, but only in the evening
+    // and night: in the morning it would make no sense.
+    final hour = DateTime.now().hour;
+    if (hour < 18 && hour >= dayStartHour) {
+      expect(find.text('Going to bed now'), findsNothing);
+      return;
+    }
     expect(find.text('Going to bed now'), findsOneWidget);
-
     await tester.runAsync(() async {
       await tester.tap(find.text('Going to bed now'));
       await Future<void>.delayed(const Duration(milliseconds: 300));
