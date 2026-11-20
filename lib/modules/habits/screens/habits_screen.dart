@@ -120,6 +120,14 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
                       ),
                     ),
                   ),
+                if (habits.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: Spacing.small),
+                    child: NoteText(
+                      'Tap a day to mark it done (✓), again for not done (✗). '
+                      'Tap a name to change the habit.',
+                    ),
+                  ),
               ],
             );
           },
@@ -291,7 +299,8 @@ class _DayHeader extends StatelessWidget {
   }
 }
 
-/// One habit on one day: ✓, ✗, or a dot for nothing recorded. Tapping
+/// One habit on one day: ✓, ✗, or nothing recorded (an empty ring
+/// today, a dot before). Tapping
 /// moves it on: nothing → ✓ → ✗ → nothing.
 class _DayCell extends StatelessWidget {
   const _DayCell({
@@ -331,7 +340,15 @@ class _DayCell extends StatelessWidget {
         );
         meaning = 'not done';
       case DayMark.none:
-        icon = Icon(Icons.circle, size: 5, color: colors.outlineVariant);
+        // Today, an empty ring in the habit's colour: a box waiting to be
+        // ticked. Past days, only a quiet dot, so the grid stays calm.
+        icon = isToday
+            ? Icon(
+                Icons.circle_outlined,
+                size: _markSize * 0.8,
+                color: habit.displayColor(theme).withValues(alpha: 0.7),
+              )
+            : Icon(Icons.circle, size: 5, color: colors.outlineVariant);
         meaning = 'not recorded';
     }
     return Semantics(
