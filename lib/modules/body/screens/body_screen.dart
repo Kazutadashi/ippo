@@ -432,7 +432,10 @@ class _CaloriesCardState extends State<_CaloriesCard> {
         else ...[
           InfoRow(
             values: [
-              InfoValue(label: 'BMR (at rest)', value: '${bmr.round()} kcal'),
+              InfoValue(
+                label: 'Burned at rest (BMR)',
+                value: '${formatThousands(bmr.round())} kcal',
+              ),
             ],
           ),
           const SizedBox(height: Spacing.small),
@@ -446,7 +449,7 @@ class _CaloriesCardState extends State<_CaloriesCard> {
                     child: Text(level.description, style: textTheme.bodyMedium),
                   ),
                   Text(
-                    '${(bmr * level.factor).round()} kcal',
+                    '${formatThousands((bmr * level.factor).round())} kcal',
                     style: textTheme.titleSmall,
                   ),
                 ],

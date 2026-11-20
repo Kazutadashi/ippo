@@ -23,10 +23,10 @@ class NutrientKind {
   final String unit;
 }
 
-/// Energy for people, in whole kilocalories: `1267 kcal`. A tenth of a
-/// kilocalorie means nothing to anyone, so the screen leaves it out;
-/// the data keeps it.
-String formatEnergy(double kcal) => '${kcal.round()} kcal';
+/// Energy for people, in whole kilocalories with a thousands separator,
+/// as for steps: `1,267 kcal`. A tenth of a kilocalorie means nothing to
+/// anyone, so the screen leaves it out; the data keeps it.
+String formatEnergy(double kcal) => '${formatThousands(kcal.round())} kcal';
 
 /// Grams for people: whole grams from 10 g on (`168 g`), and a tenth
 /// below that, where it still matters (`2.5 g`). The data keeps every

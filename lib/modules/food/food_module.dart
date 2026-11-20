@@ -88,7 +88,7 @@ class FoodModule extends IppoModule {
       // Against the limit when there is one; otherwise "so far": today is
       // not over, which is why it is usually below the average.
       valueNote: target != null
-          ? 'of ${target.round()}'
+          ? 'of ${formatThousands(target.round())}'
           : isToday
           ? 'so far'
           : null,

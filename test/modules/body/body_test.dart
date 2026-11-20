@@ -126,8 +126,8 @@ void main() {
 
     final tile = const FoodModule().homeTile(appState, currentDay(now), now);
     expect(tile.value, '500 kcal');
-    expect(tile.valueNote, 'of 2000');
+    expect(tile.valueNote, 'of 2,000');
     expect(tile.rows.first.label, 'Left today');
-    expect(tile.rows.first.value, '1500 kcal');
+    expect(tile.rows.first.value, '1,500 kcal');
   });
 }
