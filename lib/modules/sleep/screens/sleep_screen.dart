@@ -13,6 +13,7 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
+import '../../../core/widgets/moon_icon.dart';
 import '../../../core/widgets/section_card.dart';
 import '../sleep_actions.dart';
 import '../nap.dart';
@@ -402,7 +403,7 @@ class _LastNightCard extends StatelessWidget {
     return SectionCard(
       children: [
         CardHeader(
-          icon: Icons.bedtime_outlined,
+          iconWidget: const MoonIcon(),
           title: isToday ? 'Last night' : 'The night before',
         ),
         if (slept == null)
@@ -419,7 +420,7 @@ class _LastNightCard extends StatelessWidget {
                   color: colors.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.nightlight_round, color: colors.primary),
+                child: Center(child: MoonIcon(size: 28, color: colors.primary)),
               ),
               const SizedBox(width: Spacing.medium),
               Expanded(

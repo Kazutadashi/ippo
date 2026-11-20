@@ -380,7 +380,7 @@ by themselves unless the user picked another day.
 | Your foods (a list) | `list_alt` |
 | Quick food | `bolt` |
 | Exercise | `DumbbellIcon`, drawn: a level dumbbell with thick plates (`IppoModule.buildIcon`) |
-| Sleep, a night | `king_bed_outlined` |
+| Sleep, a night | `MoonIcon`, drawn: a full, even crescent with a small star (`IppoModule.buildIcon`) |
 | A nap | `airline_seat_flat` |
 | Settings | `settings_outlined` (the gear on Home) |
 | Add, new | `add` |

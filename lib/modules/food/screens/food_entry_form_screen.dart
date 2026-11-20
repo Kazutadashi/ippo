@@ -5,10 +5,6 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 
-import '../daily_references.dart';
-
-import '../../body/body_log.dart';
-
 import '../../../core/app_state.dart';
 import '../../../core/clock_time.dart';
 import '../../../core/dates.dart';
@@ -18,6 +14,8 @@ import '../../../core/undo_message.dart';
 import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/time_fields.dart';
+import '../../body/body_log.dart';
+import '../daily_references.dart';
 import '../food.dart';
 import '../food_actions.dart';
 import '../food_diary.dart';
@@ -177,6 +175,15 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
   }
 
   /// The nutrients for [amount] grams, for the live preview.
+  /// The food's ingredients, if its label gave them.
+  String? get _ingredients {
+    final food =
+        widget.food ??
+        FoodDiary.of(widget.appState).foods[widget.entry?.foodId];
+    final text = food?.ingredients?.trim();
+    return text == null || text.isEmpty ? null : text;
+  }
+
   /// A whole day's normal amounts, for the day of this entry.
   Map<String, double> get _references => dailyReferencesOn(
     BodyLog.of(widget.appState),
@@ -340,29 +347,25 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             ),
             const SizedBox(height: 16),
             // This amount against a whole day's normal amounts, then every
-            // other nutrient the food has, folded away until asked for.
+            // other nutrient the food has, and its ingredients.
             NutrientInfoRow(
               nutrients: _nutrientsFor(grams),
               references: _references,
             ),
-            Theme(
-              data: Theme.of(context)
-                  .copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: EdgeInsets.zero,
-                title: Text(
-                  'All nutrients',
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                children: [
-                  AllNutrientsList(
-                    nutrients: _nutrientsFor(grams),
-                    references: _references,
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            Text(
+              'All nutrients',
+              style: Theme.of(context).textTheme.titleSmall,
             ),
+            const SizedBox(height: 8),
+            AllNutrientsList(
+              nutrients: _nutrientsFor(grams),
+              references: _references,
+            ),
+            if (_ingredients != null) ...[
+              const SizedBox(height: 8),
+              _IngredientsBox(ingredients: _ingredients!),
+            ],
             if (widget.entry != null)
               DeleteButton(label: 'Delete this entry', onPressed: _delete),
             // Changing the food itself (its name or label values) starts
@@ -404,4 +407,38 @@ ClockTime? startingEntryTime({
   }
   final now = DateTime.now();
   return ClockTime(now.hour, now.minute);
+}
+
+/// The ingredients as on the label, in a soft box under a small title.
+class _IngredientsBox extends StatelessWidget {
+  const _IngredientsBox({required this.ingredients});
+
+  final String ingredients;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.list_alt, size: 18, color: colors.primary),
+              const SizedBox(width: 8),
+              Text('Ingredients', style: textTheme.titleSmall),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SelectableText(ingredients, style: textTheme.bodyMedium),
+        ],
+      ),
+    );
+  }
 }

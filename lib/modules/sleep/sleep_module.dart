@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import '../../core/widgets/moon_icon.dart';
 import 'screens/sleep_screen.dart';
 import 'nap.dart';
 import 'time_span_bar.dart';
@@ -27,7 +28,12 @@ class SleepModule extends IppoModule {
   String get title => 'Sleep';
 
   @override
-  IconData get icon => Icons.king_bed_outlined;
+  IconData get icon => Icons.bedtime;
+
+  /// A full, even crescent with a small star, drawn by hand: Material's
+  /// moons are thin or lopsided at small sizes.
+  @override
+  Widget buildIcon() => const MoonIcon();
 
   /// The sleep the night before [day], drawn as a bar from bedtime to
   /// waking up; then how long you have been awake (or naps), and the
