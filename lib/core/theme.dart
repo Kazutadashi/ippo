@@ -124,9 +124,12 @@ ThemeMode parseThemeMode(String? name) {
 /// out its own ("tonal spot"), so they match the rest of the phone.
 ///
 /// In dark mode, text is pure white rather than the theme's tinted
-/// off-white, for the clearest contrast. With [trueBlack], the dark
-/// background is true black too (which saves power on OLED screens),
-/// and cards are the darkest greys that still show their edges.
+/// off-white, for the clearest contrast. The dark background is a very
+/// deep navy, the night sky of the Home landscape, so every screen
+/// belongs with it and cards stand out from the page. With [trueBlack],
+/// the background is true black instead (which saves power on OLED
+/// screens), and cards are the darkest greys that still show their
+/// edges.
 ThemeData buildTheme(
   Color accent,
   Brightness brightness, {
@@ -148,17 +151,17 @@ ThemeData buildTheme(
     generated.surface,
   );
   final isDark = brightness == Brightness.dark;
+  // The dark surfaces, page first, then each card level a step lighter.
+  final darkSurfaces = trueBlack ? _trueBlackSurfaces : _nightSurfaces;
   final colorScheme = generated.copyWith(
     // Main text pure white in dark mode; grey text stays grey.
     onSurface: isDark ? Colors.white : null,
-    surface: isDark && trueBlack ? Colors.black : null,
-    surfaceContainerLowest: isDark && trueBlack ? Colors.black : null,
-    surfaceContainerLow: isDark && trueBlack ? const Color(0xFF0B0B0B) : null,
-    surfaceContainer: isDark && trueBlack ? const Color(0xFF141414) : null,
-    surfaceContainerHigh: isDark && trueBlack ? const Color(0xFF1C1C1C) : null,
-    surfaceContainerHighest: isDark && trueBlack
-        ? const Color(0xFF242424)
-        : null,
+    surface: isDark ? darkSurfaces[0] : null,
+    surfaceContainerLowest: isDark ? darkSurfaces[1] : null,
+    surfaceContainerLow: isDark ? darkSurfaces[2] : null,
+    surfaceContainer: isDark ? darkSurfaces[3] : null,
+    surfaceContainerHigh: isDark ? darkSurfaces[4] : null,
+    surfaceContainerHighest: isDark ? darkSurfaces[5] : null,
     primaryContainer: main,
     onPrimaryContainer: onMain,
     secondary: main,
@@ -174,13 +177,38 @@ ThemeData buildTheme(
     visualDensity: VisualDensity.compact,
     materialTapTargetSize: MaterialTapTargetSize.padded,
     // Every text field gets an outline, so anything the user can change
-    // looks the same on every screen.
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
+    // looks the same on every screen. A quiet outline at rest, so a form
+    // full of fields is not heavy; the accent, thicker, while typing.
+    inputDecorationTheme: InputDecorationTheme(
+      border: const OutlineInputBorder(),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: colorScheme.outline.withValues(alpha: 0.6),
+        ),
+      ),
       isDense: true,
       // The label always sits on the border, so a field's unit ("kcal")
       // and example ("2 slices") show before anything is typed.
       floatingLabelBehavior: FloatingLabelBehavior.always,
+    ),
+    // Choices (Female/Male, Grams/Millilitres): the chosen one filled
+    // with the accent tint and its label in the accent, the others
+    // plain with a quieter label, so the choice is what stands out.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (states) =>
+              states.contains(WidgetState.selected) ? tint : Colors.transparent,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? (isDark ? Colors.white : main)
+              : colorScheme.onSurfaceVariant,
+        ),
+        side: WidgetStatePropertyAll(
+          BorderSide(color: colorScheme.outline.withValues(alpha: 0.6)),
+        ),
+      ),
     ),
     listTileTheme: const ListTileThemeData(
       visualDensity: VisualDensity.compact,
@@ -207,6 +235,28 @@ ThemeData buildTheme(
   );
   return theme.copyWith(textTheme: _withTabularDigits(theme.textTheme));
 }
+
+/// The night surfaces of dark mode: page, then the card levels from
+/// lowest to highest. Deep navy, from the Home landscape's night sky.
+const List<Color> _nightSurfaces = [
+  Color(0xFF0B1120),
+  Color(0xFF080D19),
+  Color(0xFF101828),
+  Color(0xFF162033),
+  Color(0xFF1C283D),
+  Color(0xFF243148),
+];
+
+/// The true-black surfaces: a black page, and the darkest greys that
+/// still show a card's edge.
+const List<Color> _trueBlackSurfaces = [
+  Colors.black,
+  Colors.black,
+  Color(0xFF0B0B0B),
+  Color(0xFF141414),
+  Color(0xFF1C1C1C),
+  Color(0xFF242424),
+];
 
 /// Gives every text style digits of equal width, so numbers line up in
 /// columns and a value that changes ("25 min ago") does not shift
