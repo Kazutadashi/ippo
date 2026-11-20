@@ -15,6 +15,7 @@ import 'nap.dart';
 import 'time_span_bar.dart';
 import 'sleep_moment.dart';
 import 'sleep_log.dart';
+import 'sleep_demo.dart';
 
 /// The sleep module, as seen by the core app.
 class SleepModule extends IppoModule {
@@ -114,6 +115,9 @@ class SleepModule extends IppoModule {
 
   @override
   Widget buildScreen(AppState appState) => SleepScreen(appState: appState);
+
+  @override
+  List<DemoEvent> demoEvents(DemoPlan plan) => sleepDemoEvents(plan);
 }
 
 /// The average sleep a night over the week before [day], counting only

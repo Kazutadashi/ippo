@@ -12,6 +12,7 @@ import '../../core/number_input.dart';
 import '../../core/widgets/dumbbell_icon.dart';
 import 'exercise_log.dart';
 import 'screens/exercise_home_screen.dart';
+import 'exercise_demo.dart';
 
 /// The exercise module, as seen by the core app.
 class ExerciseModule extends IppoModule {
@@ -118,6 +119,9 @@ class ExerciseModule extends IppoModule {
   @override
   Widget buildScreen(AppState appState) =>
       ExerciseHomeScreen(appState: appState);
+
+  @override
+  List<DemoEvent> demoEvents(DemoPlan plan) => exerciseDemoEvents(plan);
 }
 
 /// When the last workout before [day] was: "yesterday" (or "the day

@@ -53,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final hasDataFolder = widget.appState.dataFolder != null;
         final chooseFolderFirst = _ChooseDataFolderFirst(
           onOpenSettings: _openSettings,
+          onTryDemo: () => startDemo(widget.appState),
         );
         // IndexedStack keeps every tab alive, so each keeps its state.
         final tabs = IndexedStack(
@@ -70,6 +71,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   : chooseFolderFirst,
           ],
         );
+        // While the demo runs, a strip above the tabs says so on every
+        // screen, with the way out.
+        final demoStrip = widget.appState.isDemo
+            ? _DemoStrip(onLeave: widget.appState.endDemo)
+            : null;
         final destinations = [
           (const Icon(Icons.home_outlined), 'Home'),
           for (final module in allModules) (module.buildIcon(), module.title),
@@ -79,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // instead of stretching across the whole window.
         if (MediaQuery.sizeOf(context).width >= _wideWindow) {
           return Scaffold(
+            bottomNavigationBar: demoStrip,
             body: Row(
               children: [
                 NavigationRail(
@@ -103,25 +110,31 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
+        final navigationBar = NavigationBar(
+          selectedIndex: _selectedTab,
+          onDestinationSelected: (index) =>
+              setState(() => _selectedTab = index),
+          destinations: [
+            const NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            for (final module in allModules)
+              NavigationDestination(
+                icon: module.buildIcon(),
+                label: module.title,
+              ),
+          ],
+        );
         return Scaffold(
           body: tabs,
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _selectedTab,
-            onDestinationSelected: (index) =>
-                setState(() => _selectedTab = index),
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              for (final module in allModules)
-                NavigationDestination(
-                  icon: module.buildIcon(),
-                  label: module.title,
+          bottomNavigationBar: demoStrip == null
+              ? navigationBar
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [demoStrip, navigationBar],
                 ),
-            ],
-          ),
         );
       },
     );
@@ -137,9 +150,15 @@ const double _maxWidth = 720;
 
 /// Shown while no data folder is chosen, leading to Settings.
 class _ChooseDataFolderFirst extends StatelessWidget {
-  const _ChooseDataFolderFirst({required this.onOpenSettings});
+  const _ChooseDataFolderFirst({
+    required this.onOpenSettings,
+    required this.onTryDemo,
+  });
 
   final VoidCallback onOpenSettings;
+
+  /// Starts the demo, to look around before choosing a folder.
+  final VoidCallback onTryDemo;
 
   @override
   Widget build(BuildContext context) {
@@ -160,8 +179,52 @@ class _ChooseDataFolderFirst extends StatelessWidget {
                 onPressed: onOpenSettings,
                 child: const Text('Choose a data folder'),
               ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: onTryDemo,
+                icon: const Icon(Icons.play_circle_outline),
+                label: const Text('Or try the demo first'),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The strip shown above the tabs during the demo: what it is, and a
+/// button to leave it.
+class _DemoStrip extends StatelessWidget {
+  const _DemoStrip({required this.onLeave});
+
+  final VoidCallback onLeave;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Material(
+      color: colors.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
+        child: Row(
+          children: [
+            Icon(Icons.play_circle_outline, color: colors.onTertiaryContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Demo: made-up data, not saved',
+                style: TextStyle(color: colors.onTertiaryContainer),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.onTertiaryContainer,
+              ),
+              onPressed: onLeave,
+              child: const Text('Leave demo'),
+            ),
+          ],
         ),
       ),
     );

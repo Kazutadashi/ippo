@@ -16,6 +16,7 @@ import 'nutrients.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
 import 'screens/food_diary_screen.dart';
+import 'food_demo.dart';
 
 /// The food module, as seen by the core app.
 class FoodModule extends IppoModule {
@@ -150,6 +151,9 @@ class FoodModule extends IppoModule {
 
   @override
   Widget buildScreen(AppState appState) => FoodDiaryScreen(appState: appState);
+
+  @override
+  List<DemoEvent> demoEvents(DemoPlan plan) => foodDemoEvents(plan);
 }
 
 /// The average energy a day over the week before [day], counting only

@@ -49,6 +49,16 @@ class SettingsScreen extends StatelessWidget {
             SectionCard(
               children: [
                 const CardHeader(
+                  icon: Icons.play_circle_outline,
+                  title: 'Demo',
+                ),
+                const SizedBox(height: 4),
+                _DemoSection(appState: appState),
+              ],
+            ),
+            SectionCard(
+              children: [
+                const CardHeader(
                   icon: Icons.backup_outlined,
                   title: 'Back up and clear',
                 ),
@@ -345,6 +355,59 @@ class _ErrorBanner extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Text(message, style: TextStyle(color: colors.onErrorContainer)),
       ),
+    );
+  }
+}
+
+/// Starting and leaving the demo.
+class _DemoSection extends StatelessWidget {
+  const _DemoSection({required this.appState});
+
+  final AppState appState;
+
+  @override
+  Widget build(BuildContext context) {
+    if (appState.isDemo) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const NoteText(
+            'The demo is on: Ippo shows four weeks of made-up data, kept '
+            'only in memory. Add, change and delete anything you like. '
+            'Your own data is set aside, untouched, and comes back when '
+            'you leave.',
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: appState.endDemo,
+            icon: const Icon(Icons.logout),
+            label: const Text('Leave the demo'),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const NoteText(
+          'See Ippo filled in: four weeks of made-up habits, meals, '
+          'workouts and sleep. It is kept only in memory and never '
+          'written to your data folder; leaving the demo (or closing the '
+          'app) throws it away.',
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await startDemo(appState);
+            if (context.mounted) {
+              // Straight to Home, to see it.
+              Navigator.of(context).pop();
+            }
+          },
+          icon: const Icon(Icons.play_circle_outline),
+          label: const Text('Try the demo'),
+        ),
+      ],
     );
   }
 }

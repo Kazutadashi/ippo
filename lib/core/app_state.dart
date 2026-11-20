@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import 'dates.dart';
+import 'demo/demo_plan.dart';
 import 'events/event.dart';
 import 'events/event_log.dart';
 import 'events/event_log_reader.dart';
@@ -18,6 +19,7 @@ import 'settings/app_settings.dart';
 import 'storage/android_data_folder.dart';
 import 'storage/data_folder.dart';
 import 'storage/local_data_folder.dart';
+import 'storage/memory_data_folder.dart';
 import 'storage/settings_file.dart';
 
 /// Holds the app-wide state and tells listening screens when it changes.
@@ -62,6 +64,16 @@ class AppState extends ChangeNotifier {
   EventLog? _eventLog;
   String? _errorMessage;
   bool _isLoading = true;
+
+  // While the demo runs: the real data folder and what was read from it,
+  // put aside, so leaving the demo brings them back exactly as they were.
+  ({
+    DataFolder? folder,
+    String? description,
+    EventWriter? writer,
+    EventLog? log,
+  })?
+  _beforeDemo;
 
   /// True until [load] has finished.
   bool get isLoading => _isLoading;
@@ -110,6 +122,53 @@ class AppState extends ChangeNotifier {
     final value = build(eventLog?.events ?? const []);
     _derivedValues[key] = value;
     return value;
+  }
+
+  /// Whether the demo is running: the app shows made-up data kept only in
+  /// memory, and the real data folder is set aside, untouched.
+  bool get isDemo => _beforeDemo != null;
+
+  /// Starts the demo with [eventFileText], the made-up events (see
+  /// `demo_plan.dart`).
+  ///
+  /// The data folder becomes a [MemoryDataFolder] holding them. Anything
+  /// added, changed or deleted during the demo stays in memory, and is
+  /// gone when the demo ends or the app closes. Settings such as the
+  /// accent colour are still saved as usual.
+  Future<void> startDemo(String eventFileText) async {
+    if (isDemo) {
+      return;
+    }
+    _beforeDemo = (
+      folder: _dataFolder,
+      description: _dataFolderDescription,
+      writer: _eventWriter,
+      log: _eventLog,
+    );
+    _dataFolder = MemoryDataFolder({
+      '$eventsFolderName/$demoDeviceId.jsonl': eventFileText,
+    });
+    _dataFolderDescription = 'Demo data, kept only in memory';
+    _eventLog = null;
+    _createEventWriter();
+    await reloadEvents();
+  }
+
+  /// Ends the demo: its data is thrown away, and the real data folder
+  /// comes back as it was. Its events are read again, in case a sync
+  /// changed them meanwhile.
+  Future<void> endDemo() async {
+    final before = _beforeDemo;
+    if (before == null) {
+      return;
+    }
+    _beforeDemo = null;
+    _dataFolder = before.folder;
+    _dataFolderDescription = before.description;
+    _eventWriter = before.writer;
+    _eventLog = before.log;
+    notifyListeners();
+    await reloadEvents();
   }
 
   /// Loads the settings and the data folder, then reads the events.
@@ -168,7 +227,8 @@ class AppState extends ChangeNotifier {
     final settings = _settings;
     final now = DateTime.now();
     final month = formatDate(now).substring(0, 7);
-    if (settings == null || month == _backedUpMonth) {
+    // The demo's folder is only in memory: nothing to back up there.
+    if (settings == null || month == _backedUpMonth || isDemo) {
       return;
     }
     try {
@@ -399,6 +459,8 @@ class AppState extends ChangeNotifier {
   }
 
   void _useAndroidFolder(String folderUri) {
+    // Choosing a real folder ends the demo, if it is running.
+    _beforeDemo = null;
     _dataFolder = AndroidDataFolder(folderUri);
     _dataFolderDescription = describeAndroidFolder(folderUri);
     _eventLog = null;
@@ -406,6 +468,8 @@ class AppState extends ChangeNotifier {
   }
 
   void _useLinuxFolder(String path) {
+    // Choosing a real folder ends the demo, if it is running.
+    _beforeDemo = null;
     _dataFolder = LocalDataFolder(path);
     _dataFolderDescription = path;
     _eventLog = null;

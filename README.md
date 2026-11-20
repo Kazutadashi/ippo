@@ -20,6 +20,13 @@ Ippo is built from modules:
 
 You can add more modules without changing the existing ones.
 
+**Try the demo** (on the welcome screen, or in Settings) to see Ippo
+filled in with four weeks of made-up habits, meals, workouts and sleep.
+The demo data is made up on the phone when you start it, kept only in
+memory, and thrown away when you leave; your own data folder is never
+touched. Each module makes its own demo data (`demoEvents` in
+`lib/core/module.dart`).
+
 ## Your data stays yours
 
 - **No network.** The Android app does not request the `INTERNET`

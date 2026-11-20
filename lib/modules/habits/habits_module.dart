@@ -13,6 +13,7 @@ import 'habit.dart';
 import 'habit_log.dart';
 import 'habit_marks.dart';
 import 'screens/habits_screen.dart';
+import 'habits_demo.dart';
 
 /// The habits module, as seen by the core app.
 class HabitsModule extends IppoModule {
@@ -98,6 +99,9 @@ class HabitsModule extends IppoModule {
 
   @override
   Widget buildScreen(AppState appState) => HabitsScreen(appState: appState);
+
+  @override
+  List<DemoEvent> demoEvents(DemoPlan plan) => habitsDemoEvents(plan);
 }
 
 /// How many of [habits] are done on [date] (`YYYY-MM-DD`).
