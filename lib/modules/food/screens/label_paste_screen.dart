@@ -12,14 +12,13 @@ import '../label_json.dart';
 import '../nutrients.dart';
 import '../nutrition_label.dart';
 
-/// A short example of the JSON, shown in the empty box so it is clear
-/// what to paste.
-const String _jsonHint = '''{
-  "name": "Potato chips",
-  "per": "serving",
-  "serving": {"unit": "chips", "count": 9, "amount": 28},
-  "nutrients": {"energy_kcal": 150, "fat_g": 9, …}
-}''';
+/// What the empty box says: what to paste, in plain words, with a
+/// short example of label text. (JSON works too; the ⓘ explains.)
+const String _boxHint = '''Paste the label here, for example:
+Serving size 9 chips (28 g)
+Calories 150
+Fat 9 g
+Protein 2 g''';
 
 /// Takes a label's JSON or text, shows what was read from it as it is
 /// typed or pasted, and closes with the reading when the person taps
@@ -144,8 +143,8 @@ class _LabelPasteScreenState extends State<LabelPasteScreen> {
             decoration: InputDecoration(
               labelText: 'Label as JSON or text',
               alignLabelWithHint: true,
-              hintText: _jsonHint,
-              hintMaxLines: 8,
+              hintText: _boxHint,
+              hintMaxLines: 6,
               suffixIcon: _textField.text.isEmpty
                   ? null
                   : IconButton(
@@ -328,8 +327,10 @@ class _HowToDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Ippo never goes online, so it cannot read a photo itself. '
-            'An AI assistant can, and can write the label as JSON:',
+            'Ippo never goes online and sends nothing anywhere, so it '
+            'cannot read a photo itself. An AI assistant can, and can '
+            'write the label as JSON. The photo goes only where you send '
+            'it:',
           ),
           const SizedBox(height: 12),
           step('1', 'Take a photo of the nutrition label.'),
