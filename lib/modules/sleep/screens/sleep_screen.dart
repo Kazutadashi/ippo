@@ -244,6 +244,36 @@ class _DayEntryState extends State<_DayEntry> {
       widget.wakeUp == null &&
       _wokeUp == wakeUpMoment(widget.day, widget.wakeGuess);
 
+  /// The one-tap button for right now, if there is one: "Woke up now"
+  /// until the wake-up is saved, then "Going to bed now" until the
+  /// bedtime is. Only for today: other days are logged after the fact.
+  MomentKind? get _nowKind {
+    if (widget.day != today()) {
+      return null;
+    }
+    if (widget.wakeUp == null) {
+      return MomentKind.wokeUp;
+    }
+    if (widget.bedtime == null) {
+      return MomentKind.wentToBed;
+    }
+    return null;
+  }
+
+  /// Saves [kind] as happening now, to the minute, in one tap: no time
+  /// to pick, which is the common case in the morning and at night.
+  Future<void> _saveNow(MomentKind kind) async {
+    final now = DateTime.now();
+    final moment = DateTime(now.year, now.month, now.day, now.hour, now.minute);
+    HapticFeedback.selectionClick();
+    await saveOrShowError(
+      context,
+      () =>
+          SleepActions(widget.appState)
+              .recordMoment(kind: kind, day: widget.day, at: moment),
+    );
+  }
+
   Future<void> _save() async {
     final problem = checkDayTimes(_wokeUp, _wentToBed);
     setState(() => _problem = problem);
@@ -345,6 +375,22 @@ class _DayEntryState extends State<_DayEntry> {
           ProblemText(_problem!),
         ],
         const SizedBox(height: 16),
+        if (_nowKind != null) ...[
+          FilledButton.tonalIcon(
+            onPressed: () => _saveNow(_nowKind!),
+            icon: Icon(
+              _nowKind == MomentKind.wokeUp
+                  ? Icons.wb_sunny_outlined
+                  : Icons.bedtime_outlined,
+            ),
+            label: Text(
+              _nowKind == MomentKind.wokeUp
+                  ? 'Woke up now'
+                  : 'Going to bed now',
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
         if (_hasChanges)
           FilledButton(onPressed: _save, child: const Text('Save'))
         else
