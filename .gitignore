@@ -51,3 +51,6 @@ app.*.map.json
 __pycache__/
 python/build/
 python/*.egg-info/
+
+# Experience passes: screenshots and review notes, kept locally only.
+/experience-passes/
