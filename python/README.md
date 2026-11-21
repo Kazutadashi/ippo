@@ -2,7 +2,16 @@
 
 A small package that turns an Ippo data folder into pandas tables, with
 every change and deletion already applied, so you see the same thing as
-the app. Its only dependency is pandas.
+the app. Its only dependency is pandas (plus pyarrow, optionally, for
+Parquet files).
+
+Every column of every table is described in the codebook
+(`ippo/codebook.py`): its type, its meaning, its unit as a
+[UCUM](https://ucum.org) code, and, where one fits, its code in a
+recognised vocabulary: INFOODS tagnames and USDA FoodData Central ids
+for nutrients, LOINC for body weight and daily steps. The tables use
+the codebook's types, so a column's dtype never depends on whether it
+happens to hold values.
 
 ## Get your data onto your computer
 
@@ -16,6 +25,7 @@ From this `python` folder:
 
 ```
 pip install .
+pip install ".[parquet]"    # also write Parquet files
 ```
 
 Or skip installing: run Python from this folder, or add it to
@@ -41,7 +51,7 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 | `habit_days()` | day | The habit grid: one column per habit. |
 | `foods()` | food | Nutrients per 100 g or ml (vitamins and minerals too), the serving size, and the ingredients. |
 | `food_entries()` | thing eaten | Nutrients for the amount eaten. A missing nutrient is unknown, never zero. |
-| `food_days()` | day | Totals, and `<nutrient>_complete`: whether every entry that day gave that nutrient. |
+| `food_days()` | day | Totals; `<nutrient>_complete`: whether every entry that day gave that nutrient; `diary_complete`: the user's own mark that everything eaten that day is logged (empty if never marked). |
 | `exercises()` | exercise | `measured_in` is `reps` or `seconds`. |
 | `sets()` | set | `value` with `unit`, for every exercise. |
 | `exercise_days()` | exercise and day | `sets`, `total`, `best`. |
@@ -52,7 +62,8 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 | `sleep_days()` | day | Wake-up and bedtime (exact, local, and as hours), sleep before the day, time zone changes, naps. |
 | `naps()` | nap | |
 | `devices()` | device | When each device's data was last seen. |
-| `events` | event | Everything, unprocessed, for anything the tables do not cover. |
+| `events` | event | Everything, unprocessed, for anything the tables do not cover; with the `app_version` and `time_zone` (IANA name) each event was written with, when known. |
+| `tables()` | | Every table above by name, as the export writes them. |
 
 Times come in two forms. `..._utc` columns are exact moments, right for
 durations and ordering. `..._local` columns are the clock time where you
@@ -62,13 +73,22 @@ midnight, so a bedtime of 01:00 the next morning is `25.0`.
 
 Each docstring explains its table in detail: `help(ippo.food.food_days)`.
 
-## Without Python
-
-Write every table as a CSV file, for a spreadsheet or any other program:
+## Export: for any other program
 
 ```
-python -m ippo export /path/to/data /path/to/csv-folder
+python -m ippo export /path/to/data /path/to/export-folder
 ```
+
+or `data.export("/path/to/export-folder")` writes a folder that explains
+itself:
+
+| File | What |
+| --- | --- |
+| `<table>.csv` | Every table, one row per record; dates as `YYYY-MM-DD`, moments in UTC as `YYYY-MM-DDTHH:MM:SS.sss+00:00`. |
+| `<table>.parquet` | The same tables in Apache Parquet, with each column's type kept (when pyarrow is installed; `--no-parquet` to skip). |
+| `datapackage.json` | A [Frictionless Data Package](https://datapackage.org) (v2): every table and column with its type and description, and as extra properties its `unit` (UCUM) and `codes`. Frictionless tools validate and load it directly, in Python or R. |
+| `codebook.csv` | The same descriptions as one table: `table`, `column`, `type`, `unit_ucum`, `description`, `infoods`, `usda_fdc_id`, `usda_fdc_number`, `loinc`. |
+| `README.txt` | The rules that hold everywhere (empty means not recorded, never zero; what `date`, `_utc` and `_local` mean). |
 
 `python -m ippo summary /path/to/data` prints what the folder holds.
 

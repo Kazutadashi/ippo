@@ -12,6 +12,10 @@ license = "GPL-3.0-or-later"
 requires-python = ">=3.11"
 dependencies = ["pandas>=2.0"]
 
+[project.optional-dependencies]
+# Parquet export: pip install ".[parquet]"
+parquet = ["pyarrow>=14"]
+
 [tool.setuptools]
 packages = ["ippo"]
 

@@ -95,7 +95,8 @@ def read_events(folder, now=None):
     Returns ``(events, problems, newer_count, future_count)``:
 
     - ``events``: a DataFrame with one row per event, oldest first. The
-      columns are the event fields, plus ``recorded_utc`` and
+      columns are the event fields (``app_version`` and ``time_zone``
+      empty when an event does not have them), plus ``recorded_utc`` and
       ``recorded_local`` (see :class:`Moment`) and ``file``.
     - ``problems``: a list of :class:`Problem` for skipped lines.
     - ``newer_count``: how many events were set aside because they need
@@ -131,7 +132,7 @@ def read_events(folder, now=None):
 
     columns = [
         "format_version", "id", "recorded_at", "recorded_utc", "recorded_local",
-        "device_id", "device_name", "module", "type", "data", "file",
+        "device_id", "device_name", "app_version", "time_zone", "module", "type", "data", "file",
     ]
     events = pd.DataFrame(rows, columns=columns)
     # The same event can be in a file and in its conflict copy.
@@ -177,7 +178,15 @@ def _read_line(line):
         "recorded_local": moment.local,
         "device_id": event["device_id"],
         "device_name": event["device_name"],
+        # Optional: events written before these were recorded lack them.
+        "app_version": _optional_text(event.get("app_version")),
+        "time_zone": _optional_text(event.get("time_zone")),
         "module": event["module"],
         "type": event["type"],
         "data": event["data"],
     }, None
+
+
+def _optional_text(value):
+    """Returns ``value`` if it is non-empty text, otherwise None."""
+    return value if isinstance(value, str) and value else None

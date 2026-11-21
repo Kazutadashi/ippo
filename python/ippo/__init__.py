@@ -23,8 +23,9 @@ except ImportError:
         "conda create -n ippo python=3.12 pandas"
     ) from None
 
+from . import codebook, export  # noqa: E402
 from .data import IppoData, load  # noqa: E402
 from .reading import FORMAT_VERSION, Problem  # noqa: E402
 
-__all__ = ["FORMAT_VERSION", "IppoData", "Problem", "load"]
+__all__ = ["FORMAT_VERSION", "IppoData", "Problem", "codebook", "export", "load"]
 __version__ = "0.1.0"

@@ -40,6 +40,7 @@ it.
 | Package | Maintained by | What it does | Why we need it |
 | --- | --- | --- | --- |
 | `pandas` | pandas team | Tables of data, with dates, grouping and CSV files. | It is what most people analyse data with in Python, so the tables are ready to use. |
+| `pyarrow` (optional) | Apache Arrow project | Writes Apache Parquet files. | Parquet is the standard file format for tables in data science (pandas, R, Polars, DuckDB, Spark), and keeps each column's type. Only installed on request (`pip install ".[parquet]"`); without it the export writes CSV only. |
 
 The scripts in `python/examples/` also use `matplotlib`, the standard
 Python charting library, to draw charts. The package itself does not

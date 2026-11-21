@@ -2,7 +2,7 @@
 """Command line use, without writing any Python:
 
     python -m ippo summary /path/to/data
-    python -m ippo export /path/to/data /path/to/csv-folder
+    python -m ippo export /path/to/data /path/to/export-folder
 """
 
 import argparse
@@ -16,15 +16,21 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     summary = commands.add_parser("summary", help="show what the folder holds")
     summary.add_argument("folder", help="the data folder (the one holding events/)")
-    export = commands.add_parser("export", help="write every table as a CSV file")
+    export = commands.add_parser(
+        "export",
+        help="write every table as CSV (and Parquet, if pyarrow is installed), "
+        "with datapackage.json and codebook.csv describing every column",
+    )
     export.add_argument("folder", help="the data folder (the one holding events/)")
-    export.add_argument("out", help="the folder to write the CSV files into")
+    export.add_argument("out", help="the folder to write the files into")
+    export.add_argument("--no-parquet", action="store_true", help="write CSV only")
     arguments = parser.parse_args()
 
     data = load(arguments.folder)
     print(data.summary())
     if arguments.command == "export":
-        for path in data.export_csv(arguments.out):
+        parquet = False if arguments.no_parquet else None
+        for path in data.export(arguments.out, parquet=parquet):
             print(f"wrote {path}")
 
 

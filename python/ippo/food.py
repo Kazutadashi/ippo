@@ -158,11 +158,18 @@ def food_days(events):
       one entry (often a quick entry) did not say, so the real total is
       probably higher.
 
-    Also ``food_entries``: how many entries the day has.
+    Also ``food_entries``: how many entries the day has, and
+    ``diary_complete``: the user's own mark that everything eaten that
+    day is logged (True), or is not (False); empty if the day was never
+    marked. Days marked but without entries are listed too, since a
+    complete day with nothing eaten is information.
     """
     entries = food_entries(events)
     grouped = entries.groupby("date")
     result = pd.DataFrame({"food_entries": grouped.size()})
+    marks = diary_marks(events)
+    result = result.join(marks, how="outer")
+    result["food_entries"] = result["food_entries"].fillna(0).astype(int)
     nutrients_list = [column for column in entries.columns if _NUTRIENT_NAME.match(column)]
     for nutrient in nutrients_list:
         # min_count=1: a day where no entry knows the nutrient is empty,
@@ -170,7 +177,26 @@ def food_days(events):
         result[nutrient] = grouped[nutrient].sum(min_count=1)
         result[f"{nutrient}_complete"] = grouped[nutrient].apply(lambda values: values.notna().all())
     result.index.name = "date"
-    return result
+    columns = ["food_entries", "diary_complete"]
+    return result[columns + [column for column in result.columns if column not in columns]]
+
+
+def diary_marks(events):
+    """The ``diary_complete`` mark of each day ever marked, indexed by
+    date: the latest ``diary_day_marked`` event for that date wins."""
+    marks = {}
+    rows = events[(events["module"] == "food") & (events["type"] == "diary_day_marked")]
+    for data in rows["data"]:  # oldest first, so later marks win
+        date = data.get("date")
+        complete = data.get("complete")
+        if isinstance(date, str) and isinstance(complete, bool):
+            marks[date] = complete
+    result = pd.DataFrame(
+        {"diary_complete": pd.array(list(marks.values()), dtype="boolean")},
+        index=as_dates(pd.Series(list(marks.keys()), dtype="object")),
+    )
+    result.index.name = "date"
+    return result[result.index.notna()]
 
 
 def _number(value):

@@ -32,7 +32,7 @@ void main() {
   });
 
   test('every event is read once; the cut-off line is reported', () {
-    expect(eventLog.events, hasLength(48));
+    expect(eventLog.events, hasLength(51));
     expect(eventLog.problems, hasLength(1));
     expect(eventLog.problems.single.reason, 'not valid JSON');
     expect(eventLog.newerVersionEventCount, 1);
@@ -57,6 +57,22 @@ void main() {
     final diary = FoodDiary.fromEvents(eventLog.events);
     expect(diary.totalOn('2026-03-01').energyKcal, 1040);
     expect(diary.totalOn('2026-03-02').energyKcal, 285);
+  });
+
+  test('food: the latest mark of a day counts; unmarked days are null', () {
+    final diary = FoodDiary.fromEvents(eventLog.events);
+    expect(diary.markOn('2026-03-01'), isTrue);
+    expect(diary.markOn('2026-03-02'), isFalse);
+    expect(diary.markOn('2026-03-03'), isNull);
+  });
+
+  test('events keep their app version and time zone when given', () {
+    final marked = eventLog.events.firstWhere(
+      (event) => event.id == '019c0040-0000-7000-8000-000000000040',
+    );
+    expect(marked.appVersion, '0.1.0');
+    expect(marked.timeZone, 'America/New_York');
+    expect(eventLog.events.first.timeZone, isNull);
   });
 
   test('exercise: changed and deleted sets', () {

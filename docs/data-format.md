@@ -182,7 +182,9 @@ Every event has these fields, in this order:
 | `recorded_at` | string | When the event was written, as a [timestamp](#timestamps). |
 | `device_id` | string | The id of the device that wrote the event. Always the same as the file name. |
 | `device_name` | string | The device's name at the time, chosen by the user, for example `"my-phone"`. Only for display. |
-| `module` | string | The module the event belongs to: `"habits"`, `"exercise"`, `"food"`, `"time_tracking"` or `"sleep"`. |
+| `app_version` | string, optional | The version of the app that wrote the event, for example `"0.1.0"`. Lets an analysis tell which app behaviour produced a value. Missing in events written before it was recorded. |
+| `time_zone` | string, optional | The [IANA time zone](https://www.iana.org/time-zones) the device was set to, for example `"Asia/Tokyo"`. The offset in each timestamp gives the exact moment; the zone name also tells a daylight saving change from a trip. Missing when the device could not say. |
+| `module` | string | The module the event belongs to: `"habits"`, `"exercise"`, `"food"`, `"body"`, `"time_tracking"` or `"sleep"`. |
 | `type` | string | What happened, for example `"habit_created"`. Each module lists its types below. |
 | `data` | object | The details. Its fields depend on `module` and `type`. |
 
@@ -192,6 +194,7 @@ Example (one line in the file; wrapped here to fit):
 {"format_version":1,"id":"019a8f3c-5b2e-7c41-9d3a-2f6e8b1c4d5a",
  "recorded_at":"2026-11-17T21:04:11.123+09:00",
  "device_id":"019a8f3c-0000-7000-8000-000000000001","device_name":"my-phone",
+ "app_version":"0.1.0","time_zone":"Asia/Tokyo",
  "module":"habits","type":"habit_entry_recorded",
  "data":{"habit_id":"019a8e10-1111-7000-8000-000000000001","date":"2026-11-17","value":12}}
 ```
@@ -507,35 +510,63 @@ nutrition values, and log what you eat.
 | --- | --- | --- | --- |
 | food | `food_created` | yes | yes |
 | food entry | `food_entry_recorded` | yes | yes |
+| day mark | `diary_day_marked` | no (mark again instead) | no |
 
 ### Nutrients
 
-Nutrient values always use these field names. They follow the names
-used by [Open Food Facts](https://world.openfoodfacts.org/), so data
-from there is easy to match.
+Nutrient values always use these field names. The words follow the
+readable style of [Open Food Facts](https://world.openfoodfacts.org/)
+(`proteins`, `fiber`; Open Food Facts itself writes `proteins_100g` and
+`saturated-fat_100g`), and each name ends in its unit: `_g` grams, `_mg`
+milligrams, `_ug` micrograms, `_kcal` kilocalories. The unit is fixed:
+values are never stored in another unit.
 
-Each field name ends in its unit: `_g` grams, `_mg` milligrams, `_ug`
-micrograms, `_kcal` kilocalories.
+To say exactly which food component each field is, the table gives its
+**standard codes**: the [INFOODS tagname](https://www.fao.org/infoods/infoods/standards-guidelines/food-component-identifiers-tagnames/en/)
+(the FAO/UN identifiers used by food composition tables), the
+[USDA FoodData Central](https://fdc.nal.usda.gov) nutrient id and its
+older nutrient number, and the unit as a [UCUM](https://ucum.org) code.
+Only codes checked against those sources are given; a dash means none
+was confirmed. The Python package's codebook (`python/ippo/codebook.py`)
+holds the same table and writes it into every export.
 
-| Field | What |
-| --- | --- |
-| `energy_kcal` | energy |
-| `proteins_g` | protein |
-| `carbohydrates_g` | carbohydrates |
-| `sugars_g` | sugars (part of carbohydrates) |
-| `added_sugars_g` | added sugars (part of carbohydrates) |
-| `fiber_g` | fibre |
-| `fat_g` | fat |
-| `saturated_fat_g` | saturated fat (part of fat) |
-| `monounsaturated_fat_g` | monounsaturated fat (part of fat) |
-| `polyunsaturated_fat_g` | polyunsaturated fat (part of fat) |
-| `trans_fat_g` | trans fat (part of fat) |
-| `cholesterol_mg` | cholesterol |
-| `salt_g` | salt |
-| `sodium_mg` | sodium |
-| `potassium_mg`, `calcium_mg`, `iron_mg`, `magnesium_mg`, `zinc_mg`, `phosphorus_mg` | minerals |
-| `vitamin_a_ug`, `vitamin_c_mg`, `vitamin_d_ug`, `vitamin_e_mg`, `vitamin_k_ug` | vitamins |
-| `thiamin_mg`, `riboflavin_mg`, `niacin_mg`, `vitamin_b6_mg`, `folate_ug`, `vitamin_b12_ug` | B vitamins |
+| Field | What | UCUM | INFOODS | USDA FDC id (number) |
+| --- | --- | --- | --- | --- |
+| `energy_kcal` | energy | `kcal` | `ENERC` (in kcal) | 1008 (208) |
+| `proteins_g` | protein | `g` | `PROCNT` | 1003 (203) |
+| `carbohydrates_g` | carbohydrate, by difference | `g` | `CHOCDF` | 1005 (205) |
+| `sugars_g` | sugars, total (part of carbohydrates) | `g` | `SUGAR` | 2000 (269) |
+| `added_sugars_g` | added sugars (part of carbohydrates) | `g` | – | – |
+| `fiber_g` | dietary fibre, total | `g` | `FIBTG` | 1079 (291) |
+| `fat_g` | fat, total | `g` | `FAT` | 1004 (204) |
+| `saturated_fat_g` | saturated fatty acids (part of fat) | `g` | `FASAT` | 1258 (606) |
+| `monounsaturated_fat_g` | monounsaturated fatty acids (part of fat) | `g` | `FAMS` | 1292 (645) |
+| `polyunsaturated_fat_g` | polyunsaturated fatty acids (part of fat) | `g` | `FAPU` | 1293 (646) |
+| `trans_fat_g` | trans fatty acids (part of fat) | `g` | `FATRN` | 1257 (605) |
+| `cholesterol_mg` | cholesterol | `mg` | `CHOLE` | 1253 (601) |
+| `salt_g` | salt | `g` | `NACL` (given in mg there) | – |
+| `sodium_mg` | sodium | `mg` | `NA` | 1093 (307) |
+| `potassium_mg` | potassium | `mg` | `K` | 1092 (306) |
+| `calcium_mg` | calcium | `mg` | `CA` | 1087 (301) |
+| `iron_mg` | iron | `mg` | `FE` | 1089 (303) |
+| `magnesium_mg` | magnesium | `mg` | `MG` | 1090 (304) |
+| `zinc_mg` | zinc | `mg` | `ZN` | 1095 (309) |
+| `phosphorus_mg` | phosphorus | `mg` | `P` | 1091 (305) |
+| `vitamin_a_ug` | vitamin A, as on labels | `ug` | – | 1106 (320), as RAE |
+| `vitamin_c_mg` | vitamin C | `mg` | `VITC` | 1162 (401) |
+| `vitamin_d_ug` | vitamin D (D2 + D3) | `ug` | `VITD` | 1114 (328) |
+| `vitamin_e_mg` | vitamin E, as on labels | `mg` | `TOCPHA` | 1109 (323), alpha-tocopherol |
+| `vitamin_k_ug` | vitamin K | `ug` | `VITK` (K1 + K2) | 1185 (430), phylloquinone only |
+| `thiamin_mg` | thiamin | `mg` | `THIA` | 1165 (404) |
+| `riboflavin_mg` | riboflavin | `mg` | `RIBF` | 1166 (405) |
+| `niacin_mg` | niacin (preformed) | `mg` | `NIA` | 1167 (406) |
+| `vitamin_b6_mg` | vitamin B6 | `mg` | `VITB6A` | 1175 (415) |
+| `folate_ug` | folate, as on labels (usually dietary folate equivalents) | `ug` | `FOLDFE` | 1190 (435) |
+| `vitamin_b12_ug` | vitamin B12 | `ug` | `VITB12` | 1178 (418) |
+
+Labels do not always say which form of a vitamin they count, so the
+codes for vitamins A, E, K and folate are the closest match, with the
+difference noted.
 
 Salt is 2.5 times sodium. Labels that give only sodium (as in the US)
 get both fields: the app works out salt from sodium.
@@ -608,6 +639,24 @@ change is visible in the log.)
 directly, for example `{"name": "Restaurant lunch", "nutrients":
 {"energy_kcal": 850}}`. This is for when looking up each ingredient is
 not worth it.
+
+
+### `diary_day_marked`
+
+The user's own word on whether everything eaten on a day is logged.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The day. |
+| `complete` | boolean | `true`: everything eaten that day is logged. `false`: it is not. |
+
+The latest mark of a day counts. A day never marked has no mark, which
+is not the same as `false`: it only means nobody said.
+
+This matters for analysis: a day with half its meals logged looks like
+a day of eating little. Analyses of intake should use days marked
+complete, or say how they treated the others. A complete day with no
+entries means nothing was eaten that day.
 
 
 ## 11. Module: time tracking
@@ -812,12 +861,19 @@ daily = data.daily()
 
 See `python/README.md` for every table.
 
-**In a spreadsheet or another program**, the same package writes every
-table as a CSV file:
+**In a spreadsheet, R, or another program**, the same package writes
+every table to a folder that explains itself:
 
 ```
-python -m ippo export /path/to/data /path/to/csv-folder
+python -m ippo export /path/to/data /path/to/export-folder
 ```
+
+It holds each table as CSV, and as Apache Parquet when `pyarrow` is
+installed. With them are `codebook.csv` and `datapackage.json` (a
+[Frictionless Data Package](https://datapackage.org), v2), which
+describe every column: its type, meaning, unit as a UCUM code, and any
+standard code (INFOODS and USDA FoodData Central for nutrients, LOINC
+29463-7 for body weight and 41950-7 for daily steps).
 
 **Writing your own reader?** The folder `example-data/` holds a small
 data folder with every awkward case: two devices, a sync conflict copy,

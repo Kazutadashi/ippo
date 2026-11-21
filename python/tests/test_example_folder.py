@@ -10,6 +10,7 @@ and this package are known to agree.
 Run from the ``python`` folder with: ``python -m unittest``
 """
 
+import json
 import tempfile
 import unittest
 from datetime import datetime, timezone
@@ -34,7 +35,7 @@ class ReadingTest(unittest.TestCase):
     def test_every_event_is_read_once(self):
         # 39 events were written; one needs a newer version. The conflict
         # copy only repeats events, and the hidden file is not read.
-        self.assertEqual(len(self.data.events), 48)
+        self.assertEqual(len(self.data.events), 51)
         self.assertTrue(self.data.events["id"].is_unique)
         self.assertNotIn("019cffff-0000-7000-8000-00000000ffff", set(self.data.events["id"]))
 
@@ -54,7 +55,7 @@ class ReadingTest(unittest.TestCase):
 
     def test_devices(self):
         devices = self.data.devices().set_index("device_name")
-        self.assertEqual(devices.loc["my-phone", "events"], 45)
+        self.assertEqual(devices.loc["my-phone", "events"], 48)
         self.assertEqual(devices.loc["my-desktop", "events"], 3)
 
     def test_a_folder_without_events_is_explained(self):
@@ -228,16 +229,82 @@ class DailyTest(unittest.TestCase):
         self.assertEqual(daily.loc["2026-03-03", "food_entries"], 0)
         self.assertTrue(pd.isna(daily.loc["2026-03-03", "energy_kcal"]))
 
-    def test_csv_export_needs_nothing_to_read_back(self):
+    def test_export_needs_nothing_to_read_back(self):
         with tempfile.TemporaryDirectory() as out:
-            written = self.data.export_csv(out)
-            self.assertEqual(len(written), len(ippo.data.TABLE_NAMES) + 1)
+            written = self.data.export(out, parquet=False)
+            names = {path.name for path in written}
+            for table in [*ippo.data.TABLE_NAMES, "events"]:
+                self.assertIn(f"{table}.csv", names)
+            self.assertTrue({"datapackage.json", "codebook.csv", "README.txt"} <= names)
             sleep = pd.read_csv(Path(out) / "sleep_days.csv")
             self.assertEqual(sleep.loc[0, "date"], "2026-03-01")
             self.assertEqual(sleep.loc[0, "woke_up_utc"], "2026-03-01T06:00:00.000+00:00")
             self.assertEqual(sleep.loc[0, "woke_up_local"], "2026-03-01T07:00:00.000")
             events = pd.read_csv(Path(out) / "events.csv")
-            self.assertEqual(len(events), 48)
+            self.assertEqual(len(events), 51)
+
+    def test_data_package_describes_every_column_of_every_file(self):
+        with tempfile.TemporaryDirectory() as out:
+            self.data.export(out, parquet=False)
+            package = json.loads((Path(out) / "datapackage.json").read_text(encoding="utf-8"))
+            self.assertEqual(package["$schema"], "https://datapackage.org/profiles/2.0/datapackage.json")
+            for resource in package["resources"]:
+                header = list(pd.read_csv(Path(out) / resource["path"], nrows=0).columns)
+                fields = resource["schema"]["fields"]
+                self.assertEqual([field["name"] for field in fields], header, resource["path"])
+                for field in fields:
+                    self.assertNotEqual(field["description"], "Not described in the codebook.",
+                                        f"{resource['path']}: {field['name']}")
+            weights = next(r for r in package["resources"] if r["name"] == "weights")
+            weight = next(f for f in weights["schema"]["fields"] if f["name"] == "weight_kg")
+            self.assertEqual((weight["unit"], weight["codes"]["loinc"]), ("kg", "29463-7"))
+            codebook = pd.read_csv(Path(out) / "codebook.csv")
+            rows = codebook[(codebook["table"] == "food_entries") & (codebook["column"] == "proteins_g")]
+            protein = rows.iloc[0]
+            codes = (protein["infoods"], protein["usda_fdc_id"], protein["unit_ucum"])
+            self.assertEqual(codes, ("PROCNT", 1003, "g"))
+
+    @unittest.skipUnless(ippo.export.parquet_available(), "pyarrow is not installed")
+    def test_parquet_keeps_the_column_types(self):
+        with tempfile.TemporaryDirectory() as out:
+            self.data.export(out, parquet=True)
+            days = pd.read_parquet(Path(out) / "food_days.parquet")
+            self.assertEqual(str(days["diary_complete"].dtype), "boolean")
+            self.assertEqual(str(days["food_entries"].dtype), "Int64")
+
+
+class DiaryAndProvenanceTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.data = ippo.load(EXAMPLE, now=NOW)
+
+    def test_the_latest_mark_of_a_day_counts(self):
+        days = self.data.food_days()
+        self.assertTrue(days.loc["2026-03-01", "diary_complete"])
+        self.assertFalse(days.loc["2026-03-02", "diary_complete"])
+        self.assertTrue(pd.isna(self.data.daily().loc["2026-03-03", "diary_complete"]))
+
+    def test_events_keep_the_app_version_and_time_zone_when_given(self):
+        events = self.data.events.set_index("id")
+        marked = events.loc["019c0040-0000-7000-8000-000000000040"]
+        self.assertEqual((marked["app_version"], marked["time_zone"]), ("0.1.0", "America/New_York"))
+        self.assertTrue(pd.isna(events.iloc[0]["time_zone"]))
+
+
+class CodebookTest(unittest.TestCase):
+    def test_every_column_of_every_table_is_described(self):
+        data = ippo.load(EXAMPLE, now=NOW)
+        for name, frame in data.tables().items():
+            for column in [*frame.columns, *([frame.index.name] if frame.index.name else [])]:
+                self.assertIsNotNone(ippo.codebook.describe(name, column), f"{name}.{column}")
+
+    def test_every_type_and_unit_is_from_the_standards_used(self):
+        types = {"string", "integer", "number", "boolean", "date", "datetime", "any"}
+        units = {"", "kg", "cm", "g", "mg", "ug", "kcal", "h", "{steps}/d"}
+        for table in ippo.codebook.TABLES.values():
+            for column in table.values():
+                self.assertIn(column.type, types, column.name)
+                self.assertIn(column.unit, units, column.name)
 
 
 class EmptyFolderTest(unittest.TestCase):

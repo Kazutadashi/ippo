@@ -2,11 +2,11 @@
 """The loaded data folder, with one method per table."""
 
 import json
-from pathlib import Path
 
 import pandas as pd
 
-from . import body, daily, exercise, food, habits, sleep
+from . import body, codebook, daily, exercise, food, habits, sleep
+from .export import export as export_tables
 from .reading import read_events
 
 
@@ -147,37 +147,35 @@ class IppoData:
             lines.append(f"{self.future_count} event(s) are dated in the future; is a device's clock wrong?")
         return "\n".join(lines)
 
-    def export_csv(self, out_folder):
-        """Writes every table, and the events, as CSV files into
-        ``out_folder`` (created if needed). Returns the files written.
-
-        The CSV files can be opened in a spreadsheet or read by any other
-        program, without this package. Dates are written ``YYYY-MM-DD``,
-        moments in UTC as ``YYYY-MM-DDTHH:MM:SS.sss+00:00``, and local
-        clock times without a time zone.
-        """
-        out_folder = Path(out_folder)
-        out_folder.mkdir(parents=True, exist_ok=True)
+    def tables(self):
+        """Every table, by name, as :meth:`export` writes them (the raw
+        events included, with ``data`` as JSON text)."""
         tables = {name: getattr(self, name)() for name in TABLE_NAMES}
         events = self.events.copy()
         events["data"] = events["data"].map(lambda data: json.dumps(data, ensure_ascii=False))
-        tables["events"] = events.drop(columns=["recorded_utc", "recorded_local"])
+        events = events.drop(columns=["recorded_utc", "recorded_local"])
+        tables["events"] = codebook.apply_types("events", events)
+        return tables
 
-        written = []
-        for name, frame in tables.items():
-            path = out_folder / f"{name}.csv"
-            index = frame.index.name == "date"
-            _for_csv(frame).to_csv(path, index=index)
-            written.append(path)
-        return written
+    def export(self, out_folder, parquet=None):
+        """Writes every table into ``out_folder`` (created if needed), as
+        CSV, as Parquet when ``pyarrow`` is installed, and with
+        ``datapackage.json`` and ``codebook.csv`` describing every column.
+        Returns the files written. See :mod:`ippo.export`.
+
+        ``parquet``: True to require Parquet, False to skip it, None (the
+        default) to write it if ``pyarrow`` is installed.
+        """
+        return export_tables(self.tables(), out_folder, parquet=parquet)
 
     def _table(self, build):
+        """Builds a table once, with each column in its codebook type."""
         if build not in self._tables:
-            self._tables[build] = build(self.events)
+            self._tables[build] = codebook.apply_types(build.__name__, build(self.events))
         return self._tables[build].copy()
 
 
-#: The tables written by :meth:`IppoData.export_csv`, besides the events.
+#: The tables written by :meth:`IppoData.export`, besides the events.
 TABLE_NAMES = [
     "habits", "habit_entries", "habit_days",
     "foods", "food_entries", "food_days",
@@ -186,20 +184,3 @@ TABLE_NAMES = [
     "weights", "profile", "energy_targets",
     "daily", "devices",
 ]
-
-
-def _for_csv(frame):
-    """Writes dates and moments as plain, unambiguous text."""
-    frame = frame.copy()
-    if isinstance(frame.index, pd.DatetimeIndex):
-        frame.index = frame.index.strftime("%Y-%m-%d")
-    for column in frame.columns:
-        values = frame[column]
-        if isinstance(values.dtype, pd.DatetimeTZDtype):
-            frame[column] = values.dt.strftime("%Y-%m-%dT%H:%M:%S.%f").str[:-3] + "+00:00"
-        elif pd.api.types.is_datetime64_dtype(values):
-            if column == "date":
-                frame[column] = values.dt.strftime("%Y-%m-%d")
-            else:
-                frame[column] = values.dt.strftime("%Y-%m-%dT%H:%M:%S.%f").str[:-3]
-    return frame
