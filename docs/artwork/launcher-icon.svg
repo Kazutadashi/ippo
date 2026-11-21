@@ -1,17 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
   <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
   <!-- Ippo's launcher icon, drawn for Ippo: steps climbing toward the
-       rising sun, in three ridges that fade into the distance. On the
+       rising moon, in three ridges, in the Home header's night colours
+       (lib/core/widgets/sky_header.dart): snow, stone and fir green. On the
        108 x 108 grid of an Android adaptive icon; launchers show the
        middle 72 x 72, cut to their own shape. The same shapes are the
        vector layers in android/app/src/main/res/drawable/ic_launcher_*.xml;
        the mipmap PNGs for older Android are rendered from this file (see
        "Artwork" in docs/dependencies.md). -->
-  <rect width="108" height="108" fill="#FFC9A0"/>
-  <circle cx="62" cy="45" r="11.5" fill="#FFF8EA"/>
+  <rect width="108" height="108" fill="#17243B"/>
+  <circle cx="30" cy="30" r="0.9" fill="#F4F1E8"/>
+  <circle cx="42" cy="24" r="0.6" fill="#F4F1E8"/>
+  <circle cx="80" cy="28" r="0.75" fill="#F4F1E8"/>
+  <circle cx="26" cy="44" r="0.55" fill="#F4F1E8"/>
+  <circle cx="84" cy="40" r="0.5" fill="#F4F1E8"/>
+  <circle cx="36" cy="38" r="0.45" fill="#F4F1E8"/>
+  <circle cx="62" cy="45" r="11.5" fill="#E9E2CC"/>
   <!-- Every ridge has the same rhythm: two steps, 26 wide and 6 high,
-       their top corners a little rounded. -->
-  <path d="M0,108 V58 H40 V53.8 Q40,52 41.8,52 H66 V47.8 Q66,46 67.8,46 H108 V108 Z" fill="#F0A48F"/>
-  <path d="M0,108 V68 H30 V63.8 Q30,62 31.8,62 H56 V57.8 Q56,56 57.8,56 H108 V108 Z" fill="#C2697F"/>
-  <path d="M0,108 V78 H22 V73.8 Q22,72 23.8,72 H48 V67.8 Q48,66 49.8,66 H108 V108 Z" fill="#5A2C5C"/>
+       their top corners a little rounded. Snow, stone, fir. -->
+  <path d="M0,108 V58 H40 V53.8 Q40,52 41.8,52 H66 V47.8 Q66,46 67.8,46 H108 V108 Z" fill="#B4C0CF"/>
+  <path d="M0,108 V68 H30 V63.8 Q30,62 31.8,62 H56 V57.8 Q56,56 57.8,56 H108 V108 Z" fill="#5F6D86"/>
+  <path d="M0,108 V78 H22 V73.8 Q22,72 23.8,72 H48 V67.8 Q48,66 49.8,66 H108 V108 Z" fill="#101922"/>
 </svg>

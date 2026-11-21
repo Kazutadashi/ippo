@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- Ippo's launcher icon on Android 8 and later: steps climbing toward
-     the rising sun, in three ridges that fade into the distance. One
-     step at a time, as the name says (一歩, "one step"). The sky and sun
+     the rising moon, in three ridges, in the Home header's night colours. One
+     step at a time, as the name says (一歩, "one step"). The sky, stars and moon
      are the back layer and the steps the front one, so launchers that
      move the layers apart give it a little depth. The monochrome layer
      lets Android 13 and later tint it to match the phone's themed icons.

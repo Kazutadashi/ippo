@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The back of Ippo's launcher icon: a dawn sky and the rising sun. The
-     steps in front are ic_launcher_foreground.xml. Flat colours only.
-     The source drawing is docs/artwork/launcher-icon.svg. -->
+<!-- The back of Ippo's launcher icon: the Home header's night sky, its
+     stars and the rising moon, in the header's colours
+     (lib/core/widgets/sky_header.dart). The steps in front are
+     ic_launcher_foreground.xml. Flat colours only. The source drawing is
+     docs/artwork/launcher-icon.svg. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The sky. -->
+    <!-- The night sky. -->
     <path
-        android:fillColor="#FFFFC9A0"
+        android:fillColor="#FF17243B"
         android:pathData="M0,0 H108 V108 H0 Z" />
-    <!-- The sun, behind the farthest steps. -->
+    <!-- A few stars. -->
     <path
-        android:fillColor="#FFFFF8EA"
+        android:fillColor="#FFF4F1E8"
+        android:pathData="M29.1,30 A0.9,0.9 0 1,0 30.9,30 A0.9,0.9 0 1,0 29.1,30 Z M41.4,24 A0.6,0.6 0 1,0 42.6,24 A0.6,0.6 0 1,0 41.4,24 Z M79.25,28 A0.75,0.75 0 1,0 80.75,28 A0.75,0.75 0 1,0 79.25,28 Z M25.45,44 A0.55,0.55 0 1,0 26.55,44 A0.55,0.55 0 1,0 25.45,44 Z M83.5,40 A0.5,0.5 0 1,0 84.5,40 A0.5,0.5 0 1,0 83.5,40 Z M35.55,38 A0.45,0.45 0 1,0 36.45,38 A0.45,0.45 0 1,0 35.55,38 Z" />
+    <!-- The moon, behind the farthest steps. -->
+    <path
+        android:fillColor="#FFE9E2CC"
         android:pathData="M50.5,45 A11.5,11.5 0 1,0 73.5,45 A11.5,11.5 0 1,0 50.5,45 Z" />
 </vector>

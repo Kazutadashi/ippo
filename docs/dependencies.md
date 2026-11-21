@@ -47,8 +47,8 @@ need it.
 
 ## Artwork
 
-The launcher icon (steps climbing toward the rising sun, in three
-ridges that fade into the distance) was drawn for Ippo. Its source is
+The launcher icon (steps climbing toward the rising moon, in three
+ridges, in the Home header's night colours) was drawn for Ippo. Its source is
 `docs/artwork/launcher-icon.svg`; the same shapes are the vector layers
 in `android/app/src/main/res/drawable/ic_launcher_*.xml`. The PNGs for
 older Android (`mipmap-*/ic_launcher.png`) are the middle 72 × 72 of
