@@ -20,6 +20,7 @@ void main() {
             color: null,
             purpose: 'accent colour',
             onPicked: (color) => picked = color,
+            asShown: (color) => color,
           ),
         ),
       ),
@@ -55,6 +56,7 @@ void main() {
             color: const Color(0xFF123456),
             purpose: 'habit colour',
             onPicked: (_) {},
+            asShown: (color) => color,
           ),
         ),
       ),
@@ -62,5 +64,16 @@ void main() {
     expect(find.byIcon(Icons.check), findsOneWidget);
     expect(isPresetColor(const Color(0xFF123456)), isFalse);
     expect(isPresetColor(accentChoices.first.color), isTrue);
+  });
+
+  test('swatches show the accent as the app does: softer on dark', () {
+    const blue = Color(0xFF1E88E5);
+    final onDark = accentAsShown(blue, Brightness.dark);
+    final onLight = accentAsShown(blue, Brightness.light);
+    // The app's dark-mode accent is lighter than the raw colour, so the
+    // swatch is too; and it is the theme's own main colour.
+    expect(onDark.computeLuminance(), greaterThan(blue.computeLuminance()));
+    expect(onDark, buildTheme(blue, Brightness.dark).colorScheme.primary);
+    expect(onLight, buildTheme(blue, Brightness.light).colorScheme.primary);
   });
 }

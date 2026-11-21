@@ -30,20 +30,29 @@ class AppearanceSection extends StatelessWidget {
       systemAccent,
     );
     final accent = chooseAccentColor(settings?.accentColor, systemAccent);
+    final brightness = Theme.of(context).brightness;
 
     final swatches = <Widget>[
       // The phone's own colour comes first, when it has one.
       if (systemAccent != null)
         ColorCircle(
-          choice: AccentChoice('System', systemAccent),
+          choice: AccentChoice(
+            'System',
+            accentAsShown(systemAccent, brightness, matchSystem: true),
+          ),
           purpose: 'accent colour',
           isSelected: isSystemChosen,
           icon: Icons.smartphone,
           onTap: () => appState.setAccentColor(systemAccentSetting),
         ),
+      // Each colour as the app will show it in this mode (softer than the
+      // raw colour on dark), so what is tapped is what the app becomes.
       for (final choice in accentChoices)
         ColorCircle(
-          choice: choice,
+          choice: AccentChoice(
+            choice.name,
+            accentAsShown(choice.color, brightness),
+          ),
           purpose: 'accent colour',
           isSelected:
               !isSystemChosen && choice.color.toARGB32() == accent.toARGB32(),
@@ -54,6 +63,7 @@ class AppearanceSection extends StatelessWidget {
         color: isSystemChosen || isPresetColor(accent) ? null : accent,
         purpose: 'accent colour',
         onPicked: (color) => appState.setAccentColor(accentColorToHex(color)),
+        asShown: (color) => accentAsShown(color, brightness),
       ),
     ];
 

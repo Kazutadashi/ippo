@@ -286,6 +286,39 @@ TextTheme _withTabularDigits(TextTheme textTheme) {
   );
 }
 
+/// The accent colour as the app really shows it, for the accent [seed]
+/// in light or dark mode ([brightness]). [buildTheme] does not use the
+/// chosen colour as it is: it turns it into a shade that reads well in
+/// that mode (softer on dark). So colour swatches show this, and what is
+/// tapped is what the app looks like. With [matchSystem], as Android
+/// works out its own colours (for the phone's system colour).
+Color accentAsShown(
+  Color seed,
+  Brightness brightness, {
+  bool matchSystem = false,
+}) {
+  final key = (seed.toARGB32(), brightness, matchSystem);
+  return _shownAccents.putIfAbsent(
+    key,
+    () => ColorScheme.fromSeed(
+      seedColor: seed,
+      brightness: brightness,
+      dynamicSchemeVariant: matchSystem
+          ? DynamicSchemeVariant.tonalSpot
+          : DynamicSchemeVariant.fidelity,
+    ).primary,
+  );
+}
+
+/// The accents worked out by [accentAsShown], so the swatches do not
+/// work them out again on every redraw.
+final Map<(int, Brightness, bool), Color> _shownAccents = {};
+
+/// A habit colour as the app really shows it in [theme]: made readable
+/// on the cards (see [readableOn]). Swatches for habits show this.
+Color habitColourAsShown(Color color, ThemeData theme) =>
+    readableOn(color, theme.colorScheme.surfaceContainer);
+
 /// The contrast that marks and large text need against their background
 /// (WCAG's level for graphics and large text).
 const double readableContrast = 3;

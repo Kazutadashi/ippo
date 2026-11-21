@@ -96,9 +96,13 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
         isSelected: picked == null,
         onTap: () => setState(() => _color = null),
       ),
+      // Each colour as it will show on the cards, not the raw colour.
       for (final choice in accentChoices)
         ColorCircle(
-          choice: choice,
+          choice: AccentChoice(
+            choice.name,
+            habitColourAsShown(choice.color, Theme.of(context)),
+          ),
           purpose: 'habit colour',
           isSelected: picked == choice.color.toARGB32(),
           onTap: () => setState(() => _color = choice.color),
@@ -108,6 +112,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
         color: _color == null || isPresetColor(_color!) ? null : _color,
         purpose: 'habit colour',
         onPicked: (color) => setState(() => _color = color),
+        asShown: (color) => habitColourAsShown(color, Theme.of(context)),
       ),
     ];
   }

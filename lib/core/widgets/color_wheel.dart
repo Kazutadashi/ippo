@@ -11,11 +11,16 @@ import 'package:material_ui/material_ui.dart';
 import '../theme.dart';
 
 /// Opens a window with a colour wheel, starting at [initial]. Returns the
-/// chosen colour, or null if cancelled.
-Future<Color?> showColorWheel(BuildContext context, {required Color initial}) {
+/// chosen colour, or null if cancelled. Its preview shows the colour as
+/// [asShown] turns it, as the app will show it.
+Future<Color?> showColorWheel(
+  BuildContext context, {
+  required Color initial,
+  required Color Function(Color) asShown,
+}) {
   return showDialog<Color>(
     context: context,
-    builder: (context) => _ColorWheelDialog(initial: initial),
+    builder: (context) => _ColorWheelDialog(initial: initial, asShown: asShown),
   );
 }
 
@@ -29,6 +34,7 @@ class CustomColorCircle extends StatelessWidget {
     required this.color,
     required this.purpose,
     required this.onPicked,
+    required this.asShown,
   });
 
   /// The chosen colour if it is a custom one, or null.
@@ -40,10 +46,16 @@ class CustomColorCircle extends StatelessWidget {
   /// Called with the colour picked on the wheel.
   final ValueChanged<Color> onPicked;
 
+  /// Turns a picked colour into the one the app shows (see
+  /// [accentAsShown] and [habitColourAsShown]), so the circle and the
+  /// wheel's preview match what the app will look like.
+  final Color Function(Color) asShown;
+
   Future<void> _open(BuildContext context) async {
     final picked = await showColorWheel(
       context,
       initial: color ?? Theme.of(context).colorScheme.primary,
+      asShown: asShown,
     );
     if (picked != null) {
       onPicked(picked);
@@ -52,7 +64,9 @@ class CustomColorCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chosen = color;
+    final picked = color;
+    // The chosen colour as the app shows it.
+    final chosen = picked == null ? null : asShown(picked);
     return Semantics(
       label: 'Other $purpose: pick from a colour wheel',
       selected: chosen != null,
@@ -110,9 +124,13 @@ const double _wheelSide = 220;
 /// The wheel: hue goes around it, and strength (saturation) out from
 /// the pale centre to the rim. A slider below sets the brightness.
 class _ColorWheelDialog extends StatefulWidget {
-  const _ColorWheelDialog({required this.initial});
+  const _ColorWheelDialog({required this.initial, required this.asShown});
 
   final Color initial;
+
+  /// Turns the picked colour into the one the app shows, for the
+  /// preview.
+  final Color Function(Color) asShown;
 
   @override
   State<_ColorWheelDialog> createState() => _ColorWheelDialogState();
@@ -173,7 +191,11 @@ class _ColorWheelDialogState extends State<_ColorWheelDialog> {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                // As the app will show it, not the raw colour.
+                decoration: BoxDecoration(
+                  color: widget.asShown(color),
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 12),
               Text(

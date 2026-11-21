@@ -79,7 +79,7 @@ class Habit {
     if (color == null) {
       return theme.colorScheme.primary;
     }
-    return readableOn(color, theme.colorScheme.surfaceContainer);
+    return habitColourAsShown(color, theme);
   }
 
   /// Whether the habit is hidden without being deleted.
