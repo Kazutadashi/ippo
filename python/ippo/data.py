@@ -101,6 +101,10 @@ class IppoData:
         """See :func:`ippo.body.energy_targets`."""
         return self._table(body.energy_targets)
 
+    def nutrient_targets(self):
+        """See :func:`ippo.body.nutrient_targets`."""
+        return self._table(body.nutrient_targets)
+
     def sleep_days(self):
         """See :func:`ippo.sleep.sleep_days`."""
         return self._table(sleep.sleep_days)
@@ -181,6 +185,6 @@ TABLE_NAMES = [
     "foods", "food_entries", "food_days",
     "exercises", "sets", "exercise_days", "steps",
     "sleep_days", "naps",
-    "weights", "profile", "energy_targets",
+    "weights", "profile", "energy_targets", "nutrient_targets",
     "daily", "devices",
 ]

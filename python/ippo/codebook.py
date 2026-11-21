@@ -86,8 +86,20 @@ NUTRIENTS = {
     "polyunsaturated_fat_g": Nutrient("Polyunsaturated fatty acids, total", "g", "FAPU", 1293, "646"),
     "trans_fat_g": Nutrient("Trans fatty acids, total", "g", "FATRN", 1257, "605"),
     "cholesterol_mg": Nutrient("Cholesterol", "mg", "CHOLE", 1253, "601"),
-    "salt_g": Nutrient("Salt", "g", "NACL", note="INFOODS NACL is given in mg; here in g (2.5 × sodium)."),
-    "sodium_mg": Nutrient("Sodium", "mg", "NA", 1093, "307"),
+    "salt_g": Nutrient(
+        "Salt",
+        "g",
+        "NACL",
+        note="2.5 × sodium; worked out from sodium_mg when an entry gave only sodium. INFOODS NACL is in mg.",
+    ),
+    "sodium_mg": Nutrient(
+        "Sodium",
+        "mg",
+        "NA",
+        1093,
+        "307",
+        note="Worked out from salt_g (salt / 2.5) when an entry gave only salt.",
+    ),
     "potassium_mg": Nutrient("Potassium", "mg", "K", 1092, "306"),
     "calcium_mg": Nutrient("Calcium", "mg", "CA", 1087, "301"),
     "iron_mg": Nutrient("Iron", "mg", "FE", 1089, "303"),
@@ -313,6 +325,18 @@ TABLES = {
             "The daily energy limit set by the user; empty means the limit was removed.",
             "kcal",
         ),
+        _RECORDED,
+    ),
+    "nutrient_targets": _columns(
+        Column("date", "date", "The first day this goal applies to."),
+        Column("nutrient", "string", "The nutrient's field name, such as fat_g (see the nutrient columns)."),
+        Column(
+            "amount",
+            "number",
+            "The user's own amount a day, in the nutrient's unit; empty means the goal was "
+            "removed and the reference amount applies again.",
+        ),
+        Column("kind", "string", "at_most (a limit, such as fat) or at_least (a minimum, such as protein)."),
         _RECORDED,
     ),
     "daily": _columns(

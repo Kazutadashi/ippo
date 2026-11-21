@@ -23,6 +23,7 @@ import '../../body/screens/body_screen.dart';
 import '../../body/screens/weight_card.dart';
 import '../daily_references.dart';
 import 'nutrient_bars.dart';
+import 'nutrient_goals_screen.dart';
 import 'choose_food_screen.dart';
 import 'food_entry_form_screen.dart';
 import 'foods_screen.dart';
@@ -97,6 +98,14 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
       );
     }
     return removed;
+  }
+
+  void _openGoals() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => NutrientGoalsScreen(appState: widget.appState),
+      ),
+    );
   }
 
   void _openBody() {
@@ -212,6 +221,15 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                       nutrients: diary.totalOn(date),
                       references: references,
                       energyTarget: energyTarget,
+                    ),
+                    // Your own amounts a day, in place of the references.
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: _openGoals,
+                        icon: const Icon(Icons.flag_outlined),
+                        label: const Text('Daily goals'),
+                      ),
                     ),
                     // With a limit: how much is left, or how far over.
                     if (energyTarget != null) ...[

@@ -377,7 +377,7 @@ record a value for it.
 | `unit` | string, optional | Only for `"number"`: a label such as `"pages"` or `"cards"`. |
 | `target` | object, optional | The goal. See below. If missing, any recorded value counts as done. |
 | `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week; `{"times": 1, "per_days": 3}` means every 3 days. Whole numbers, `times` at least 1 and at most `per_days`, `per_days` at most 365; anything else is read as every day. Changed later with `habit_changed`. |
-| `description` | string, optional | A note for yourself. |
+| `description` | string, optional | What the habit means, in the user's words, such as what a short name stands for. The app shows it in a key under the habit grid. Changed with `habit_changed` (`null` clears it). |
 | `color` | string, optional | A display colour, `"#RRGGBB"`. Missing or `null` means the app's accent colour. |
 | `archived` | boolean, optional | `true` hides the habit without deleting it. Usually set later with `habit_changed`. |
 
@@ -568,8 +568,13 @@ Labels do not always say which form of a vitamin they count, so the
 codes for vitamins A, E, K and folate are the closest match, with the
 difference noted.
 
-Salt is 2.5 times sodium. Labels that give only sodium (as in the US)
-get both fields: the app works out salt from sodium.
+**Salt and sodium are one measurement in two forms**: salt (sodium
+chloride) is 2.5 times the sodium. Labels in the EU give salt, in the US
+sodium. Labels that give only sodium get both fields when read in: the
+app works out salt from sodium. An entry with only one of the two keeps
+only that one in the data; readers that add up days (the app, and the
+Python package's tables) first work out the missing one, so a day's
+salt and sodium always agree and count every entry that gave either.
 
 **New nutrients can be added at any time.** Any field whose name is
 lower-case words joined by `_` and ending in a unit (`_g`, `_mg`, `_ug`
@@ -629,6 +634,9 @@ One thing eaten.
 | `unit_name` | string, optional | The name of those pieces, such as `"chips"`, copied from the food's `serving`. |
 | `nutrients` | object | The nutrients **for this amount**, worked out and copied when logged. |
 | `note` | string, optional | A note. |
+
+To move an entry logged on the wrong day, `food_entry_changed` gives it
+a new `date` (and `time` if that changed too).
 
 The nutrients are **copied into each entry**. If you later correct a
 food's values, past days do not change silently. (The app may offer to
@@ -803,6 +811,7 @@ use them: the limit, and the daily reference amounts of nutrients.
 | Thing | Created by | `_changed` | `_deleted` / `_restored` |
 | --- | --- | --- | --- |
 | weight | `weight_recorded` | yes | yes |
+| nutrient goal | `nutrient_target_recorded` | no (set again instead) | no |
 
 ### `profile_recorded`
 
@@ -837,6 +846,23 @@ The daily energy limit, from a day on.
 The limit on a day is the one with the latest `date` on or before it;
 of two with the same `date`, the one recorded last. So a new limit
 never changes past days.
+
+### `nutrient_target_recorded`
+
+The user's own amount a day of one nutrient, from a day on, in place of
+the reference amount the app otherwise compares against.
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `date` | date | The first day it applies to. |
+| `nutrient` | string | The nutrient's field name (see "Nutrients"), such as `"fat_g"`. |
+| `amount` | number, optional | The amount a day, in the nutrient's unit. Missing means the goal was removed: the reference amount applies again. |
+| `kind` | string | `"at_most"` (a limit: more is going over, as for fat or salt) or `"at_least"` (a minimum: more is fine, as for protein or fibre). |
+
+As with the energy limit, the goal on a day is the one with the latest
+`date` on or before it (of two with the same `date`, the one recorded
+last), so a new goal never changes past days. Goals are kept apart from
+what was eaten: they say what the user aimed for, never what happened.
 
 The app works out the BMR with the Mifflin-St Jeor equation: 10 ×
 weight (kg) + 6.25 × height (cm) − 5 × age (years), plus 5 for men or

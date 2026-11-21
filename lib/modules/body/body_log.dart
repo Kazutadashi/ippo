@@ -71,6 +71,55 @@ class EnergyTarget {
   final double? energyKcal;
 }
 
+/// Whether a goal is a most or a least.
+enum GoalKind {
+  /// A most, such as fat or salt: going past it is going over.
+  atMost('at_most'),
+
+  /// A least, such as protein or fibre: going past it is fine.
+  atLeast('at_least');
+
+  const GoalKind(this.name);
+
+  /// The name in the data.
+  final String name;
+
+  /// The kind called [name] in the data, or null if unknown.
+  static GoalKind? fromName(Object? name) {
+    for (final kind in values) {
+      if (kind.name == name) {
+        return kind;
+      }
+    }
+    return null;
+  }
+}
+
+/// The user's own daily goal for one nutrient, from [date] on, in place
+/// of the reference amount. Recorded by `nutrient_target_recorded`.
+class NutrientTarget {
+  /// Creates a goal.
+  const NutrientTarget({
+    required this.date,
+    required this.nutrient,
+    required this.amount,
+    required this.kind,
+  });
+
+  /// The first day it applies to, `YYYY-MM-DD`.
+  final String date;
+
+  /// The nutrient's field name, such as `fat_g`.
+  final String nutrient;
+
+  /// The amount a day, in the unit of [nutrient]; null when the goal
+  /// was removed, so the reference amount applies again.
+  final double? amount;
+
+  /// Whether [amount] is a most or a least.
+  final GoalKind kind;
+}
+
 /// Everything recorded about the body, with every change applied.
 class BodyLog {
   /// Creates a log. Normal code uses [BodyLog.fromEvents].
@@ -81,6 +130,7 @@ class BodyLog {
     required this.weights,
     required this.targets,
     required this.invalidCount,
+    this.nutrientTargets = const [],
   });
 
   /// The current state for [appState], worked out once per change of
@@ -95,6 +145,7 @@ class BodyLog {
     int? birthYear;
     double? heightCm;
     final targets = <EnergyTarget>[];
+    final nutrientTargets = <NutrientTarget>[];
     for (final event in events) {
       if (event.module != bodyModuleName) {
         continue;
@@ -122,6 +173,27 @@ class BodyLog {
           EnergyTarget(
             date: date,
             energyKcal: energy is num && energy > 0 ? energy.toDouble() : null,
+          ),
+        );
+      } else if (event.type == 'nutrient_target_recorded') {
+        final date = data['date'];
+        final nutrient = data['nutrient'];
+        final amount = data['amount'];
+        final kind = GoalKind.fromName(data['kind']);
+        if (date is! String ||
+            !isValidDate(date) ||
+            nutrient is! String ||
+            nutrient.isEmpty ||
+            kind == null) {
+          invalidCount++;
+          continue;
+        }
+        nutrientTargets.add(
+          NutrientTarget(
+            date: date,
+            nutrient: nutrient,
+            amount: amount is num && amount > 0 ? amount.toDouble() : null,
+            kind: kind,
           ),
         );
       }
@@ -159,6 +231,7 @@ class BodyLog {
       weights: weights,
       targets: targets,
       invalidCount: invalidCount,
+      nutrientTargets: nutrientTargets,
     );
   }
 
@@ -217,5 +290,26 @@ class BodyLog {
       }
     }
     return found;
+  }
+
+  /// Every nutrient goal ever set, in the order recorded.
+  final List<NutrientTarget> nutrientTargets;
+
+  /// The user's goal for [nutrient] on [date]: of the goals for it
+  /// starting on or before that day, the one with the latest date (of
+  /// two with the same date, the one recorded last). Null if there is
+  /// none, or it was removed: then the reference amount applies. So a
+  /// new goal never changes past days.
+  NutrientTarget? nutrientTargetOn(String nutrient, String date) {
+    NutrientTarget? found;
+    for (final target in nutrientTargets) {
+      final applies =
+          target.nutrient == nutrient && target.date.compareTo(date) <= 0;
+      if (applies &&
+          (found == null || target.date.compareTo(found.date) >= 0)) {
+        found = target;
+      }
+    }
+    return found?.amount == null ? null : found;
   }
 }

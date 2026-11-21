@@ -76,4 +76,20 @@ void main() {
     expect(json['energy_kcal'], isA<int>());
     expect(json['fat_g'], 6.5);
   });
+
+  test('salt and sodium are worked out from each other, to add up days', () {
+    const euLabel = Nutrients({'energy_kcal': 100, 'salt_g': 1.5});
+    const usLabel = Nutrients({'energy_kcal': 100, 'sodium_mg': 400});
+    expect(euLabel.withSaltAndSodium().values['sodium_mg'], 600);
+    expect(usLabel.withSaltAndSodium().values['salt_g'], 1);
+    // Both given: kept as given.
+    const both = Nutrients({'energy_kcal': 1, 'salt_g': 1, 'sodium_mg': 380});
+    expect(both.withSaltAndSodium().values['sodium_mg'], 380);
+    // Neither: nothing is made up.
+    expect(const Nutrients({'energy_kcal': 1}).withSaltAndSodium().values, {
+      'energy_kcal': 1,
+    });
+    final day = euLabel.withSaltAndSodium().plus(usLabel.withSaltAndSodium());
+    expect((day.values['salt_g'], day.values['sodium_mg']), (2.5, 1000));
+  });
 }

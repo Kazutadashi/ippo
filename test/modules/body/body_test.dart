@@ -130,4 +130,37 @@ void main() {
     expect(tile.rows.first.label, 'Left today');
     expect(tile.rows.first.value, '1,500 kcal');
   });
+
+  test('own nutrient goals replace the references from their day on', () async {
+    await actions.setNutrientTarget(
+      date: '2026-11-10',
+      nutrient: 'fat_g',
+      amount: 60,
+      kind: GoalKind.atMost,
+    );
+    await actions.setNutrientTarget(
+      date: '2026-11-15',
+      nutrient: 'proteins_g',
+      amount: 140,
+      kind: GoalKind.atLeast,
+    );
+    await actions.setNutrientTarget(
+      date: '2026-11-20',
+      nutrient: 'fat_g',
+      amount: null,
+      kind: GoalKind.atMost,
+    );
+    final log = await logFromDisk();
+    expect(log.nutrientTargetOn('fat_g', '2026-11-09'), isNull);
+    expect(log.nutrientTargetOn('fat_g', '2026-11-12')?.amount, 60);
+    // Removed on the 20th: the reference applies again.
+    expect(log.nutrientTargetOn('fat_g', '2026-11-20'), isNull);
+    expect(dailyReferencesOn(log, '2026-11-12')['fat_g'], 60);
+    expect(dailyReferencesOn(log, '2026-11-20')['fat_g'], 70);
+    expect(dailyReferencesOn(log, '2026-11-16')['proteins_g'], 140);
+    expect(
+      log.nutrientTargetOn('proteins_g', '2026-11-16')?.kind,
+      GoalKind.atLeast,
+    );
+  });
 }

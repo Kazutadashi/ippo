@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/value_text.dart';
+import '../daily_references.dart';
 import '../nutrients.dart';
 import 'nutrient_bars.dart';
 
@@ -120,6 +121,9 @@ class AllNutrientsList extends StatelessWidget {
     const shownAbove = {energyKey, 'proteins_g', 'carbohydrates_g', 'fat_g'};
     // Every nutrient any food gave, including ones Ippo does not list
     // yet, so a new nutrient shows up the day it is first logged.
+    // Salt and sodium are the same thing in two units: show both,
+    // always in step.
+    final nutrients = this.nutrients.withSaltAndSodium();
     final kinds = [
       for (final key in orderedNutrientKeys(nutrients.values.keys))
         if (!shownAbove.contains(key)) nutrientKindOf(key)!,
@@ -129,13 +133,20 @@ class AllNutrientsList extends StatelessWidget {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [for (final kind in kinds) _line(kind, textTheme, muted)],
+      children: [
+        for (final kind in kinds) _line(kind, nutrients, textTheme, muted),
+      ],
     );
   }
 
   /// One nutrient: its name, the amount, and "of … a day" with a bar
   /// when it has a daily reference amount.
-  Widget _line(NutrientKind kind, TextTheme textTheme, Color muted) {
+  Widget _line(
+    NutrientKind kind,
+    Nutrients nutrients,
+    TextTheme textTheme,
+    Color muted,
+  ) {
     final amount = nutrients.values[kind.key]!;
     final reference = references[kind.key];
     return Padding(
@@ -165,7 +176,10 @@ class AllNutrientsList extends StatelessWidget {
           ),
           if (reference != null) ...[
             const SizedBox(height: 3),
-            ShareBar(share: amount / reference),
+            ShareBar(
+              share: amount / reference,
+              isLimit: isLimitNutrient(kind.key),
+            ),
           ],
         ],
       ),

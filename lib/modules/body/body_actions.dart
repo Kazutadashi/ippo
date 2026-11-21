@@ -65,6 +65,23 @@ class BodyActions {
     });
   }
 
+  /// Sets the daily goal for [nutrient] (a field name such as `fat_g`)
+  /// to [amount] from [date] on, as a most or least ([kind]); null
+  /// [amount] removes the goal, so the reference amount applies again.
+  Future<Event> setNutrientTarget({
+    required String date,
+    required String nutrient,
+    required double? amount,
+    required GoalKind kind,
+  }) {
+    return _write('nutrient_target_recorded', {
+      'date': date,
+      'nutrient': nutrient,
+      if (amount != null) 'amount': jsonNumber(amount),
+      'kind': kind.name,
+    });
+  }
+
   Future<Event> _write(String type, Map<String, Object?> data) {
     return appState.writeEvent(module: bodyModuleName, type: type, data: data);
   }

@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
 import '../../../core/clock_time.dart';
+import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
@@ -74,6 +75,12 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
   final Map<String, String?> _nutrientProblems = {};
 
   /// When it was eaten (see [startingEntryTime]).
+  /// The day it counts for: the entry's own, or the day being shown.
+  /// It can be changed, to move a meal logged on the wrong day.
+  late DateTime _day = parseDate(
+    widget.entry?.date ?? widget.date ?? formatDate(today()),
+  )!;
+
   late ClockTime? _time = startingEntryTime(
     entryTime: widget.entry?.time,
     isNew: widget.entry == null,
@@ -139,7 +146,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
     final saved = await saveOrShowError(context, () {
       if (entry == null) {
         return actions.recordQuickEntry(
-          date: widget.date!,
+          date: formatDate(_day),
           time: _time?.toString(),
           name: _nameField.text,
           nutrients: nutrients,
@@ -149,6 +156,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
         entry,
         name: _nameField.text,
         nutrients: nutrients,
+        date: formatDate(_day),
         time: _time?.toString(),
       );
     });
@@ -179,6 +187,7 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
   /// Everything the user can change here, for the discard guard.
   String _snapshot() => [
     _nameField.text,
+    _day,
     _time,
     for (final field in _nutrientFields.values) field.text,
   ].join('\n');
@@ -221,10 +230,11 @@ class _QuickEntryFormScreenState extends State<QuickEntryFormScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                TimeField(
-                  label: 'Eaten at',
+                DayAndTimeFields(
+                  day: _day,
                   time: _time,
-                  onChanged: (time) => setState(() => _time = time),
+                  onDayChanged: (day) => setState(() => _day = day),
+                  onTimeChanged: (time) => setState(() => _time = time),
                 ),
               ],
             ),

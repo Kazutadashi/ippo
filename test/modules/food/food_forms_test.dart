@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/clock_time.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
@@ -350,6 +351,7 @@ void main() {
       entry,
       name: 'Soup',
       nutrients: entry.nutrients,
+      date: entry.date,
       time: '12:00',
     );
     expect((same.data['changes']! as Map).containsKey('time'), isFalse);
@@ -358,10 +360,24 @@ void main() {
       entry,
       name: 'Soup',
       nutrients: entry.nutrients,
+      date: entry.date,
       time: '13:30',
     );
     entry = FoodDiary.fromEvents(state.eventLog!.events).entries.single;
     expect(entry.time, '13:30');
+
+    // Logged on the wrong day: moved to the day before.
+    final dayBefore = formatDate(addDays(parseDate(entry.date)!, -1));
+    await actions.changeQuickEntry(
+      entry,
+      name: 'Soup',
+      nutrients: entry.nutrients,
+      date: dayBefore,
+      time: entry.time,
+    );
+    final diary = FoodDiary.fromEvents(state.eventLog!.events);
+    expect(diary.entriesOn(dayBefore).single.name, 'Soup');
+    expect(diary.entriesOn(entry.date), isEmpty);
   });
 
   testWidgets('both forms fit a narrow phone screen', (tester) async {

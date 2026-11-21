@@ -62,6 +62,34 @@ def energy_targets(events):
     return result.dropna(subset=["date"]).reset_index(drop=True)
 
 
+def nutrient_targets(events):
+    """One row per daily nutrient goal set, in the order recorded.
+
+    A goal replaces the reference amount for its nutrient from ``date``
+    on, until the next goal for that nutrient.
+
+    Columns: ``date`` (the first day it applies to), ``nutrient`` (a
+    field name such as ``fat_g``), ``amount`` (in the nutrient's unit;
+    empty when the goal was removed and the reference applies again),
+    ``kind`` (``at_most`` or ``at_least``), ``recorded_utc``.
+    """
+    of_body = events[(events["module"] == "body") & (events["type"] == "nutrient_target_recorded")]
+    rows = [
+        {
+            "date": event.data.get("date"),
+            "nutrient": event.data.get("nutrient"),
+            "amount": event.data.get("amount"),
+            "kind": event.data.get("kind"),
+            "recorded_utc": event.recorded_utc,
+        }
+        for event in of_body.itertuples(index=False)
+    ]
+    result = table(rows, ["date", "nutrient", "amount", "kind", "recorded_utc"])
+    result["date"] = as_dates(result["date"])
+    result["amount"] = pd.to_numeric(result["amount"], errors="coerce")
+    return result.dropna(subset=["date", "nutrient"]).reset_index(drop=True)
+
+
 def energy_target_on(targets, days):
     """The limit that applies on each of ``days``: of the limits starting
     on or before a day, the one with the latest start (and of those, the

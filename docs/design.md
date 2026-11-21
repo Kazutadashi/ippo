@@ -244,8 +244,18 @@ daily reference amount ("73 g of 50 g"), on the Food page and on Home.
 The amounts are the EU's reference intakes for an adult (scaled to the
 user's calorie limit, with protein by body weight when known); see
 `lib/modules/food/daily_references.dart` for every source. They are
-averages for adults, never presented as targets. The Food page's
-**All nutrients** opens every other nutrient of the day the same way.
+averages for adults, never presented as targets, until the user sets
+a goal of their own: **Daily goals** (under the Total card's bars) has a
+field per nutrient (protein, carbs, sugars, added sugars, fibre, fat,
+saturated fat, salt), empty for the reference amount, shown as the
+hint. A new goal counts from today. The Food page's **All nutrients**
+opens every other nutrient of the day the same way.
+
+Bars turn red past a **most** (energy, fat, saturated and trans fat,
+sugars, salt, sodium, cholesterol) only; past a **least** (protein,
+fibre, vitamins, minerals) they stay in the accent colour, since more is
+fine. Salt and sodium are the same thing in two units (salt is 2.5 ×
+sodium), always shown in step, whichever one a label gave.
 
 The calorie limit is set on the **Body and calories** screen, reached
 from the Food page's Total card and from Settings: sex, year of birth
@@ -285,6 +295,13 @@ closes at once. The ✕ calls `Navigator.maybePop`, so it goes through
 the guard too.
 
 
+### When a meal was eaten
+
+The food forms have **Day** and **Eaten at** side by side
+(`DayAndTimeFields`): the day it counts for, which can be changed to move
+a meal logged on the wrong day, and the clock time, "Not set" if not
+known.
+
 ### The food diary's "Day complete"
 
 The Eaten card ends with a **Day complete** switch ("Everything eaten is
@@ -294,6 +311,13 @@ like days of eating little (see `docs/data-principles.md`). Off means
 "not said" until it is first switched; switching it off again records
 "not complete".
 
+
+### The habits key
+
+Habit names in the grid's narrow column are often short. A habit can
+have a description ("What it means" in its form); habits that have one
+are listed under the grid in a **What they mean** card, each name in its
+colour above its description.
 
 ## 3. Fields, information and buttons
 

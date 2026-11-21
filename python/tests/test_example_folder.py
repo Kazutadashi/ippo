@@ -35,7 +35,7 @@ class ReadingTest(unittest.TestCase):
     def test_every_event_is_read_once(self):
         # 39 events were written; one needs a newer version. The conflict
         # copy only repeats events, and the hidden file is not read.
-        self.assertEqual(len(self.data.events), 51)
+        self.assertEqual(len(self.data.events), 52)
         self.assertTrue(self.data.events["id"].is_unique)
         self.assertNotIn("019cffff-0000-7000-8000-00000000ffff", set(self.data.events["id"]))
 
@@ -55,7 +55,7 @@ class ReadingTest(unittest.TestCase):
 
     def test_devices(self):
         devices = self.data.devices().set_index("device_name")
-        self.assertEqual(devices.loc["my-phone", "events"], 48)
+        self.assertEqual(devices.loc["my-phone", "events"], 49)
         self.assertEqual(devices.loc["my-desktop", "events"], 3)
 
     def test_a_folder_without_events_is_explained(self):
@@ -241,7 +241,7 @@ class DailyTest(unittest.TestCase):
             self.assertEqual(sleep.loc[0, "woke_up_utc"], "2026-03-01T06:00:00.000+00:00")
             self.assertEqual(sleep.loc[0, "woke_up_local"], "2026-03-01T07:00:00.000")
             events = pd.read_csv(Path(out) / "events.csv")
-            self.assertEqual(len(events), 51)
+            self.assertEqual(len(events), 52)
 
     def test_data_package_describes_every_column_of_every_file(self):
         with tempfile.TemporaryDirectory() as out:
@@ -273,6 +273,29 @@ class DailyTest(unittest.TestCase):
             self.assertEqual(str(days["food_entries"].dtype), "Int64")
 
 
+class SaltAndSodiumTest(unittest.TestCase):
+    def test_either_one_gives_the_other(self):
+        events = pd.DataFrame([
+            _food_entry("019c1000-0000-7000-8000-000000000001", {"energy_kcal": 100, "salt_g": 1.5}),
+            _food_entry("019c1000-0000-7000-8000-000000000002", {"energy_kcal": 100, "sodium_mg": 400}),
+        ])
+        entries = ippo.food.food_entries(events)
+        self.assertEqual(list(entries["sodium_mg"]), [600, 400])
+        self.assertEqual(list(entries["salt_g"]), [1.5, 1.0])
+        day = ippo.food.food_days(events).iloc[0]
+        self.assertEqual((day["salt_g"], day["sodium_mg"]), (2.5, 1000))
+        self.assertTrue(day["sodium_mg_complete"])
+
+
+def _food_entry(event_id, nutrients):
+    """A food_entry_recorded event as the events table holds it."""
+    moment = pd.Timestamp("2026-03-01T12:00:00Z")
+    return {
+        "id": event_id, "module": "food", "type": "food_entry_recorded", "recorded_utc": moment,
+        "data": {"date": "2026-03-01", "name": "Soup", "nutrients": nutrients},
+    }
+
+
 class DiaryAndProvenanceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -283,6 +306,11 @@ class DiaryAndProvenanceTest(unittest.TestCase):
         self.assertTrue(days.loc["2026-03-01", "diary_complete"])
         self.assertFalse(days.loc["2026-03-02", "diary_complete"])
         self.assertTrue(pd.isna(self.data.daily().loc["2026-03-03", "diary_complete"]))
+
+    def test_nutrient_goals_say_their_nutrient_amount_and_kind(self):
+        goal = self.data.nutrient_targets().iloc[0]
+        self.assertEqual((goal["nutrient"], goal["amount"], goal["kind"]), ("fat_g", 60, "at_most"))
+        self.assertEqual(goal["date"], day("2026-03-02"))
 
     def test_events_keep_the_app_version_and_time_zone_when_given(self):
         events = self.data.events.set_index("id")

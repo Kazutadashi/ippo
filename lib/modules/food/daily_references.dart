@@ -90,12 +90,52 @@ Map<String, double> dailyReferences({double? energyTarget, double? weightKg}) {
   return references;
 }
 
-/// The normal amounts for [date] (`YYYY-MM-DD`), from the body details
-/// in [body]: the energy target that applies that day, and the latest
-/// weight.
+/// The amounts a day for [date] (`YYYY-MM-DD`), from the body details
+/// in [body]: the energy target that applies that day, the latest
+/// weight, and in place of a reference amount, any goal of the user's own
+/// that applies that day (see `BodyLog.nutrientTargetOn`).
 Map<String, double> dailyReferencesOn(BodyLog body, String date) {
-  return dailyReferences(
+  final references = dailyReferences(
     energyTarget: body.energyTargetOn(date),
     weightKg: body.weightAsOf(date),
   );
+  for (final nutrient in goalNutrients) {
+    final own = body.nutrientTargetOn(nutrient, date)?.amount;
+    if (own != null) {
+      references[nutrient] = own;
+    }
+  }
+  return references;
 }
+
+/// The nutrients whose daily amount the user can set as a goal of their
+/// own, in the order shown (energy has its own limit).
+const List<String> goalNutrients = [
+  'proteins_g',
+  'carbohydrates_g',
+  'sugars_g',
+  'added_sugars_g',
+  'fiber_g',
+  'fat_g',
+  'saturated_fat_g',
+  'salt_g',
+];
+
+/// The nutrients whose daily amount is a most: eating more than it is
+/// going over, shown in red. For the others (protein, fibre, vitamins and
+/// minerals) the amount is a least, and more is fine.
+const Set<String> limitNutrients = {
+  energyKey,
+  'fat_g',
+  'saturated_fat_g',
+  'trans_fat_g',
+  'sugars_g',
+  'added_sugars_g',
+  'salt_g',
+  'sodium_mg',
+  'cholesterol_mg',
+};
+
+/// Whether the daily amount of [nutrient] is a most (see
+/// [limitNutrients]).
+bool isLimitNutrient(String nutrient) => limitNutrients.contains(nutrient);

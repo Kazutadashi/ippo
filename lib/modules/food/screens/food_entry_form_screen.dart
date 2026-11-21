@@ -79,6 +79,12 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
 
   /// When it was eaten: now for a new entry today, "Not set" for another
   /// day (the time is not known), or the entry's own time.
+  /// The day it counts for: the entry's own, or the day being shown.
+  /// It can be changed, to move a meal logged on the wrong day.
+  late DateTime _day = parseDate(
+    widget.entry?.date ?? widget.date ?? formatDate(today()),
+  )!;
+
   late ClockTime? _time = startingEntryTime(
     entryTime: widget.entry?.time,
     isNew: widget.entry == null,
@@ -185,10 +191,8 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
   }
 
   /// A whole day's normal amounts, for the day of this entry.
-  Map<String, double> get _references => dailyReferencesOn(
-    BodyLog.of(widget.appState),
-    widget.entry?.date ?? widget.date ?? formatDate(today()),
-  );
+  Map<String, double> get _references =>
+      dailyReferencesOn(BodyLog.of(widget.appState), formatDate(_day));
 
   Nutrients _nutrientsFor(double amount) {
     final food = widget.food;
@@ -230,7 +234,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
     final saved = await saveOrShowError(context, () {
       if (food != null) {
         return actions.recordFoodEntry(
-          date: widget.date!,
+          date: formatDate(_day),
           time: _time?.toString(),
           food: food,
           amount: grams,
@@ -242,6 +246,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
         entry!,
         newAmount: grams,
         unitCount: pieces,
+        date: formatDate(_day),
         time: _time?.toString(),
       );
     });
@@ -342,7 +347,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
   }
 
   /// Everything the user can change here, for the discard guard.
-  String _snapshot() => [_amountField.text, _inPieces, _time].join('\n');
+  String _snapshot() => [_amountField.text, _inPieces, _day, _time].join('\n');
 
   @override
   Widget build(BuildContext context) {
@@ -412,10 +417,13 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               onSubmitted: (_) => _save(),
             ),
             const SizedBox(height: 16),
-            TimeField(
-              label: 'Eaten at',
+            // When it was eaten: the day it counts for and the time,
+            // side by side. The day can be changed to move the meal.
+            DayAndTimeFields(
+              day: _day,
               time: _time,
-              onChanged: (time) => setState(() => _time = time),
+              onDayChanged: (day) => setState(() => _day = day),
+              onTimeChanged: (time) => setState(() => _time = time),
             ),
             const SizedBox(height: 16),
             // This amount against a whole day's normal amounts, then every

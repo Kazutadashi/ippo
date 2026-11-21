@@ -128,7 +128,9 @@ class FoodDiary {
   Nutrients totalOn(String date) {
     var total = Nutrients.none;
     for (final entry in entriesOn(date)) {
-      total = total.plus(entry.nutrients);
+      // Each entry's salt and sodium in step first, so the day's totals
+      // of both count every entry that gave either.
+      total = total.plus(entry.nutrients.withSaltAndSodium());
     }
     return total;
   }

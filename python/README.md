@@ -50,7 +50,7 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 | `habit_entries()` | habit and day | The latest value counts. `True` done, `False` said no; no row means nothing recorded. |
 | `habit_days()` | day | The habit grid: one column per habit. |
 | `foods()` | food | Nutrients per 100 g or ml (vitamins and minerals too), the serving size, and the ingredients. |
-| `food_entries()` | thing eaten | Nutrients for the amount eaten. A missing nutrient is unknown, never zero. |
+| `food_entries()` | thing eaten | Nutrients for the amount eaten. A missing nutrient is unknown, never zero. When an entry gave only salt or only sodium, the other is worked out (salt = 2.5 × sodium). |
 | `food_days()` | day | Totals; `<nutrient>_complete`: whether every entry that day gave that nutrient; `diary_complete`: the user's own mark that everything eaten that day is logged (empty if never marked). |
 | `exercises()` | exercise | `measured_in` is `reps` or `seconds`. |
 | `sets()` | set | `value` with `unit`, for every exercise. |
@@ -59,6 +59,7 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 | `weights()` | day | Weight in kg. |
 | `profile()` | one row | The latest sex, year of birth and height. |
 | `energy_targets()` | limit set | The daily energy limit, from its `date` on (empty `energy_kcal`: no limit). |
+| `nutrient_targets()` | goal set | The user's own amount a day of a nutrient (`nutrient`, `amount`, `kind`: `at_most` or `at_least`), from its `date` on, in place of the reference amount. |
 | `sleep_days()` | day | Wake-up and bedtime (exact, local, and as hours), sleep before the day, time zone changes, naps. |
 | `naps()` | nap | |
 | `devices()` | device | When each device's data was last seen. |

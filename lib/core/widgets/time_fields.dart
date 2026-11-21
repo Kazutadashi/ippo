@@ -72,6 +72,120 @@ class TimeField extends StatelessWidget {
   }
 }
 
+/// A day the user can change, such as "Thu 19 Nov". It looks like a
+/// text field (outline and label), and tapping it opens the calendar. No
+/// day after today can be picked: nothing can be logged there yet.
+class DateField extends StatelessWidget {
+  /// Creates the field showing [day] with [label].
+  const DateField({
+    super.key,
+    required this.label,
+    required this.day,
+    required this.onChanged,
+  });
+
+  /// What the day is, for example `Day`.
+  final String label;
+
+  /// The day shown (a date, no time).
+  final DateTime day;
+
+  /// Called with the newly picked day.
+  final ValueChanged<DateTime> onChanged;
+
+  Future<void> _pick(BuildContext context) async {
+    final last = today();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: day.isAfter(last) ? last : day,
+      firstDate: DateTime(2000),
+      lastDate: last,
+      helpText: label,
+    );
+    if (picked != null) {
+      onChanged(DateTime(picked.year, picked.month, picked.day));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _pick(context),
+      borderRadius: BorderRadius.circular(4),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: const Icon(Icons.calendar_today),
+        ),
+        child: Text(
+          _shortDay(day),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+      ),
+    );
+  }
+}
+
+/// [day] briefly enough for half a phone's width: `Today`, `Yesterday`,
+/// or the date, such as `19 Nov`.
+String _shortDay(DateTime day) {
+  final daysAgo = daysBetween(day, today());
+  if (daysAgo == 0) {
+    return 'Today';
+  }
+  if (daysAgo == 1) {
+    return 'Yesterday';
+  }
+  return '${day.day} ${shortMonthName(day.month)}';
+}
+
+/// A day and a time side by side at equal width, such as when a meal was
+/// eaten: the [day] it counts for, and the [time] on the clock (null for
+/// "Not set"). Changing the day moves the thing to another day.
+class DayAndTimeFields extends StatelessWidget {
+  /// Creates the two fields.
+  const DayAndTimeFields({
+    super.key,
+    required this.day,
+    required this.time,
+    required this.onDayChanged,
+    required this.onTimeChanged,
+  });
+
+  /// The day shown.
+  final DateTime day;
+
+  /// The time shown, or null for "Not set".
+  final ClockTime? time;
+
+  /// Called with a newly picked day.
+  final ValueChanged<DateTime> onDayChanged;
+
+  /// Called with a newly picked time.
+  final ValueChanged<ClockTime> onTimeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: DateField(label: 'Day', day: day, onChanged: onDayChanged),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TimeField(
+            label: 'Eaten at',
+            time: time,
+            onChanged: onTimeChanged,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// A date and time the user can change, such as "Thu 19 Nov, 01:00". It
 /// looks like a text field (outline and label).
 ///

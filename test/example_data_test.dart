@@ -32,7 +32,7 @@ void main() {
   });
 
   test('every event is read once; the cut-off line is reported', () {
-    expect(eventLog.events, hasLength(51));
+    expect(eventLog.events, hasLength(52));
     expect(eventLog.problems, hasLength(1));
     expect(eventLog.problems.single.reason, 'not valid JSON');
     expect(eventLog.newerVersionEventCount, 1);
@@ -64,6 +64,13 @@ void main() {
     expect(diary.markOn('2026-03-01'), isTrue);
     expect(diary.markOn('2026-03-02'), isFalse);
     expect(diary.markOn('2026-03-03'), isNull);
+  });
+
+  test('body: an own nutrient goal applies from its day on', () {
+    final body = BodyLog.fromEvents(eventLog.events);
+    expect(body.nutrientTargetOn('fat_g', '2026-03-01'), isNull);
+    final goal = body.nutrientTargetOn('fat_g', '2026-03-02')!;
+    expect((goal.amount, goal.kind), (60, GoalKind.atMost));
   });
 
   test('events keep their app version and time zone when given', () {

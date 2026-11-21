@@ -37,6 +37,17 @@ String formatEnergy(double kcal) => '${formatThousands(kcal.round())} kcal';
 /// The field name for energy, the one nutrient that is always required.
 const String energyKey = 'energy_kcal';
 
+/// The field name of salt, in grams.
+const String saltKey = 'salt_g';
+
+/// The field name of sodium, in milligrams.
+const String sodiumKey = 'sodium_mg';
+
+/// How much salt (sodium chloride) holds a unit of sodium: salt is 2.5
+/// times the sodium, as EU labelling law counts it (Regulation (EU)
+/// No 1169/2011, Annex I, point 11).
+const double saltPerSodium = 2.5;
+
 /// Every nutrient Ippo knows, in the order they are shown, as on a
 /// label: energy and the macronutrients first, then fats, minerals and
 /// vitamins. Each field name ends in its unit (`_g`, `_mg`, `_ug` for
@@ -202,6 +213,27 @@ class Nutrients {
     return Nutrients({
       for (final entry in values.entries)
         entry.key: roundToTenth(entry.value * factor),
+    });
+  }
+
+  /// These nutrients with salt and sodium both known when either is.
+  ///
+  /// Salt and sodium are one measurement in two forms: salt (sodium
+  /// chloride) is 2.5 times the sodium. Labels in the EU give salt, in
+  /// the US sodium, so a food has one or the other. Filling in the
+  /// missing one before adding up a day keeps the day's salt and sodium
+  /// in step; otherwise each would count only the foods that named it.
+  /// The data keeps what was entered; this is only worked out to show.
+  Nutrients withSaltAndSodium() {
+    final salt = values[saltKey];
+    final sodium = values[sodiumKey];
+    if ((salt == null) == (sodium == null)) {
+      return this;
+    }
+    return Nutrients({
+      ...values,
+      saltKey: salt ?? roundToTenth(sodium! * saltPerSodium / 1000),
+      sodiumKey: sodium ?? (salt! * 1000 / saltPerSodium).roundToDouble(),
     });
   }
 

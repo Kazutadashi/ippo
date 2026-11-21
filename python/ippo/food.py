@@ -102,6 +102,11 @@ def food_entries(events):
     The nutrients are those copied into the entry when it was logged, so
     later changes to a food do not change past days.
 
+    ``salt_g`` and ``sodium_mg`` are one measurement in two forms (salt
+    is 2.5 times sodium). Labels give one or the other, so when an entry
+    gave only one, the other is worked out here (as the app does), and
+    days add up both alike.
+
     **A missing nutrient means "not known", never zero.** Quick entries
     (``quick`` is ``True``) usually only have energy. Their other
     nutrient columns are empty (NaN).
@@ -112,7 +117,7 @@ def food_entries(events):
     amount; see :func:`nutrient_columns`), ``note``, ``recorded_utc``.
     """
     things = collect_things(events, "food", "food_entry_recorded", "food_entry")
-    nutrients_list = nutrient_columns(_dict(entry.get("nutrients")) for entry in things)
+    nutrients_list = nutrient_columns(_salt_and_sodium(_dict(entry.get("nutrients"))) for entry in things)
     rows = []
     for entry in things:
         if entry["deleted"]:
@@ -131,7 +136,7 @@ def food_entries(events):
             "note": entry.get("note"),
             "recorded_utc": entry["recorded_utc"],
         }
-        nutrients = _dict(entry.get("nutrients"))
+        nutrients = _salt_and_sodium(_dict(entry.get("nutrients")))
         for nutrient in nutrients_list:
             row[nutrient] = _number(nutrients.get(nutrient))
         rows.append(row)
@@ -197,6 +202,25 @@ def diary_marks(events):
     )
     result.index.name = "date"
     return result[result.index.notna()]
+
+
+#: How much salt (sodium chloride) holds a unit of sodium, as EU labelling
+#: law counts it (Regulation (EU) No 1169/2011, Annex I, point 11).
+SALT_PER_SODIUM = 2.5
+
+
+def _salt_and_sodium(nutrients):
+    """``nutrients`` with salt and sodium both present when either is."""
+    salt = _number(nutrients.get("salt_g"))
+    sodium = _number(nutrients.get("sodium_mg"))
+    if pd.isna(salt) == pd.isna(sodium):
+        return nutrients
+    filled = dict(nutrients)
+    if pd.isna(salt):
+        filled["salt_g"] = round(sodium * SALT_PER_SODIUM / 1000, 1)
+    else:
+        filled["sodium_mg"] = round(salt * 1000 / SALT_PER_SODIUM)
+    return filled
 
 
 def _number(value):

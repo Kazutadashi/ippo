@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/number_input.dart';
 import '../../../core/widgets/section_card.dart';
+import '../daily_references.dart';
 import '../nutrients.dart';
 
 /// One nutrient's amount against its daily [reference].
@@ -47,11 +48,18 @@ String formatNutrientAmount(double amount, String unit) {
 }
 
 /// A thin bar as full as [share], in the accent colour on a pale track.
-/// Past 1 (more than the daily amount) it is full and red, the theme's
-/// colour for problems, so going over shows at a glance.
+/// Past 1 it is full; for a most ([isLimit], such as fat or salt) it
+/// then turns red, the theme's colour for problems, so going over shows
+/// at a glance. For a least (protein, fibre) more is fine: it stays in
+/// the accent colour.
 class ShareBar extends StatelessWidget {
   /// Creates the bar.
-  const ShareBar({super.key, required this.share, this.height = 4});
+  const ShareBar({
+    super.key,
+    required this.share,
+    this.height = 4,
+    this.isLimit = true,
+  });
 
   /// How full: 0 empty, 1 full; more than 1 is over.
   final double share;
@@ -59,10 +67,13 @@ class ShareBar extends StatelessWidget {
   /// How thick.
   final double height;
 
+  /// Whether the daily amount is a most, so going past it is red.
+  final bool isLimit;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isOver = share > 1;
+    final isOver = isLimit && share > 1;
     final color = isOver ? colors.error : colors.primary;
     final filled = (share.clamp(0.0, 1.0) * 1000).round();
     return Container(
@@ -156,7 +167,10 @@ class NutrientBars extends StatelessWidget {
           ),
           if (reference != null) ...[
             const SizedBox(height: 3),
-            ShareBar(share: nutrient.share),
+            ShareBar(
+              share: nutrient.share,
+              isLimit: isLimitNutrient(nutrient.key),
+            ),
             if (showsReference)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
