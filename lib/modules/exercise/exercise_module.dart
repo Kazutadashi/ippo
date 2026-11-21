@@ -43,32 +43,27 @@ class ExerciseModule extends IppoModule {
     final date = formatDate(day);
     final steps = log.stepsOn(date);
     final isToday = day == currentDay(now);
-    final done = log.activeExercises
-        .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
-        .length;
     final averageSteps = _averageSteps(log, day);
+    // Each exercise done on the day, with its sets, in the order the
+    // exercises were added.
+    final doneToday = [
+      for (final exercise in log.activeExercises)
+        if (log.setsOn(date, exercise.id).isNotEmpty)
+          (name: exercise.name, sets: log.setsOn(date, exercise.id).length),
+    ];
     return HomeTile(
       value: steps == null
           ? HomeTile.unknownValue
           : formatThousands(steps.steps),
       valueNote: steps == null ? 'No steps yet' : 'steps',
-      // The week at a glance: which of the last seven days had a
-      // workout. Nothing is planned, so a day without one is simply that.
-      mark: _WorkoutWeek(
-        days: weekEndingOn(day),
-        trained: {
-          for (final weekDay in weekEndingOn(day))
-            if (_trainedOn(log, formatDate(weekDay))) weekDay,
-        },
-        shown: day,
-      ),
+      // One chip per exercise done: each means one exercise, with its
+      // number of sets. A day without says so instead.
+      mark: doneToday.isEmpty ? null : _ExerciseChips(done: doneToday),
+      note: doneToday.isEmpty
+          ? (isToday ? 'No workout yet today' : 'No workout this day')
+          : null,
       rows: [
-        if (done > 0)
-          TileRow(
-            isToday ? 'Today' : 'This day',
-            '$done ${done == 1 ? 'exercise' : 'exercises'}',
-          )
-        else
+        if (doneToday.isEmpty)
           TileRow('Last workout', _lastWorkout(log, day, isToday: isToday)),
         if (averageSteps != null)
           TileRow('Avg (7 days)', '${formatThousands(averageSteps)} steps'),
@@ -209,88 +204,54 @@ String? _exercisesDone(ExerciseLog log, String date) {
 String? _thousands(int? steps) =>
     steps == null ? null : (steps / 1000).toStringAsFixed(1);
 
-/// Whether any exercise has a set on [date].
-bool _trainedOn(ExerciseLog log, String date) => log.activeExercises.any(
-  (exercise) => log.setsOn(date, exercise.id).isNotEmpty,
-);
+/// How many exercise chips the tile shows; more become "+2 more", so
+/// the tile keeps its size.
+const int _chipLimit = 4;
 
-/// The last seven days as a bar of seven segments, the day shown last:
-/// filled on a day with a workout, an outline on a day without. Under
-/// it, each day's letter, the day shown in the accent colour. The same
-/// look as the habits bar: filled is done, outlined is not.
-class _WorkoutWeek extends StatelessWidget {
-  const _WorkoutWeek({
-    required this.days,
-    required this.trained,
-    required this.shown,
-  });
+/// The day's exercises as small chips, "Push-up ×3": the exercise and
+/// how many sets were done. Each chip is one exercise.
+class _ExerciseChips extends StatelessWidget {
+  const _ExerciseChips({required this.done});
 
-  /// The seven days, oldest first.
-  final List<DateTime> days;
-
-  /// Those with a workout.
-  final Set<DateTime> trained;
-
-  /// The day shown on Home, the last of them.
-  final DateTime shown;
+  /// The exercises done, with their number of sets.
+  final List<({String name, int sets})> done;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final shown = done.take(_chipLimit).toList();
+    final more = done.length - shown.length;
     return Semantics(
       label:
-          'Workouts in the last 7 days: ${trained.length} '
-          '${trained.length == 1 ? 'day' : 'days'}',
+          'Done: ${[for (final item in done) '${item.name}, ${item.sets} '
+                '${item.sets == 1 ? 'set' : 'sets'}'].join('; ')}',
       child: ExcludeSemantics(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
           children: [
-            Row(
-              children: [
-                for (final (index, day) in days.indexed) ...[
-                  if (index > 0) const SizedBox(width: 4),
-                  Expanded(
-                    child: Container(
-                      height: 10,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: trained.contains(day) ? colors.primary : null,
-                        border: trained.contains(day)
-                            ? null
-                            : Border.all(
-                                color: colors.primary.withValues(alpha: 0.6),
-                                width: 1.5,
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 3),
-            Row(
-              children: [
-                for (final (index, day) in days.indexed) ...[
-                  if (index > 0) const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      letters[day.weekday - 1],
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: day == shown
-                            ? colors.primary
-                            : colors.onSurfaceVariant,
-                        fontWeight: day == shown ? FontWeight.bold : null,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+            for (final item in shown)
+              _chip(theme, '${item.name} ×${item.sets}'),
+            if (more > 0) _chip(theme, '+$more more'),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _chip(ThemeData theme, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        // The accent tint of logged things, as elsewhere.
+        color: theme.chipTheme.backgroundColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: theme.textTheme.labelMedium,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

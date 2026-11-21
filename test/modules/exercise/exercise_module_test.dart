@@ -275,7 +275,7 @@ void main() {
     final day = currentDay(now);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '– No steps yet | Last workout none yet',
+      '– No steps yet | No workout yet today, Last workout none yet',
     );
 
     final pushUp = await createExercise('Push-up', MeasuredIn.reps);
@@ -284,7 +284,8 @@ void main() {
     await actions.saveSteps(date: '2026-11-16', steps: 8000, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '– No steps yet | Last workout 2 days ago, Avg (7 days) 8,000 steps',
+      '– No steps yet | No workout yet today, Last workout 2 days ago, '
+      'Avg (7 days) 8,000 steps',
     );
 
     await addSets(pushUp, '2026-11-18', 20, 1);
@@ -292,7 +293,7 @@ void main() {
     await actions.saveSteps(date: '2026-11-18', steps: 10500, existing: null);
     expect(
       describeTile(module.homeTile(appState, day, now)),
-      '10,500 steps | Today 2 exercises, Avg (7 days) 8,000 steps',
+      '10,500 steps | Avg (7 days) 8,000 steps',
     );
     expect(module.weekRows(appState, day).first.cells, [
       null,
