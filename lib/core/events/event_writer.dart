@@ -3,6 +3,7 @@
 /// Writing new events to this device's own event file.
 library;
 
+import '../build_info.dart';
 import '../storage/data_folder.dart';
 import 'event.dart';
 import 'event_log_reader.dart';
@@ -25,6 +26,7 @@ class EventWriter {
     required this.dataFolder,
     required this.deviceId,
     required this.deviceName,
+    this.timeZone,
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now {
     if (!isValidUuid(deviceId)) {
@@ -40,6 +42,11 @@ class EventWriter {
 
   /// This device's name, stored in each event for display.
   final String deviceName;
+
+  /// Gives the device's IANA time zone (such as `Europe/Paris`) at the
+  /// moment of writing, or null if not known. Asked for each event, since
+  /// the zone changes when the user travels. Null for none.
+  final String? Function()? timeZone;
 
   final DateTime Function() _now;
 
@@ -78,6 +85,8 @@ class EventWriter {
       recordedAtUtc: parseTimestamp(recordedAt)!,
       deviceId: deviceId,
       deviceName: deviceName,
+      appVersion: appVersion,
+      timeZone: timeZone?.call(),
       module: module,
       type: type,
       data: data,

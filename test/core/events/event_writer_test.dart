@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/events/event_log_reader.dart';
+import 'package:ippo/core/build_info.dart';
 import 'package:ippo/core/events/event_writer.dart';
 import 'package:ippo/core/storage/local_data_folder.dart';
 
@@ -47,6 +48,23 @@ void main() {
     expect(lines, hasLength(3)); // two lines, then the empty text after \n
     expect(lines.last, isEmpty);
     expect(writer.filePath, 'events/$phoneId.jsonl');
+  });
+
+  test('each event records the app version and the time zone then', () async {
+    var zone = 'Europe/Paris';
+    final writer = EventWriter(
+      dataFolder: dataFolder,
+      deviceId: phoneId,
+      deviceName: 'my-phone',
+      timeZone: () => zone,
+      now: () => clock,
+    );
+    final first = await writer.write(module: 'habits', type: 'a', data: {});
+    zone = 'Asia/Tokyo';
+    final second = await writer.write(module: 'habits', type: 'b', data: {});
+    expect(first.appVersion, appVersion);
+    expect(first.timeZone, 'Europe/Paris');
+    expect(second.timeZone, 'Asia/Tokyo');
   });
 
   test('what is written reads back as the same events', () async {

@@ -54,6 +54,28 @@ void main() {
     ]);
   });
 
+  test('the app version and time zone sit after the device, when given', () {
+    final json = validEventJson()
+      ..['app_version'] = '0.1.0'
+      ..['time_zone'] = 'Asia/Tokyo';
+    final event = Event.fromJsonLine(jsonEncode(json));
+    expect((event.appVersion, event.timeZone), ('0.1.0', 'Asia/Tokyo'));
+    final keys = (jsonDecode(event.toJsonLine()) as Map<String, Object?>).keys;
+    expect(keys.toList().sublist(4, 7), [
+      'device_name',
+      'app_version',
+      'time_zone',
+    ]);
+  });
+
+  test('an odd app version or time zone is ignored, not an error', () {
+    final json = validEventJson()
+      ..['app_version'] = 3
+      ..['time_zone'] = '';
+    final event = Event.fromJsonLine(jsonEncode(json));
+    expect((event.appVersion, event.timeZone), (null, null));
+  });
+
   test('unknown extra fields are ignored', () {
     final json = validEventJson()..['added_in_a_later_version'] = true;
     final event = Event.fromJsonLine(jsonEncode(json));

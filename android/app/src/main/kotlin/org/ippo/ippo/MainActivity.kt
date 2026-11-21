@@ -10,8 +10,9 @@ import io.flutter.plugin.common.MethodChannel
 /**
  * The app's single Android screen. Flutter draws everything inside it.
  *
- * Its only extra job is connecting [StorageBridge] (files) and
- * [SystemColors] (the phone's accent colour) to the Dart code.
+ * Its only extra job is connecting [StorageBridge] (files),
+ * [SystemColors] (the phone's accent colour) and [SystemTimeZone] (the
+ * name of the phone's time zone) to the Dart code.
  */
 class MainActivity : FlutterActivity() {
 
@@ -25,6 +26,8 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler(bridge)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SystemColors.CHANNEL_NAME)
             .setMethodCallHandler(SystemColors(this))
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SystemTimeZone.CHANNEL_NAME)
+            .setMethodCallHandler(SystemTimeZone())
     }
 
     // The folder picker reports back here. We use this older API because

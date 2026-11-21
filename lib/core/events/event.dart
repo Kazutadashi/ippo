@@ -28,6 +28,8 @@ class Event {
     required this.recordedAtUtc,
     required this.deviceId,
     required this.deviceName,
+    this.appVersion,
+    this.timeZone,
     required this.module,
     required this.type,
     required this.data,
@@ -79,6 +81,8 @@ class Event {
       recordedAtUtc: recordedAtUtc,
       deviceId: _requireText(decoded, 'device_id'),
       deviceName: _requireText(decoded, 'device_name'),
+      appVersion: _optionalText(decoded, 'app_version'),
+      timeZone: _optionalText(decoded, 'time_zone'),
       module: _requireText(decoded, 'module'),
       type: _requireText(decoded, 'type'),
       data: data,
@@ -104,6 +108,17 @@ class Event {
   /// The device's name when the event was written. Only for display.
   final String deviceName;
 
+  /// The version of the app that wrote the event, such as `0.1.0`, or
+  /// null for events written before it was recorded. Lets an analysis
+  /// tell which app behaviour produced a value.
+  final String? appVersion;
+
+  /// The IANA time zone the device was set to when the event was
+  /// written, such as `Europe/Paris`, or null if not known. With the
+  /// offset in [recordedAt] it tells daylight saving changes apart from
+  /// travel.
+  final String? timeZone;
+
   /// The module the event belongs to, for example `habits`.
   final String module;
 
@@ -123,6 +138,9 @@ class Event {
       'recorded_at': recordedAt,
       'device_id': deviceId,
       'device_name': deviceName,
+      // Optional fields are left out rather than written as null.
+      if (appVersion != null) 'app_version': appVersion,
+      if (timeZone != null) 'time_zone': timeZone,
       'module': module,
       'type': type,
       'data': data,
@@ -150,4 +168,11 @@ String _requireText(Map<String, Object?> json, String name) {
     throw EventFormatException('"$name" is missing or not text');
   }
   return value;
+}
+
+/// The text field [name] of [json], or null if it is missing, empty or
+/// not text. Used for optional fields, which never make an event invalid.
+String? _optionalText(Map<String, Object?> json, String name) {
+  final value = json[name];
+  return value is String && value.isNotEmpty ? value : null;
 }

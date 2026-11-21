@@ -21,6 +21,7 @@ import 'storage/data_folder.dart';
 import 'storage/local_data_folder.dart';
 import 'storage/memory_data_folder.dart';
 import 'storage/settings_file.dart';
+import 'storage/system_time_zone.dart';
 
 /// Holds the app-wide state and tells listening screens when it changes.
 ///
@@ -63,6 +64,11 @@ class AppState extends ChangeNotifier {
   EventWriter? _eventWriter;
   EventLog? _eventLog;
   String? _errorMessage;
+
+  // The device's IANA time zone, written into each new event; null if
+  // not known. Read again whenever the app comes back to the front, in
+  // case the user travelled.
+  String? _timeZone;
   bool _isLoading = true;
 
   // While the demo runs: the real data folder and what was read from it,
@@ -192,6 +198,7 @@ class AppState extends ChangeNotifier {
   /// On the very first run, it creates new settings with a new device id.
   /// Errors do not throw; they appear in [errorMessage].
   Future<void> load() async {
+    _timeZone = await readSystemTimeZone();
     try {
       final savedJson = await settingsFile.read();
       if (savedJson == null) {
@@ -222,6 +229,7 @@ class AppState extends ChangeNotifier {
   /// Reads all event files again, for example after a sync. Also makes
   /// this month's backup, the first time each month.
   Future<void> reloadEvents() async {
+    _timeZone = await readSystemTimeZone();
     final dataFolder = _dataFolder;
     if (dataFolder == null) {
       return;
@@ -507,6 +515,7 @@ class AppState extends ChangeNotifier {
       dataFolder: dataFolder,
       deviceId: settings.deviceId,
       deviceName: settings.deviceName,
+      timeZone: () => _timeZone,
     );
   }
 }
