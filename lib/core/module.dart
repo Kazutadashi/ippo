@@ -10,11 +10,13 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import 'app_state.dart';
+import 'charts/chart_data.dart';
 import 'dates.dart';
 import 'demo/demo_plan.dart';
 import 'trends.dart';
 import 'widgets/info_tile.dart';
 
+export 'charts/chart_data.dart';
 export 'demo/demo_plan.dart' show DemoEvent, DemoPlan;
 export 'trends.dart' show TrendMeasure;
 export 'widgets/info_tile.dart' show LabelledValues, TileDetail, TileRow;
@@ -73,6 +75,14 @@ abstract class IppoModule {
   /// hours slept: each compares this week with the four weeks before.
   /// Empty for none.
   List<TrendMeasure> trendMeasures(AppState appState) => const [];
+
+  /// The module's charts on the Charts screen (opened from Home), such
+  /// as weight or hours slept over time: one [ChartSpec] per measure,
+  /// with one value per day logged. The core draws them all the same
+  /// way, with the running mean, the summary numbers and the period
+  /// chosen; see `lib/core/charts/`. Leave out a chart with no data at
+  /// all. Empty for none.
+  List<ChartSpec> charts(AppState appState) => const [];
 
   /// Made-up events for the demo (Settings › Try the demo): a few weeks
   /// of everyday use of this module, made with [plan]. Empty for none.

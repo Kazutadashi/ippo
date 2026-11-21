@@ -143,6 +143,12 @@ int daysBetween(DateTime from, DateTime to) {
 /// Writes a day briefly, for example `Thu 19 Nov`.
 String formatShortDate(DateTime day) {
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return '${weekdays[day.weekday - 1]} ${day.day} ${shortMonthName(day.month)}';
+}
+
+/// The first three letters of the name of [month] (1 to 12), for
+/// example `Nov` for 11.
+String shortMonthName(int month) {
   const months = [
     'Jan',
     'Feb',
@@ -157,7 +163,7 @@ String formatShortDate(DateTime day) {
     'Nov',
     'Dec',
   ];
-  return '${weekdays[day.weekday - 1]} ${day.day} ${months[day.month - 1]}';
+  return months[month - 1];
 }
 
 /// Writes a duration as hours and minutes, for example `7 h 30 min`,
