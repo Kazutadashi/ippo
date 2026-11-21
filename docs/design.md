@@ -398,6 +398,7 @@ by themselves unless the user picked another day.
 | Home | `home` (outlined when not selected) |
 | Habits | `check_circle_outline` |
 | Done / not done (habit grid) | `check` / `close` |
+| Not done, but covered by the habit's frequency (habit grid) | a smaller, faded check (`CoveredCheck`): for example "Twice a week" done Monday and Thursday covers a ✗ on Tuesday, so it does not look missed |
 | Food, food eaten | `restaurant` |
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |

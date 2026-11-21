@@ -425,6 +425,11 @@ class _DayCell extends StatelessWidget {
       case DayMark.done:
         icon = BoldCheck(size: _markSize, color: habit.displayColor(theme));
         meaning = 'done';
+      case DayMark.notDone when log.isCoveredOn(habit, date):
+        // Not done, but the habit was done often enough around it ("twice
+        // a week" kept): a faded ✓, so it does not look missed.
+        icon = CoveredCheck(size: _markSize, color: habit.displayColor(theme));
+        meaning = 'not done, but covered';
       case DayMark.notDone:
         // Quieter than a ✓: a "no" is information, not an alarm.
         icon = Icon(
@@ -481,7 +486,7 @@ class _DayCell extends StatelessWidget {
               duration: const Duration(milliseconds: 150),
               transitionBuilder: (child, animation) =>
                   ScaleTransition(scale: animation, child: child),
-              child: Center(key: ValueKey(mark), child: icon),
+              child: Center(key: ValueKey('$mark $meaning'), child: icon),
             ),
           ),
         ),

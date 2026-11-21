@@ -7,6 +7,7 @@ library;
 import 'package:material_ui/material_ui.dart';
 
 import 'habit.dart';
+import 'habit_frequency.dart';
 import 'habit_log.dart';
 
 /// A bar across the tile with one segment per habit, in the habit's own
@@ -212,4 +213,24 @@ class _CheckPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_CheckPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// The mark for a day marked not done that the habit's frequency still
+/// covers (see [HabitFrequency.coversDay]): a smaller, faded ✓ in the
+/// habit's colour. It reads as "fine" next to the full ✓ of a day done,
+/// and is clearly not the grey ✗ of a day missed.
+class CoveredCheck extends StatelessWidget {
+  /// Creates the mark, [size] wide, in the habit's [color].
+  const CoveredCheck({super.key, required this.size, required this.color});
+
+  /// The size of a full ✓; this one is three quarters of it.
+  final double size;
+
+  /// The habit's colour.
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return BoldCheck(size: size * 0.75, color: color.withValues(alpha: 0.45));
+  }
 }

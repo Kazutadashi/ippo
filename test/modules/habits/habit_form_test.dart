@@ -60,4 +60,45 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a ✗ between ticks the frequency allows shows as covered', (
+    tester,
+  ) async {
+    final settings = Directory.systemTemp.createTempSync('ippo_form_');
+    addTearDown(() => settings.deleteSync(recursive: true));
+    final appState = AppState(
+      settingsFile: SettingsFile(settings.path),
+      isAndroid: false,
+      defaultDeviceName: 'my-phone',
+    );
+    await tester.runAsync(appState.load);
+    tester.view.physicalSize = const Size(393 * 3, 1200 * 3);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildTheme(const Color(0xFF1E88E5), Brightness.dark),
+        home: HabitFormScreen(appState: appState),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    final pastDone = find.bySemanticsLabel('Preview, a past day: done');
+
+    // Every day: the middle one of the three past ✓ becomes ✗.
+    await tester.tap(pastDone.at(1));
+    await tester.pump(const Duration(seconds: 1));
+    expect(
+      find.bySemanticsLabel('Preview, a past day: not done'),
+      findsOneWidget,
+    );
+
+    // Twice a week: the ✓ on each side keep the rule, so it is covered.
+    await tester.tap(find.text('Twice a week'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(
+      find.bySemanticsLabel('Preview, a past day: not done, but covered'),
+      findsOneWidget,
+    );
+    expect(find.byType(CoveredCheck), findsOneWidget);
+  });
 }

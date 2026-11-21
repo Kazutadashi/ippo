@@ -156,6 +156,20 @@ class HabitLog {
     return done < frequency.times;
   }
 
+  /// Whether [date] (`YYYY-MM-DD`) is covered by [habit]'s frequency:
+  /// done often enough in some stretch of days around it, so a ✗ there
+  /// did no harm. See [HabitFrequency.coversDay].
+  bool isCoveredOn(Habit habit, String date) {
+    final day = parseDate(date);
+    if (day == null) {
+      return false;
+    }
+    return habit.frequency.coversDay(
+      (offset) =>
+          markOn(habit.id, formatDate(addDays(day, offset))) == DayMark.done,
+    );
+  }
+
   /// How many days in a row [habit] was kept up, up to and including
   /// [day]: done, or not due (a waiting day of a habit that is not for
   /// every day). If [day] is due and has no mark yet (the day is not

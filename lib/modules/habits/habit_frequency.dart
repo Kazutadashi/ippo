@@ -78,6 +78,37 @@ class HabitFrequency {
     return '$times times every $perDays days';
   }
 
+  /// Whether a day is *covered*: some stretch of [perDays] days that
+  /// includes it has the habit done at least [times] times. A day marked
+  /// not done can still be covered: "Twice a week", done on Monday and
+  /// Thursday, covers Tuesday, because Monday to Sunday has both. Then
+  /// the rule was kept, and the day is shown as fine rather than missed.
+  ///
+  /// [isDoneAt] tells whether the habit was done a number of days from
+  /// the day: 0 is the day itself, -1 the day before, 1 the day after.
+  /// A daily habit's stretch is the day itself, so only doing it covers
+  /// it.
+  bool coversDay(bool Function(int offset) isDoneAt) {
+    // The days done that could share a stretch with the day: at most
+    // [perDays] - 1 days before or after it, in order.
+    final doneOffsets = <int>[
+      for (var offset = 1 - perDays; offset < perDays; offset++)
+        if (isDoneAt(offset)) offset,
+    ];
+    // Any [times] of them that sit with the day inside [perDays] days are
+    // enough; trying each run of [times] neighbours in order finds them.
+    for (var first = 0; first + times <= doneOffsets.length; first++) {
+      final earliest = doneOffsets[first];
+      final latest = doneOffsets[first + times - 1];
+      final start = earliest < 0 ? earliest : 0;
+      final end = latest > 0 ? latest : 0;
+      if (end - start < perDays) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   bool operator ==(Object other) =>
       other is HabitFrequency &&

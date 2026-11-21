@@ -426,6 +426,23 @@ class _HabitPreviewState extends State<_HabitPreview> {
     });
   }
 
+  /// Whether day [index] (0 is today) is covered by the frequency
+  /// chosen, as in the grid (see [HabitFrequency.coversDay]). Days
+  /// beyond the four shown count as not done.
+  bool _isCovered(int index) {
+    final frequency = widget.frequency;
+    if (frequency == null) {
+      return false;
+    }
+    return frequency.coversDay((offset) {
+      // A day later is one place to the left, nearer today.
+      final shown = index - offset;
+      return shown >= 0 &&
+          shown < _marks.length &&
+          _marks[shown] == DayMark.done;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -471,6 +488,7 @@ class _HabitPreviewState extends State<_HabitPreview> {
               _PreviewDay(
                 mark: _marks[index],
                 isToday: index == 0,
+                isCovered: _isCovered(index),
                 color: habit.displayColor(theme),
                 onTap: () => _cycle(index),
               ),
@@ -487,12 +505,17 @@ class _PreviewDay extends StatelessWidget {
   const _PreviewDay({
     required this.mark,
     required this.isToday,
+    required this.isCovered,
     required this.color,
     required this.onTap,
   });
 
   final DayMark mark;
   final bool isToday;
+
+  /// Whether the habit's frequency covers this day, so a ✗ here is
+  /// shown as fine.
+  final bool isCovered;
 
   /// The habit's colour.
   final Color color;
@@ -508,6 +531,9 @@ class _PreviewDay extends StatelessWidget {
       case DayMark.done:
         icon = BoldCheck(size: 18, color: color);
         meaning = 'done';
+      case DayMark.notDone when isCovered:
+        icon = CoveredCheck(size: 18, color: color);
+        meaning = 'not done, but covered';
       case DayMark.notDone:
         icon = Icon(
           Icons.close,
@@ -542,7 +568,7 @@ class _PreviewDay extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             transitionBuilder: (child, animation) =>
                 ScaleTransition(scale: animation, child: child),
-            child: Center(key: ValueKey(mark), child: icon),
+            child: Center(key: ValueKey('$mark $isCovered'), child: icon),
           ),
         ),
       ),
