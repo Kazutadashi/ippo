@@ -38,12 +38,6 @@ class _FoodsScreenState extends State<FoodsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Your foods')),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'foods-new-food',
-        onPressed: () => _open(FoodFormScreen.add(appState: widget.appState)),
-        icon: const Icon(Icons.add),
-        label: const Text('New food'),
-      ),
       body: ListenableBuilder(
         listenable: widget.appState,
         builder: (context, _) {
@@ -59,12 +53,27 @@ class _FoodsScreenState extends State<FoodsScreen> {
                   ),
                 );
           return ListView(
-            // Room at the bottom, so the button never hides a food.
             padding: belowNavigationBar(
               context,
-              const EdgeInsets.fromLTRB(16, 4, 16, 96),
+              const EdgeInsets.fromLTRB(16, 4, 16, 24),
             ),
             children: [
+              // A new food: in the right half, where the tabs have their
+              // add buttons.
+              Row(
+                children: [
+                  const Spacer(),
+                  const SizedBox(width: Spacing.small),
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      onPressed: () =>
+                          _open(FoodFormScreen.add(appState: widget.appState)),
+                      icon: const Icon(Icons.add),
+                      label: const Text('New food'),
+                    ),
+                  ),
+                ],
+              ),
               SectionCard(
                 children: [
                   TextField(

@@ -11,6 +11,7 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
+import 'package:ippo/modules/food/food_entry.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/food/screens/food_diary_screen.dart';
 import 'package:material_ui/material_ui.dart';
@@ -29,7 +30,7 @@ void main() {
     dataFolder.deleteSync(recursive: true);
   });
 
-  testWidgets('today\'s entries are listed in order, with the total', (
+  testWidgets('today\'s entries are listed newest first, with the total', (
     tester,
   ) async {
     // A tall screen, so every meal card is drawn at once.
@@ -84,10 +85,10 @@ void main() {
     expect(find.text('Quick entry'), findsNWidgets(2));
     expect(find.text('300 kcal'), findsOneWidget);
     expect(find.text('80 kcal'), findsOneWidget);
-    // In the order they were logged.
+    // Newest on top: the apple, logged after the porridge, comes first.
     final porridgeTop = tester.getTopLeft(find.text('Porridge')).dy;
     final appleTop = tester.getTopLeft(find.text('Apple')).dy;
-    expect(porridgeTop, lessThan(appleTop));
+    expect(appleTop, lessThan(porridgeTop));
   });
 
   testWidgets('swiping a meal left removes it, with an undo', (tester) async {
@@ -136,5 +137,33 @@ void main() {
     expect(find.text('Apple'), findsNothing);
     expect(find.text('Removed Apple'), findsOneWidget);
     expect(find.text('Undo'), findsOneWidget);
+  });
+
+  test('newest first: by time eaten, untimed after, last logged first', () {
+    FoodEntry entry(String name, String? time) => FoodEntry(
+      id: name,
+      date: '2026-11-20',
+      time: time,
+      foodId: null,
+      name: name,
+      amount: null,
+      measuredIn: null,
+      unitCount: null,
+      unitName: null,
+      nutrients: const Nutrients({'energy_kcal': 1}),
+      note: null,
+      isDeleted: false,
+    );
+    final order = newestFirst([
+      entry('Breakfast', '07:30'),
+      entry('Snack, no time', null),
+      entry('Dinner', '19:00'),
+      entry('Lunch', '12:30'),
+      entry('Late snack, no time', null),
+    ]);
+    expect(
+      [for (final item in order) item.name],
+      ['Dinner', 'Lunch', 'Breakfast', 'Late snack, no time', 'Snack, no time'],
+    );
   });
 }

@@ -297,10 +297,12 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                     // Tap a row to change it, or swipe it away to remove
                     // it. The energy sits on the right, in one column, so
                     // it is easy to scan.
-                    for (var index = 0; index < entries.length; index++) ...[
+                    for (final (index, entry) in newestFirst(
+                      entries,
+                    ).indexed) ...[
                       // A thin line between meals, so each stands apart.
                       if (index > 0) const Divider(height: 1),
-                      _entryRow(entries[index]),
+                      _entryRow(entry),
                     ],
                   ],
                 ),
@@ -423,4 +425,24 @@ String _describeAmount(FoodEntry entry) {
     return grams;
   }
   return '${formatAmount(pieces)} $pieceName ($grams)';
+}
+
+/// [entries] with the newest meal on top: by the time eaten, latest
+/// first; meals without a time after them, the last logged first.
+List<FoodEntry> newestFirst(List<FoodEntry> entries) {
+  final numbered = entries.indexed.toList()
+    ..sort((a, b) {
+      final aTime = a.$2.time;
+      final bTime = b.$2.time;
+      if (aTime != null && bTime != null && aTime != bTime) {
+        return bTime.compareTo(aTime);
+      }
+      if ((aTime == null) != (bTime == null)) {
+        // A meal with a time comes before one without.
+        return aTime == null ? 1 : -1;
+      }
+      // Same time, or neither has one: the one logged later first.
+      return b.$1.compareTo(a.$1);
+    });
+  return [for (final (_, entry) in numbered) entry];
 }

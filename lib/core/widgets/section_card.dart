@@ -382,7 +382,11 @@ class AppBarSaveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
-      child: FilledButton(onPressed: onPressed, child: const Text('Save')),
+      // Tonal, like the app's other buttons.
+      child: FilledButton.tonal(
+        onPressed: onPressed,
+        child: const Text('Save'),
+      ),
     );
   }
 }
