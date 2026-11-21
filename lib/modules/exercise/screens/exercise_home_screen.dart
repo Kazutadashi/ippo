@@ -37,6 +37,9 @@ class ExerciseHomeScreen extends StatefulWidget {
 
 class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
     with FollowsToday {
+  @override
+  AppState get dayState => widget.appState;
+
   ExerciseLog _currentLog() => ExerciseLog.of(widget.appState);
 
   void _open(Widget screen) {

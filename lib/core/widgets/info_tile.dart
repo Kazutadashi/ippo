@@ -82,7 +82,12 @@ class HomeTileCard extends StatelessWidget {
     this.mark,
     this.note,
     this.rows = const [],
+    this.onTap,
   });
+
+  /// Called when the tile is tapped, such as to open the module's tab;
+  /// null for a tile that does nothing.
+  final VoidCallback? onTap;
 
   /// The module's icon, such as `module.buildIcon()`.
   final Widget icon;
@@ -128,52 +133,57 @@ class HomeTileCard extends StatelessWidget {
     return MergeSemantics(
       child: Card(
         margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            tilePadding,
-            10,
-            tilePadding,
-            tilePadding,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  IconTheme(
-                    data: IconThemeData(size: 14, color: colors.primary),
-                    child: icon,
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      title.toUpperCase(),
-                      style: textTheme.labelSmall?.copyWith(
-                        color: muted,
-                        letterSpacing: 0.8,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+        clipBehavior: Clip.antiAlias,
+        // Tapping the tile opens its tab, when it can.
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              tilePadding,
+              10,
+              tilePadding,
+              tilePadding,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    IconTheme(
+                      data: IconThemeData(size: 14, color: colors.primary),
+                      child: icon,
                     ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        title.toUpperCase(),
+                        style: textTheme.labelSmall?.copyWith(
+                          color: muted,
+                          letterSpacing: 0.8,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                _valueLine(textTheme, muted),
+                const SizedBox(height: Spacing.tight),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.textScalerOf(context)
+                        .scale(_markRowHeight),
                   ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              _valueLine(textTheme, muted),
-              const SizedBox(height: Spacing.tight),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.textScalerOf(context)
-                      .scale(_markRowHeight),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: mark ?? const SizedBox(),
+                  ),
                 ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: mark ?? const SizedBox(),
-                ),
-              ),
-              const SizedBox(height: Spacing.tight),
-              for (final row in rows.take(2)) _row(row, textTheme, colors),
-            ],
+                const SizedBox(height: Spacing.tight),
+                for (final row in rows.take(2)) _row(row, textTheme, colors),
+              ],
+            ),
           ),
         ),
       ),

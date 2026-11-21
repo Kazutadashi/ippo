@@ -42,6 +42,9 @@ class FoodDiaryScreen extends StatefulWidget {
 }
 
 class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
+  @override
+  AppState get dayState => widget.appState;
+
   void _addEntry() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(

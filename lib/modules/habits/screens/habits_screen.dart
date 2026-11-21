@@ -53,6 +53,9 @@ class HabitsScreen extends StatefulWidget {
 
 // FollowsToday moves today's column on by itself after midnight.
 class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
+  @override
+  AppState get dayState => widget.appState;
+
   AppState get appState => widget.appState;
 
   void _open(BuildContext context, Widget screen) {

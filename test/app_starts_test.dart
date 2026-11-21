@@ -87,6 +87,16 @@ void main() {
     expect(find.text('Data folder'), findsOneWidget);
   });
 
+  testWidgets('tapping a Home tile opens its tab', (tester) async {
+    await startApp(tester);
+
+    await tester.tap(find.text('SLEEP'));
+    await tester.pumpAndSettle();
+
+    final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(bar.selectedIndex, 4);
+  });
+
   testWidgets('the gear on Home opens Settings', (tester) async {
     await startApp(tester);
 
@@ -105,20 +115,22 @@ void main() {
     expect(find.byType(HomeTileCard), findsNWidgets(4));
     expect(find.text('–'), findsNWidgets(4));
     expect(find.byType(WeekGrid), findsNothing);
-    // Information only: everything tappable is the gear or the day bar.
+    // Everything tappable is the gear, the day bar, or a tile (which
+    // opens its tab).
     bool isTappable(Widget widget) =>
         widget is ButtonStyleButton || widget is InkWell;
     final tappable = find.descendant(
       of: find.byType(TodayScreen),
       matching: find.byWidgetPredicate(isTappable),
     );
-    final inGearOrDayBar = find.descendant(
+    final expected = find.descendant(
       of: find.byWidgetPredicate(
-        (widget) => widget is IconButton || widget is DayBar,
+        (widget) =>
+            widget is IconButton || widget is DayBar || widget is HomeTileCard,
       ),
       matching: find.byWidgetPredicate(isTappable),
     );
-    expect(tappable.evaluate().length, inGearOrDayBar.evaluate().length);
+    expect(tappable.evaluate().length, expected.evaluate().length);
   });
 
   testWidgets('Home shows what was logged today', (tester) async {

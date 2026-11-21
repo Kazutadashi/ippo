@@ -30,6 +30,7 @@ class TodayScreen extends StatefulWidget {
     super.key,
     required this.appState,
     required this.onOpenSettings,
+    required this.onOpenModule,
   });
 
   /// The app-wide state.
@@ -37,6 +38,10 @@ class TodayScreen extends StatefulWidget {
 
   /// Opens the settings screen.
   final VoidCallback onOpenSettings;
+
+  /// Opens the tab of the module at this place in `allModules`, when its
+  /// tile is tapped.
+  final ValueChanged<int> onOpenModule;
 
   @override
   State<TodayScreen> createState() => _TodayScreenState();
@@ -46,6 +51,9 @@ class TodayScreen extends StatefulWidget {
 // "Awake for" stay current while the screen is open.
 class _TodayScreenState extends State<TodayScreen> with FollowsToday {
   @override
+  AppState get dayState => widget.appState;
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
@@ -54,7 +62,8 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final day = shownDay;
     // One tile per module, the same shape each, in a grid.
     final tiles = [
-      for (final module in allModules) _tileFor(module, appState, day, now),
+      for (final (index, module) in allModules.indexed)
+        _tileFor(module, appState, day, now, () => widget.onOpenModule(index)),
     ];
     // The modules' rows of the week grid, for those that have any.
     final weekRows = <WeekGridRow>[
@@ -260,15 +269,17 @@ String? _staleDeviceNote(AppState appState, DateTime now) {
       '${days == 1 ? 'a day' : '$days days'} ago';
 }
 
-/// The tile of [module] for [day].
+/// The tile of [module] for [day]; tapping it calls [onTap].
 Widget _tileFor(
   IppoModule module,
   AppState appState,
   DateTime day,
   DateTime now,
+  VoidCallback onTap,
 ) {
   final tile = module.homeTile(appState, day, now);
   return HomeTileCard(
+    onTap: onTap,
     icon: module.buildIcon(),
     title: module.title,
     value: tile.value,

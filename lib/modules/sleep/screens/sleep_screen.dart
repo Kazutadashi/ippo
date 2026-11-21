@@ -49,6 +49,9 @@ class SleepScreen extends StatefulWidget {
 }
 
 class _SleepScreenState extends State<SleepScreen> with FollowsToday {
+  @override
+  AppState get dayState => widget.appState;
+
   void _open(Widget screen) {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (context) => screen));

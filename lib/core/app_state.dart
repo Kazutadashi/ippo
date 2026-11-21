@@ -171,6 +171,21 @@ class AppState extends ChangeNotifier {
     await reloadEvents();
   }
 
+  // The day picked with a day bar, or null to follow today. One for
+  // the whole app, so every tab shows the same day.
+  DateTime? _pickedDay;
+
+  /// The day the screens show, at local midnight: today, unless another
+  /// day was picked with a day bar. Shared by every tab.
+  DateTime get shownDay => _pickedDay ?? today();
+
+  /// Shows [day] on every tab. Picking today means following today
+  /// again, so the screens move on by themselves after midnight.
+  void showDay(DateTime day) {
+    _pickedDay = day == today() ? null : day;
+    notifyListeners();
+  }
+
   /// Loads the settings and the data folder, then reads the events.
   ///
   /// On the very first run, it creates new settings with a new device id.

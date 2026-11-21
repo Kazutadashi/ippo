@@ -63,6 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? TodayScreen(
                     appState: widget.appState,
                     onOpenSettings: _openSettings,
+                    // Home is the first tab; the modules come after it.
+                    onOpenModule: (index) =>
+                        setState(() => _selectedTab = index + 1),
                   )
                 : chooseFolderFirst,
             for (final module in allModules)
