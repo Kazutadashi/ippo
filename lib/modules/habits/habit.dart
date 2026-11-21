@@ -34,6 +34,7 @@ class Habit {
     required this.isArchived,
     required this.isDeleted,
     this.frequency = HabitFrequency.everyDay,
+    this.description,
   });
 
   /// Reads a habit from its collected events. Returns null if the data is
@@ -56,6 +57,7 @@ class Habit {
       isArchived: record.fields['archived'] == true,
       isDeleted: record.isDeleted,
       frequency: HabitFrequency.fromJson(record.fields['frequency']),
+      description: _descriptionFrom(record.fields['description']),
     );
   }
 
@@ -64,6 +66,11 @@ class Habit {
 
   /// The habit's name.
   final String name;
+
+  /// What the habit means, in the user's words, such as "Review the
+  /// day's flashcards" for a habit named "Anki"; null if none. Shown in
+  /// the key under the grid, so short names stay understandable.
+  final String? description;
 
   /// What is recorded each day: `yes_no`, `number`, ...
   final String valueType;
@@ -102,6 +109,14 @@ class Habit {
 
   /// Whether the habit was deleted.
   final bool isDeleted;
+}
+
+/// [value] if it is text with something in it, trimmed; else null.
+String? _descriptionFrom(Object? value) {
+  if (value is! String || value.trim().isEmpty) {
+    return null;
+  }
+  return value.trim();
 }
 
 /// One day's entry for a habit. Created by `habit_entry_recorded`.

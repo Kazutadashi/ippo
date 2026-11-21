@@ -24,6 +24,13 @@ typedef _DemoHabit = ({
   HabitFrequency frequency,
 });
 
+/// What a few of the demo habits mean, as a user would write it, so the
+/// key under the grid has something to show.
+const Map<String, String> _descriptions = {
+  'Walk outside': 'At least 20 minutes, whatever the weather.',
+  'Drink water': 'Eight glasses over the day.',
+};
+
 /// A dozen everyday habits, in colours all around the wheel (so "By
 /// colour" has something to sort), some kept up nearly every day and
 /// some hard, one started only last week, and four not meant for every
@@ -151,6 +158,8 @@ List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
         'value_type': 'yes_no',
         'frequency': habit.frequency.toJson(),
         if (habit.color != null) 'color': habit.color,
+        if (_descriptions[habit.name] case final description?)
+          'description': description,
       },
     );
     events.add(created);

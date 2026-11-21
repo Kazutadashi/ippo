@@ -73,6 +73,32 @@ void main() {
       expect((await logFromDisk()).shownHabits.single.name, 'Read 10 pages');
     });
 
+    test(
+      'a description says what a short name means, and can be cleared',
+      () async {
+        await actions.createHabit('Anki', description: ' Review the cards ');
+        var habit = (await logFromDisk()).shownHabits.single;
+        expect(habit.description, 'Review the cards');
+
+        await actions.changeHabit(
+          habit,
+          habit.name,
+          habit.color,
+          newDescription: 'Review the day\'s cards',
+        );
+        habit = (await logFromDisk()).shownHabits.single;
+        expect(habit.description, 'Review the day\'s cards');
+
+        await actions.changeHabit(
+          habit,
+          habit.name,
+          habit.color,
+          newDescription: '',
+        );
+        expect((await logFromDisk()).shownHabits.single.description, isNull);
+      },
+    );
+
     test('tapping a day cycles: nothing, done, not done, nothing', () async {
       final habitId = (await actions.createHabit('Read')).id;
 

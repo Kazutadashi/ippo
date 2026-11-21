@@ -42,6 +42,10 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   );
   String? _nameProblem;
 
+  late final TextEditingController _descriptionField = TextEditingController(
+    text: widget.habit?.description ?? '',
+  );
+
   /// The picked colour, or null for the accent colour.
   late Color? _color = widget.habit?.color;
 
@@ -85,6 +89,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   @override
   void dispose() {
     _nameField.dispose();
+    _descriptionField.dispose();
     _timesField.dispose();
     _daysField.dispose();
     super.dispose();
@@ -111,6 +116,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
           _nameField.text,
           color: _color,
           frequency: frequency,
+          description: _descriptionField.text,
         );
       }
       return actions.changeHabit(
@@ -118,6 +124,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
         _nameField.text,
         _color,
         newFrequency: frequency,
+        newDescription: _descriptionField.text,
       );
     });
     if (saved && mounted) {
@@ -180,6 +187,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   /// Everything the user can change here, for the discard guard.
   String _snapshot() => [
     _nameField.text,
+    _descriptionField.text,
     _color?.toARGB32(),
     _preset?.toJson(),
     _timesField.text,
@@ -219,6 +227,19 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               ),
               onSubmitted: (_) => _save(),
               // The preview follows the name as it is typed.
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: Spacing.medium),
+            // What a short name means, shown in the key under the grid.
+            TextField(
+              controller: _descriptionField,
+              textCapitalization: TextCapitalization.sentences,
+              minLines: 1,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'What it means',
+                hintText: 'Read at least 10 pages of a book',
+              ),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 20),

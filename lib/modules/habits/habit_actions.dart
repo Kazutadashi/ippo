@@ -33,12 +33,14 @@ class HabitActions {
     String name, {
     Color? color,
     HabitFrequency frequency = HabitFrequency.everyDay,
+    String description = '',
   }) {
     return _write('habit_created', {
       'name': name.trim(),
       'value_type': 'yes_no',
       'frequency': frequency.toJson(),
       if (color != null) 'color': accentColorToHex(color),
+      if (description.trim().isNotEmpty) 'description': description.trim(),
     });
   }
 
@@ -51,8 +53,13 @@ class HabitActions {
     String newName,
     Color? newColor, {
     HabitFrequency? newFrequency,
+    String? newDescription,
   }) async {
+    // An emptied description is written as null: "no description".
+    final description = newDescription?.trim();
     final changes = <String, Object?>{
+      if (description != null && description != (habit.description ?? ''))
+        'description': description.isEmpty ? null : description,
       if (newName.trim() != habit.name) 'name': newName.trim(),
       if (newColor?.toARGB32() != habit.color?.toARGB32())
         'color': newColor == null ? null : accentColorToHex(newColor),
