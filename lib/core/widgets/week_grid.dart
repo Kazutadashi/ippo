@@ -18,20 +18,26 @@ const double _nameWidth = 84;
 /// The height of one row of marks.
 const double _rowHeight = 22;
 
-/// The last seven days at a glance: the days across the top (today's
-/// picked out in the accent colour), and under them one row per module,
-/// named with its unit on the left ("Sleep (h)"), with one value per
-/// day, like a small table.
+/// Seven days at a glance: the days across the top, and under them one
+/// row per module, named with its unit on the left ("Sleep (h)"), with
+/// one value per day, like a small table. The day shown is picked out
+/// in the accent colour, with a soft column behind it; tapping another
+/// day's column shows that day, and the seven days stay where they are.
 class WeekGrid extends StatelessWidget {
-  /// Creates the grid for the seven days ending on [day].
+  /// Creates the grid for the seven days ending on [end], with [day]
+  /// (one of them) picked out.
   const WeekGrid({
     super.key,
+    required this.end,
     required this.day,
     required this.rows,
     required this.onDaySelected,
   });
 
-  /// The last day shown, in the right-hand column.
+  /// The last of the seven days, in the right-hand column.
+  final DateTime end;
+
+  /// The day shown on Home, one of the seven: picked out.
   final DateTime day;
 
   /// The rows, one per module that has one.
@@ -46,7 +52,9 @@ class WeekGrid extends StatelessWidget {
     final colors = theme.colorScheme;
     final muted = colors.onSurfaceVariant;
     const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    final days = weekEndingOn(day);
+    final days = weekEndingOn(end);
+    // The column of the day shown (the last one if it is not among them).
+    final shownIndex = days.contains(day) ? days.indexOf(day) : days.length - 1;
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -79,7 +87,7 @@ class WeekGrid extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             // The day shown has a soft column behind it, top to bottom,
-            // as on the Habits grid, so the newest day is easy to find.
+            // as on the Habits grid, so it is easy to find.
             LayoutBuilder(
               builder: (context, constraints) {
                 final columnWidth = (constraints.maxWidth - _nameWidth) / 7;
@@ -88,7 +96,7 @@ class WeekGrid extends StatelessWidget {
                     Positioned(
                       top: 0,
                       bottom: 0,
-                      right: 0,
+                      left: _nameWidth + shownIndex * columnWidth,
                       width: columnWidth,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -110,7 +118,7 @@ class WeekGrid extends StatelessWidget {
                                   letters[column.weekday - 1],
                                   textAlign: TextAlign.center,
                                   style: column == day
-                                      // The day shown stands out, as the newest.
+                                      // The day shown stands out.
                                       ? theme.textTheme.labelMedium?.copyWith(
                                           color: colors.primary,
                                           fontWeight: FontWeight.bold,
@@ -123,7 +131,7 @@ class WeekGrid extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 6),
-                        for (final row in rows) _row(context, row),
+                        for (final row in rows) _row(context, row, shownIndex),
                       ],
                     ),
                     // Each day's column, top to bottom, is a button that
@@ -156,7 +164,7 @@ class WeekGrid extends StatelessWidget {
   /// One module's row: its name with its unit, then a value per day,
   /// the day shown in the accent colour, and a quiet dash for a day
   /// without data.
-  Widget _row(BuildContext context, WeekGridRow row) {
+  Widget _row(BuildContext context, WeekGridRow row, int shownIndex) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final cells = row.row.cells.take(7).toList();
@@ -181,7 +189,7 @@ class WeekGrid extends StatelessWidget {
                 child: _cell(
                   context,
                   cells[index],
-                  isDayShown: index == cells.length - 1,
+                  isDayShown: index == shownIndex,
                   colors: colors,
                 ),
               ),

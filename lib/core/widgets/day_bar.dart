@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// A bar for choosing which day a screen shows: ‹ 📅 Today ›, and on
-/// another day a "Today" button to go straight back.
+/// A bar for choosing which day a screen shows: ‹ 📅 Today › », where
+/// » goes straight back to today.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -12,16 +12,13 @@ import '../dates.dart';
 /// "Wed 18 Nov" with its calendar icon (a longer name shrinks to fit).
 const double _dayWidth = 124;
 
-/// How wide the "Today" button is, and the room kept for it.
-const double _todayWidth = 56;
-
 /// Shows the chosen day with buttons for the previous and next day.
 /// Tapping the day opens a calendar. It goes in a screen's top bar
 /// (`AppBar.actions`), next to the title.
 ///
 /// On any day but today, the day is shown in a tinted pill (logging to
-/// the wrong day by mistake is easy to miss otherwise), and a "Today"
-/// button snaps back.
+/// the wrong day by mistake is easy to miss otherwise), and » snaps
+/// back to today. Every part keeps its place whatever the day.
 class DayBar extends StatelessWidget {
   /// Creates the bar showing [day], reporting a new day to [onChanged].
   const DayBar({super.key, required this.day, required this.onChanged});
@@ -87,21 +84,17 @@ class DayBar extends StatelessWidget {
           icon: const Icon(Icons.chevron_right),
           onPressed: () => onChanged(addDays(day, 1)),
         ),
-        // On another day, one tap goes back to today. Its room is kept
-        // on today too (empty), so nothing shifts when it appears.
-        SizedBox(
-          width: _todayWidth,
-          child: isToday
-              ? null
-              : TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: foreground,
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(_todayWidth, 40),
-                  ),
-                  onPressed: () => onChanged(today()),
-                  child: const Text('Today'),
-                ),
+        // Straight to today, always in its place at the end, as in
+        // calendar apps: greyed out on today, so nothing appears or moves.
+        // » points the way to today (« when looking ahead).
+        IconButton(
+          tooltip: 'Go to today',
+          icon: Icon(
+            day.isAfter(today())
+                ? Icons.keyboard_double_arrow_left
+                : Icons.keyboard_double_arrow_right,
+          ),
+          onPressed: isToday ? null : () => onChanged(today()),
         ),
         const SizedBox(width: 4),
       ],

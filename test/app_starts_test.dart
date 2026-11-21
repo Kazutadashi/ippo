@@ -182,7 +182,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // The day bar now shows yesterday, and Today is there to go back.
+    // The grid keeps its seven days: today is still its last column.
+    expect(
+      find.bySemanticsLabel('Show ${formatShortDate(today())}'),
+      findsOneWidget,
+    );
+    // The day bar now shows yesterday.
     expect(
       find.descendant(
         of: find.byType(DayBar),
@@ -190,10 +195,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(
-      find.descendant(of: find.byType(DayBar), matching: find.text('Today')),
-      findsOneWidget,
-    );
+    expect(find.byTooltip('Go to today'), findsOneWidget);
   });
 
   test('the greeting follows the time of day', () {

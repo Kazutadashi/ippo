@@ -53,6 +53,23 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
   @override
   AppState get dayState => widget.appState;
 
+  // The last of the seven days in the week grid, or null for today. It
+  // stays put while the day shown is among the seven (tapping a day in
+  // the grid moves only the highlight), and moves when it is not.
+  DateTime? _gridEnd;
+
+  /// The last day of the week grid for showing [day]: the grid's current
+  /// seven days if [day] is one of them, else the seven ending on [day].
+  DateTime _gridEndFor(DateTime day) {
+    final end = _gridEnd ?? today();
+    final isInGrid = !day.isAfter(end) && !day.isBefore(addDays(end, -6));
+    final newEnd = isInGrid ? end : day;
+    // Remembered without a redraw: it only changes along with the day,
+    // which already redraws.
+    _gridEnd = newEnd == today() ? null : newEnd;
+    return newEnd;
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -66,9 +83,10 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
         _tileFor(module, appState, day, now, () => widget.onOpenModule(index)),
     ];
     // The modules' rows of the week grid, for those that have any.
+    final gridEnd = _gridEndFor(day);
     final weekRows = <WeekGridRow>[
       for (final module in allModules)
-        for (final row in module.weekRows(appState, day))
+        for (final row in module.weekRows(appState, gridEnd))
           (title: module.title, icon: module.icon, row: row),
     ];
     // Lately: each module's measures, this week against the usual.
@@ -213,7 +231,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   // The week first, the wider view; then today, module by
                   // module.
                   if (weekRows.isNotEmpty) ...[
-                    WeekGrid(day: day, rows: weekRows, onDaySelected: showDay),
+                    WeekGrid(
+                      end: gridEnd,
+                      day: day,
+                      rows: weekRows,
+                      onDaySelected: showDay,
+                    ),
                     const SizedBox(height: tileGap),
                   ],
                   _TileGrid(tiles: tiles),
