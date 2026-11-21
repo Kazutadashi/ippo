@@ -128,50 +128,46 @@ void main() {
     expect(log.streakOn(habit, parseDate('2026-11-23')!), 0);
   });
 
-  group('coversDay', () {
+  group('coversDay: the chain held around a ✗', () {
     /// Whether [frequency] covers a day, with the habit done on the days
-    /// [done] away from it (-1 the day before, 1 the day after).
-    bool covers(HabitFrequency frequency, List<int> done) =>
-        frequency.coversDay(done.contains);
+    /// [done] away from it (-1 the day before, 1 the day after), and
+    /// first marked [first] days away.
+    bool covers(HabitFrequency frequency, List<int> done, {int? first}) =>
+        frequency.coversDay(done.contains, firstOffset: first);
 
+    const everyOtherDay = HabitFrequency(1, 2);
     const twiceAWeek = HabitFrequency(2, 7);
 
-    test('twice a week: done on both sides within the week', () {
-      // Done Monday and Thursday; the day is Tuesday.
-      expect(covers(twiceAWeek, [-1, 2]), isTrue);
-      // Done twice earlier in the week; the day is after them.
-      expect(covers(twiceAWeek, [-4, -2]), isTrue);
+    test('every other day: a ✓ on each side keeps the chain', () {
+      expect(covers(everyOtherDay, [-1, 1]), isTrue);
     });
 
-    test('twice a week: not when the two are more than a week apart', () {
-      // From 3 days before to 4 after is 8 days, one too many.
-      expect(covers(twiceAWeek, [-3, 4]), isFalse);
-      expect(covers(twiceAWeek, [-3, 3]), isTrue);
+    test('every other day: no ✓ after it breaks the chain', () {
+      // ✓ Monday, ✗ Tuesday, ✗ Wednesday: neither is covered.
+      expect(covers(everyOtherDay, [-1]), isFalse);
+      expect(covers(everyOtherDay, [-2]), isFalse);
+      // A ✓ on Thursday is too late: Tuesday–Wednesday had none.
+      expect(covers(everyOtherDay, [-1, 2]), isFalse);
+      expect(covers(everyOtherDay, [-2, 1]), isFalse);
     });
 
-    test('twice a week: once is not enough', () {
-      expect(covers(twiceAWeek, [-1]), isFalse);
-      expect(covers(twiceAWeek, []), isFalse);
+    test('twice a week: every week through the day has two ✓', () {
+      // First marked Monday (-1); ✓ Monday and Thursday, then ✓ the
+      // next Monday keeps Tuesday's week too.
+      expect(covers(twiceAWeek, [-1, 2, 6], first: -1), isTrue);
+      // Until that next ✓, the week from Tuesday has only one.
+      expect(covers(twiceAWeek, [-1, 2], first: -1), isFalse);
     });
 
-    test('every other day: done the day before or after', () {
-      const everyOtherDay = HabitFrequency(1, 2);
-      expect(covers(everyOtherDay, [-1]), isTrue);
-      expect(covers(everyOtherDay, [1]), isTrue);
-      expect(covers(everyOtherDay, [-2, 2]), isFalse);
+    test('weeks before the first mark are not checked', () {
+      // The same ticks, but marking started long before with none.
+      expect(covers(twiceAWeek, [-1, 2, 6], first: -30), isFalse);
+      // A day before the first mark has nothing to keep.
+      expect(covers(twiceAWeek, [2, 3, 6], first: 1), isFalse);
     });
 
-    test('3 times a week needs three inside one week with the day', () {
-      const threeAWeek = HabitFrequency(3, 7);
-      expect(covers(threeAWeek, [-2, -1, 3]), isTrue);
-      expect(covers(threeAWeek, [-6, -5, 1]), isFalse);
-      // A later group of three can still cover it.
-      expect(covers(threeAWeek, [-6, 1, 2, 4]), isTrue);
-    });
-
-    test('every day: only doing it covers a day', () {
+    test('every day: other days never cover a ✗', () {
       expect(covers(HabitFrequency.everyDay, [-1, 1]), isFalse);
-      expect(covers(HabitFrequency.everyDay, [0]), isTrue);
     });
   });
 }

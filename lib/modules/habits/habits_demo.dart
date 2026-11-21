@@ -3,6 +3,8 @@
 /// Made-up habits for the demo (see `demo_plan.dart`).
 library;
 
+import 'dart:math';
+
 import '../../core/dates.dart';
 import '../../core/module.dart';
 import 'habit_frequency.dart';
@@ -131,6 +133,9 @@ const List<_DemoHabit> _habits = [
 /// hidden.
 List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
+  // Ids for the ✗ on waiting days, added later: their own random
+  // numbers, so the rest of the demo did not change with them.
+  final waitingDayIds = Random(3);
   for (final (index, habit) in _habits.indexed) {
     final started = habit.startedDaysAgo == null
         ? plan.firstDay
@@ -175,12 +180,27 @@ List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
       if (isToday && habit.chance < 0.8) {
         continue;
       }
-      // A waiting day (done often enough lately): nothing to record.
+      // A waiting day (done often enough lately): usually nothing to
+      // record, but every third day of the month a ✗, as people tap;
+      // where the chain holds around it, the grid shows it as covered.
+      // Picked by date, not by chance, so the rest of the demo stays
+      // the same.
       final window = habit.frequency.perDays;
       final doneLately = doneDays
           .where((done) => day.difference(done).inDays < window)
           .length;
       if (doneLately >= habit.frequency.times) {
+        if (!isToday && day.day % 3 == 0) {
+          events.add(
+            plan.event(
+              plan.at(day, 21),
+              habitsModuleName,
+              'habit_entry_recorded',
+              {'habit_id': created.id, 'date': formatDate(day), 'value': false},
+              idRandom: waitingDayIds,
+            ),
+          );
+        }
         continue;
       }
       final isDone = plan.chance(habit.chance);

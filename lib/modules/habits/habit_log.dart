@@ -157,18 +157,38 @@ class HabitLog {
   }
 
   /// Whether [date] (`YYYY-MM-DD`) is covered by [habit]'s frequency:
-  /// done often enough in some stretch of days around it, so a ✗ there
-  /// did no harm. See [HabitFrequency.coversDay].
+  /// the chain held around it, so a ✗ there did no harm. See
+  /// [HabitFrequency.coversDay].
   bool isCoveredOn(Habit habit, String date) {
     final day = parseDate(date);
-    if (day == null) {
+    final first = parseDate(_firstMarkedDate[habit.id] ?? '');
+    if (day == null || first == null) {
       return false;
     }
     return habit.frequency.coversDay(
       (offset) =>
           markOn(habit.id, formatDate(addDays(day, offset))) == DayMark.done,
+      firstOffset: daysBetween(day, first),
     );
   }
+
+  /// The first day (`YYYY-MM-DD`) each habit has a ✓ or ✗, by habit id.
+  /// Built once, the first time it is needed.
+  late final Map<String, String> _firstMarkedDate = () {
+    final first = <String, String>{};
+    for (final entry in entries) {
+      final isMarked = entry.value == true || entry.value == false;
+      if (entry.isDeleted || !isMarked) {
+        continue;
+      }
+      final earlier = first[entry.habitId];
+      // Dates as YYYY-MM-DD sort as text.
+      if (earlier == null || entry.date.compareTo(earlier) < 0) {
+        first[entry.habitId] = entry.date;
+      }
+    }
+    return first;
+  }();
 
   /// How many days in a row [habit] was kept up, up to and including
   /// [day]: done, or not due (a waiting day of a habit that is not for

@@ -426,9 +426,9 @@ class _DayCell extends StatelessWidget {
         icon = BoldCheck(size: _markSize, color: habit.displayColor(theme));
         meaning = 'done';
       case DayMark.notDone when log.isCoveredOn(habit, date):
-        // Not done, but the habit was done often enough around it ("twice
-        // a week" kept): a faded ✓, so it does not look missed.
-        icon = CoveredCheck(size: _markSize, color: habit.displayColor(theme));
+        // Not done, but the chain held around it ("every other day" with
+        // a ✓ on each side): a chain link, so it does not look missed.
+        icon = CoveredMark(size: _markSize, color: habit.displayColor(theme));
         meaning = 'not done, but covered';
       case DayMark.notDone:
         // Quieter than a ✓: a "no" is information, not an alarm.

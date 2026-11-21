@@ -216,14 +216,15 @@ class _CheckPainter extends CustomPainter {
 }
 
 /// The mark for a day marked not done that the habit's frequency still
-/// covers (see [HabitFrequency.coversDay]): a smaller, faded ✓ in the
-/// habit's colour. It reads as "fine" next to the full ✓ of a day done,
-/// and is clearly not the grey ✗ of a day missed.
-class CoveredCheck extends StatelessWidget {
+/// covers, because the chain held around it (see
+/// [HabitFrequency.coversDay]): a chain link in the habit's colour. Not
+/// a ✓, so it never looks like something to tick, and not the grey ✗
+/// of a day that broke the chain.
+class CoveredMark extends StatelessWidget {
   /// Creates the mark, [size] wide, in the habit's [color].
-  const CoveredCheck({super.key, required this.size, required this.color});
+  const CoveredMark({super.key, required this.size, required this.color});
 
-  /// The size of a full ✓; this one is three quarters of it.
+  /// The size of the other marks, such as a ✓.
   final double size;
 
   /// The habit's colour.
@@ -231,6 +232,6 @@ class CoveredCheck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BoldCheck(size: size * 0.75, color: color.withValues(alpha: 0.45));
+    return Icon(Icons.link, size: size, color: color.withValues(alpha: 0.7));
   }
 }

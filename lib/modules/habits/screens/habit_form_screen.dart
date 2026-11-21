@@ -427,8 +427,9 @@ class _HabitPreviewState extends State<_HabitPreview> {
   }
 
   /// Whether day [index] (0 is today) is covered by the frequency
-  /// chosen, as in the grid (see [HabitFrequency.coversDay]). Days
-  /// beyond the four shown count as not done.
+  /// chosen, as in the grid (see [HabitFrequency.coversDay]). The
+  /// oldest day shown counts as the first one marked; days after today
+  /// are not done yet.
   bool _isCovered(int index) {
     final frequency = widget.frequency;
     if (frequency == null) {
@@ -440,7 +441,7 @@ class _HabitPreviewState extends State<_HabitPreview> {
       return shown >= 0 &&
           shown < _marks.length &&
           _marks[shown] == DayMark.done;
-    });
+    }, firstOffset: index - (_marks.length - 1));
   }
 
   @override
@@ -532,7 +533,7 @@ class _PreviewDay extends StatelessWidget {
         icon = BoldCheck(size: 18, color: color);
         meaning = 'done';
       case DayMark.notDone when isCovered:
-        icon = CoveredCheck(size: 18, color: color);
+        icon = CoveredMark(size: 18, color: color);
         meaning = 'not done, but covered';
       case DayMark.notDone:
         icon = Icon(

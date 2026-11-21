@@ -97,14 +97,19 @@ class DemoPlan {
   bool chance(double chance) => random.nextDouble() < chance;
 
   /// Makes up an event recorded at [moment].
+  ///
+  /// Its id draws from [random], so every event shifts the numbers that
+  /// follow. Events added to the demo later can pass their own
+  /// [idRandom] instead, so the rest of the demo stays as it was.
   DemoEvent event(
     DateTime moment,
     String module,
     String type,
-    Map<String, Object?> data,
-  ) {
+    Map<String, Object?> data, {
+    Random? idRandom,
+  }) {
     return DemoEvent(
-      id: generateUuidV7(now: moment, random: random),
+      id: generateUuidV7(now: moment, random: idRandom ?? random),
       moment: moment,
       module: module,
       type: type,

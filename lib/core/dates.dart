@@ -131,6 +131,15 @@ DateTime addDays(DateTime day, int days) {
   return DateTime(day.year, day.month, day.day + days);
 }
 
+/// How many days [to] is after [from] (negative if before), counting
+/// calendar days: compared in UTC, so a daylight saving change between
+/// them does not matter.
+int daysBetween(DateTime from, DateTime to) {
+  final fromDay = DateTime.utc(from.year, from.month, from.day);
+  final toDay = DateTime.utc(to.year, to.month, to.day);
+  return toDay.difference(fromDay).inDays;
+}
+
 /// Writes a day briefly, for example `Thu 19 Nov`.
 String formatShortDate(DateTime day) {
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
