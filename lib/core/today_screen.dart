@@ -193,7 +193,16 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                             secondaryContainer: Colors.white24,
                           ),
                         ),
-                        child: DayBar(day: day, onChanged: showDay),
+                        // The bar takes its colour from the icon theme,
+                        // which in light mode is dark: white here too.
+                        child: IconTheme.merge(
+                          data: const IconThemeData(color: Colors.white),
+                          child: DayBar(
+                            day: day,
+                            onChanged: showDay,
+                            todayBackground: Colors.black38,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -363,35 +372,6 @@ class _TileGrid extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Writes a day for the heading, for example `Tuesday, 18 Nov`. The
-/// month is short, so the date fits on one line beside the day bar.
-String describeToday(DateTime day) {
-  const weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${weekdays[day.weekday - 1]}, ${day.day} ${months[day.month - 1]}';
 }
 
 /// A greeting for the time of day: `Good morning` from 05:00 (when a

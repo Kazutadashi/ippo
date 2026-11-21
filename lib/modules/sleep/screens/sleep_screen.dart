@@ -11,7 +11,6 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
-import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/moon_icon.dart';
 import '../../../core/widgets/section_card.dart';
@@ -62,7 +61,8 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
     return Scaffold(
       appBar: SkyAppBar(
         title: const Text('Sleep'),
-        actions: [DayBar(day: shownDay, onChanged: showDay)],
+        day: shownDay,
+        onDayChanged: showDay,
       ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a

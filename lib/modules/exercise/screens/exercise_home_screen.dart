@@ -10,7 +10,6 @@ import '../../../core/app_state.dart';
 import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
-import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/sky_band.dart';
@@ -88,7 +87,8 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
     return Scaffold(
       appBar: SkyAppBar(
         title: const Text('Exercise'),
-        actions: [DayBar(day: shownDay, onChanged: showDay)],
+        day: shownDay,
+        onDayChanged: showDay,
       ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a

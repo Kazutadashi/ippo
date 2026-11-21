@@ -460,9 +460,9 @@ with less scrolling. Compact is about how things *look*; every tap
 target still stays at least 48 × 48 (Android's accessibility
 guidance).
 
-- The theme sets `VisualDensity.compact` and dense text fields
-  (`isDense`), so fields, buttons and list rows are shorter
-  everywhere. Do not undo this per screen.
+- The theme sets dense text fields (`isDense`) padded to 48 high, and
+  `VisualDensity.standard`, so every button keeps its 48 × 48 tap area
+  (compact density shrank them to 40). Do not change this per screen.
 - Put things that belong together **on one row** when they fit:
   − Reps + and Add set; Protein, Carbs and Fat; Woke up and Went to bed.
 - Leave out lines that only repeat what the screen already shows (no
@@ -486,7 +486,7 @@ Fixed sizes:
 | --- | --- |
 | Card header height | 36, icon 20 |
 | Home tile icon | 16 |
-| Smallest tap target | 48 × 48 (exception: habit grid cells are 34 × 36, and today's column 40 × 36, so the grid stays compact) |
+| Smallest tap target | 48 × 48 (exception: the day grids, see [Accessibility](#13-accessibility)) |
 | Room under the last card when there is a floating button | 96 |
 
 
@@ -528,18 +528,59 @@ Fixed sizes:
 
 ## 13. Accessibility
 
+Ippo follows **WCAG 2.2 level AA** and Android's accessibility
+guidance. `test/accessibility_test.dart` checks every main screen, in
+light and dark mode with the demo data, using Flutter's guideline
+checks; a new screen should be added there.
+
+Sources:
+[WCAG 2.2](https://www.w3.org/TR/WCAG22/),
+[Android: make apps more accessible](https://developer.android.com/guide/topics/ui/accessibility/apps),
+[Flutter accessibility testing](https://docs.flutter.dev/ui/accessibility/accessibility-testing),
+[MDN mobile accessibility checklist](https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Mobile_accessibility_checklist).
+
+**Touch**
+
+- Tap targets are at least 48 × 48 (Android). Flutter's buttons are,
+  with the theme's standard density; custom controls (colour circles)
+  are made 48 too.
+- The one exception is the **day grids**: the habit grid's cells and
+  the columns of Home's week. Seven days must fit across a phone, so
+  a cell is about 36 wide. That still meets WCAG 2.2 AA (24 × 24,
+  criterion 2.5.8), which the test checks there, and the same day can
+  always be reached with the day bar's full-size buttons.
+
+**Screen readers**
+
 - Every icon-only button has a `tooltip`, which screen readers read out.
 - Things that are read together are one item for screen readers
   (`MergeSemantics` on Home tiles); chips and habit names say what a tap
   does ("Set 1: 20 reps", "Edit habit").
+- Colour swatches, grid cells and other custom controls have a
+  `Semantics` label ("Orange accent colour", "Read 10 pages, Mon 16 Nov:
+  done").
+
+**Contrast**
+
+- Text is at least 4.5:1 against its background (3:1 for large text),
+  marks and outlines 3:1 (WCAG 1.4.3 and 1.4.11).
+- Contrast comes from the theme; do not put text on hand-picked colours.
+  A user's colour (a habit's, the accent) is passed through
+  `readableOn` with `textContrast` before it is used for text.
+- White text on the landscape (Home's header) sits on a faint dark
+  backing or shadow, in light mode too.
+- Nothing is told by colour alone: a habit's day is also filled, an
+  outline or a dash, and read out by name.
+
+**Text size**
+
+- Text uses the theme's styles, so it follows the phone's text size.
+- Every screen must fit with text 2 times as large, without anything
+  cut off (the test checks 1.5 and 2): let rows wrap (`Wrap`), let
+  headers grow, and shrink only small side values (`FittedBox`), never
+  the main text.
 - With large text, Home shows one tile per row rather than shrinking
   values.
-- Colour swatches and other custom controls have a `Semantics` label
-  ("Orange accent colour").
-- Tap targets are at least 48 × 48 pixels (Flutter's buttons already
-  are).
-- Text uses the theme's styles, so it follows the phone's text size.
-- Contrast comes from the theme; do not put text on hand-picked colours.
 
 
 ## 14. Template for a new module screen

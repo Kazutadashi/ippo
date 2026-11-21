@@ -260,7 +260,7 @@ class _HabitName extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: habit.displayColor(Theme.of(context)),
+                  color: habit.textColor(Theme.of(context)),
                   fontWeight: FontWeight.w500,
                   height: 1.15,
                 ),
@@ -291,29 +291,34 @@ class _DayHeader extends StatelessWidget {
       width: isToday ? _todayWidth : _dayWidth,
       height: _headerHeight,
       color: isToday ? colors.primary.withValues(alpha: 0.08) : null,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // One line each, whatever the font, so the header keeps its
-          // height.
-          Text(
-            weekdays[day.weekday - 1],
-            style: textTheme.labelSmall?.copyWith(color: color),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.clip,
-          ),
-          Text(
-            '${day.day}',
-            style: textTheme.labelMedium?.copyWith(
-              color: color,
-              fontWeight: isToday ? FontWeight.bold : null,
+      // With large text, the day and date shrink to fit the header,
+      // instead of spilling out of it.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // One line each, whatever the font, so the header keeps its
+            // height.
+            Text(
+              weekdays[day.weekday - 1],
+              style: textTheme.labelSmall?.copyWith(color: color),
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.clip,
             ),
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.clip,
-          ),
-        ],
+            Text(
+              '${day.day}',
+              style: textTheme.labelMedium?.copyWith(
+                color: color,
+                fontWeight: isToday ? FontWeight.bold : null,
+              ),
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.clip,
+            ),
+          ],
+        ),
       ),
     );
   }

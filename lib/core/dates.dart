@@ -196,3 +196,32 @@ String describeDayOf(String date) {
   final day = parseDate(date);
   return day == null ? date : formatShortDate(day);
 }
+
+/// Writes a day for the heading, for example `Tuesday, 18 Nov`. The
+/// month is short, so the date fits on one line beside the day bar.
+String describeToday(DateTime day) {
+  const weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${weekdays[day.weekday - 1]}, ${day.day} ${months[day.month - 1]}';
+}

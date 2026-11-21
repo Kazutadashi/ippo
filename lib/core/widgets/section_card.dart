@@ -86,9 +86,10 @@ class CardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final action = this.action;
-    return SizedBox(
-      // The same height with or without a button, so cards line up.
-      height: 36,
+    return ConstrainedBox(
+      // At least as tall as a button would make it, so cards line up;
+      // taller with large text, rather than cut off.
+      constraints: const BoxConstraints(minHeight: 36),
       child: Row(
         children: [
           IconTheme(
@@ -106,7 +107,9 @@ class CardHeader extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          if (action != null) action,
+          // With very large text, a wide button gets at most half the
+          // row, its label wrapping, rather than running off the card.
+          if (action != null) Flexible(child: action),
         ],
       ),
     );

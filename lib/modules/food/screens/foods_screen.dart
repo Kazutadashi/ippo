@@ -135,19 +135,23 @@ class _FoodRow extends StatelessWidget {
         ].join('   '),
         style: textTheme.bodySmall?.copyWith(color: muted),
       ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            formatEnergy(food.nutrientsPer100.energyKcal),
-            style: textTheme.titleSmall,
-          ),
-          Text(
-            'per 100 ${food.measuredIn}',
-            style: textTheme.labelSmall?.copyWith(color: muted),
-          ),
-        ],
+      // Shrunk to fit the row with very large text, rather than cut off.
+      trailing: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              formatEnergy(food.nutrientsPer100.energyKcal),
+              style: textTheme.titleSmall,
+            ),
+            Text(
+              'per 100 ${food.measuredIn}',
+              style: textTheme.labelSmall?.copyWith(color: muted),
+            ),
+          ],
+        ),
       ),
       onTap: onTap,
     );

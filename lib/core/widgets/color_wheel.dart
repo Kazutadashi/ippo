@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:material_ui/material_ui.dart';
 
 import '../theme.dart';
+import 'color_circles.dart';
 
 /// Opens a window with a colour wheel, starting at [initial]. Returns the
 /// chosen colour, or null if cancelled. Its preview shows the colour as
@@ -75,8 +76,8 @@ class CustomColorCircle extends StatelessWidget {
         onTap: () => _open(context),
         customBorder: const CircleBorder(),
         child: Container(
-          width: 40,
-          height: 40,
+          width: colorCircleSize,
+          height: colorCircleSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: chosen,

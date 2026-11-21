@@ -10,7 +10,6 @@ import '../../../core/dates.dart';
 import '../../../core/number_input.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
-import '../../../core/widgets/day_bar.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
 import '../../../core/widgets/sky_band.dart';
@@ -154,8 +153,9 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
               ),
             ),
           ),
-          DayBar(day: shownDay, onChanged: showDay),
         ],
+        day: shownDay,
+        onDayChanged: showDay,
       ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
@@ -340,29 +340,25 @@ class _LastMealLine extends StatelessWidget {
     final time = entry.time!;
     final eatenAt = momentOnDay(day, time);
     final elapsed = eatenAt == null ? null : DateTime.now().difference(eatenAt);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+    // A Wrap, not a Row: with large text the time moves to a second
+    // line instead of running off the card.
+    return Wrap(
+      spacing: Spacing.small,
+      crossAxisAlignment: WrapCrossAlignment.end,
       children: [
         Text('Last meal', style: textTheme.bodyMedium?.copyWith(color: muted)),
-        const SizedBox(width: Spacing.small),
-        Expanded(
-          child: Text(
-            entry.name,
-            style: textTheme.bodyMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+        Text(
+          entry.name,
+          style: textTheme.bodyMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(width: Spacing.small),
         Text(showSavedTime(time), style: textTheme.titleSmall),
-        if (isToday && elapsed != null && !elapsed.isNegative) ...[
-          const SizedBox(width: Spacing.small),
+        if (isToday && elapsed != null && !elapsed.isNegative)
           Text(
             formatTimeAgo(elapsed),
             style: textTheme.bodySmall?.copyWith(color: muted),
           ),
-        ],
       ],
     );
   }

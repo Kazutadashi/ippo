@@ -171,10 +171,11 @@ ThemeData buildTheme(
   );
   final theme = ThemeData(
     colorScheme: colorScheme,
-    // Compact density: Ippo is a logging tool, so it shows more at once.
-    // Fields, buttons and list rows look smaller, but every tap target
-    // stays at least 48 × 48, as accessibility guidance asks.
-    visualDensity: VisualDensity.compact,
+    // Standard density: every button and icon button can be tapped over
+    // at least 48 × 48, as Android's accessibility guidance asks. (Compact
+    // density shrank them to 40, which an accessibility check showed.)
+    // Buttons still look the same size; the extra is room around them.
+    visualDensity: VisualDensity.standard,
     materialTapTargetSize: MaterialTapTargetSize.padded,
     // Every text field gets an outline, so anything the user can change
     // looks the same on every screen. A quiet outline at rest, so a form
@@ -187,6 +188,8 @@ ThemeData buildTheme(
         ),
       ),
       isDense: true,
+      // Dense, but padded to the 48 that a tap target needs.
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       // The label always sits on the border, so a field's unit ("kcal")
       // and example ("2 slices") show before anything is typed.
       floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -202,7 +205,11 @@ ThemeData buildTheme(
         ),
         foregroundColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? (isDark ? Colors.white : main)
+              // In light mode, the accent made just dark enough to read
+              // as text (4.5:1) on its own tint.
+              ? (isDark
+                    ? Colors.white
+                    : readableOn(main, tint, minimum: textContrast))
               : colorScheme.onSurfaceVariant,
         ),
         side: WidgetStatePropertyAll(
@@ -323,18 +330,27 @@ Color habitColourAsShown(Color color, ThemeData theme) =>
 /// (WCAG's level for graphics and large text).
 const double readableContrast = 3;
 
+/// The contrast ordinary text needs against its background (WCAG's level
+/// for text, 1.4.3).
+const double textContrast = 4.5;
+
 /// [color], made only as much lighter or darker as it takes to stand out
-/// against [background] by at least [readableContrast]. Its hue stays,
+/// against [background] by at least [minimum]: [readableContrast] (3:1)
+/// for marks and large text, [textContrast] (4.5:1) for ordinary text. Its hue stays,
 /// so a habit's colour is still its own: on a light card a yellow
 /// becomes a deeper yellow, on a dark card a navy becomes a brighter
 /// blue. A colour that already stands out is returned as it is.
-Color readableOn(Color color, Color background) {
+Color readableOn(
+  Color color,
+  Color background, {
+  double minimum = readableContrast,
+}) {
   final isDarkBackground = background.computeLuminance() < 0.5;
   var hsl = HSLColor.fromColor(color);
   // Small steps towards white on dark, towards black on light; at most
   // twenty, which covers the whole range of lightness.
   for (var step = 0; step < 20; step++) {
-    if (contrastRatio(hsl.toColor(), background) >= readableContrast) {
+    if (contrastRatio(hsl.toColor(), background) >= minimum) {
       break;
     }
     final lightness = hsl.lightness + (isDarkBackground ? 0.05 : -0.05);

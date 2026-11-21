@@ -11,8 +11,9 @@ import '../theme.dart';
 /// How many colour circles go in one row.
 const int _circlesPerRow = 6;
 
-/// The size of one colour circle.
-const double _circleSize = 40;
+/// The size of one colour circle: 48, the smallest tap target Android's
+/// accessibility guidance asks for.
+const double colorCircleSize = 48;
 
 /// Lays out [circles] in rows that span the full width, with the columns
 /// lined up from row to row.
@@ -31,7 +32,7 @@ class ColorCircleGrid extends StatelessWidget {
       // Fill a short last row with empty spaces, so its circles stay in
       // the same columns as the rows above.
       while (rowCircles.length < _circlesPerRow) {
-        rowCircles.add(const SizedBox(width: _circleSize));
+        rowCircles.add(const SizedBox(width: colorCircleSize));
       }
       rows.add(
         Padding(
@@ -91,8 +92,8 @@ class ColorCircle extends StatelessWidget {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Container(
-          width: _circleSize,
-          height: _circleSize,
+          width: colorCircleSize,
+          height: colorCircleSize,
           decoration: BoxDecoration(
             color: choice.color,
             shape: BoxShape.circle,

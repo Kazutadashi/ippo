@@ -85,6 +85,15 @@ class Habit {
     return habitColourAsShown(color, theme);
   }
 
+  /// The colour for the habit's name in [theme]: its own colour (or the
+  /// accent), made dark or light enough to read as text (4.5:1 on the
+  /// cards), which is more than marks such as ticks need.
+  Color textColor(ThemeData theme) => readableOn(
+    color ?? theme.colorScheme.primary,
+    theme.colorScheme.surfaceContainer,
+    minimum: textContrast,
+  );
+
   /// How often the habit is meant to be done; every day by default.
   final HabitFrequency frequency;
 
