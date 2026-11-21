@@ -30,6 +30,11 @@ mixin FollowsToday<T extends StatefulWidget> on State<T> {
   Timer? _minuteTimer;
   AppLifecycleListener? _lifecycle;
 
+  // The day shown at the last redraw, so a change of the app state that
+  // is not a change of day (a new entry, say) does not redraw here: the
+  // screen's own builder redraws for those.
+  DateTime? _lastShownDay;
+
   /// The app-wide state that holds the day shown (usually
   /// `widget.appState`).
   AppState get dayState;
@@ -48,15 +53,23 @@ mixin FollowsToday<T extends StatefulWidget> on State<T> {
     super.initState();
     _minuteTimer = Timer.periodic(const Duration(minutes: 1), (_) => _redraw());
     _lifecycle = AppLifecycleListener(onResume: _redraw);
-    dayState.addListener(_redraw);
+    _lastShownDay = shownDay;
+    dayState.addListener(_redrawIfDayChanged);
   }
 
   @override
   void dispose() {
     _minuteTimer?.cancel();
     _lifecycle?.dispose();
-    dayState.removeListener(_redraw);
+    dayState.removeListener(_redrawIfDayChanged);
     super.dispose();
+  }
+
+  void _redrawIfDayChanged() {
+    if (shownDay != _lastShownDay) {
+      _lastShownDay = shownDay;
+      _redraw();
+    }
   }
 
   void _redraw() {

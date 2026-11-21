@@ -185,17 +185,22 @@ class SkyHeader extends StatelessWidget {
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
     final wholeHeight = (height * pixelRatio).round() / pixelRatio;
     return ExcludeSemantics(
-      child: SizedBox(
-        height: wholeHeight,
-        width: double.infinity,
-        child: CustomPaint(
-          painter: _SkyPainter(
-            palette: _palettes[phase]!,
-            phase: phase,
-            background: Theme.of(context).scaffoldBackgroundColor,
-            clearTop: clearTop,
-            seed: seed,
-            skyOnly: skyOnly,
+      // Its own layer: the landscape is hundreds of shapes, and is only
+      // drawn again when it changes, not whenever the page around it
+      // scrolls or redraws.
+      child: RepaintBoundary(
+        child: SizedBox(
+          height: wholeHeight,
+          width: double.infinity,
+          child: CustomPaint(
+            painter: _SkyPainter(
+              palette: _palettes[phase]!,
+              phase: phase,
+              background: Theme.of(context).scaffoldBackgroundColor,
+              clearTop: clearTop,
+              seed: seed,
+              skyOnly: skyOnly,
+            ),
           ),
         ),
       ),
