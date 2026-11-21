@@ -115,12 +115,14 @@ const List<_DemoHabit> _habits = [
 /// hidden.
 List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
-  for (final habit in _habits) {
+  for (final (index, habit) in _habits.indexed) {
     final started = habit.startedDaysAgo == null
         ? plan.firstDay
         : addDays(plan.today, -habit.startedDaysAgo!);
+    // A minute apart, so they keep the order of the list (habits made at
+    // the very same moment would be ordered by their random ids).
     final created = plan.event(
-      plan.at(started, 8),
+      plan.at(started, 8 + index / 60),
       habitsModuleName,
       'habit_created',
       {

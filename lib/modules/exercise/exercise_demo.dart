@@ -53,9 +53,10 @@ List<String> _workoutsOn(int daysAgo) {
 List<DemoEvent> exerciseDemoEvents(DemoPlan plan) {
   final events = <DemoEvent>[];
   final ids = <String, String>{};
-  for (final exercise in _exercises) {
+  for (final (index, exercise) in _exercises.indexed) {
+    // A minute apart, so they keep the order of the list.
     final created = plan.event(
-      plan.at(plan.firstDay, 7),
+      plan.at(plan.firstDay, 7 + index / 60),
       exerciseModuleName,
       'exercise_created',
       {'name': exercise.name, 'measured_in': exercise.measuredIn},

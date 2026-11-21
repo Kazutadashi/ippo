@@ -44,21 +44,19 @@ class ExerciseModule extends IppoModule {
     final steps = log.stepsOn(date);
     final isToday = day == currentDay(now);
     final averageSteps = _averageSteps(log, day);
-    // Each exercise done on the day, with its sets, in the order the
-    // exercises were added.
+    // Each exercise done on the day, in the order they were added.
     final doneToday = [
       for (final exercise in log.activeExercises)
-        if (log.setsOn(date, exercise.id).isNotEmpty)
-          (name: exercise.name, sets: log.setsOn(date, exercise.id).length),
+        if (log.setsOn(date, exercise.id).isNotEmpty) exercise.name,
     ];
     return HomeTile(
       value: steps == null
           ? HomeTile.unknownValue
           : formatThousands(steps.steps),
       valueNote: steps == null ? 'No steps yet' : 'steps',
-      // One chip per exercise done: each means one exercise, with its
-      // number of sets. A day without says so instead.
-      mark: doneToday.isEmpty ? null : _ExerciseChips(done: doneToday),
+      // One chip per exercise done: each means one exercise. A day
+      // without says so instead.
+      mark: doneToday.isEmpty ? null : _ExerciseChips(names: doneToday),
       note: doneToday.isEmpty
           ? (isToday ? 'No workout yet today' : 'No workout this day')
           : null,
@@ -204,48 +202,54 @@ String? _exercisesDone(ExerciseLog log, String date) {
 String? _thousands(int? steps) =>
     steps == null ? null : (steps / 1000).toStringAsFixed(1);
 
-/// How many exercise chips the tile shows; more become "+2 more", so
-/// the tile keeps its size.
-const int _chipLimit = 4;
-
-/// The day's exercises as small chips, "Push-up 3 sets": the exercise
-/// and, quieter, how many sets were done. Each chip is one exercise.
+/// The day's exercises as small chips in a fixed grid of two rows of
+/// two, so the tile keeps its height however many there are. Each chip
+/// is one exercise done, its name shortened with "…" if it is long;
+/// with more than four, the fourth chip says how many more ("+4 more").
+/// How many sets each had is on the Exercise tab.
 class _ExerciseChips extends StatelessWidget {
-  const _ExerciseChips({required this.done});
+  const _ExerciseChips({required this.names});
 
-  /// The exercises done, with their number of sets.
-  final List<({String name, int sets})> done;
+  /// The names of the exercises done, in order.
+  final List<String> names;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final shown = done.take(_chipLimit).toList();
-    final more = done.length - shown.length;
+    // Four places: all names if they fit, else three and "+N more".
+    final cells = names.length <= 4
+        ? names
+        : [...names.take(3), '+${names.length - 3} more'];
     return Semantics(
-      label:
-          'Done: ${[for (final item in done) '${item.name}, ${item.sets} '
-                '${item.sets == 1 ? 'set' : 'sets'}'].join('; ')}',
+      label: 'Exercises done: ${names.join(', ')}',
       child: ExcludeSemantics(
-        child: Wrap(
-          spacing: 4,
-          runSpacing: 4,
+        child: Column(
           children: [
-            for (final item in shown)
-              _chip(
-                theme,
-                item.name,
-                detail: '${item.sets} ${item.sets == 1 ? 'set' : 'sets'}',
+            for (var row = 0; row * 2 < cells.length; row++) ...[
+              if (row > 0) const SizedBox(height: 4),
+              Row(
+                children: [
+                  for (var column = 0; column < 2; column++) ...[
+                    if (column > 0) const SizedBox(width: 4),
+                    Expanded(
+                      child: row * 2 + column < cells.length
+                          ? _chip(theme, cells[row * 2 + column])
+                          // An empty place, so a lone chip is as wide as
+                          // the others.
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
               ),
-            if (more > 0) _chip(theme, '+$more more'),
+            ],
           ],
         ),
       ),
     );
   }
 
-  /// One chip: [text], and after it [detail] in a quieter colour.
-  Widget _chip(ThemeData theme, String text, {String? detail}) {
-    final style = theme.textTheme.labelMedium;
+  /// One chip holding [text], on one line.
+  Widget _chip(ThemeData theme, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -253,20 +257,9 @@ class _ExerciseChips extends StatelessWidget {
         color: theme.chipTheme.backgroundColor,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text.rich(
-        TextSpan(
-          text: text,
-          children: [
-            if (detail != null)
-              TextSpan(
-                text: '  $detail',
-                style: style?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-          ],
-        ),
-        style: style,
+      child: Text(
+        text,
+        style: theme.textTheme.labelMedium,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

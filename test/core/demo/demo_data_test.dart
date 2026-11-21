@@ -48,7 +48,8 @@ void main() {
     // one was renamed and shows under its new name.
     expect(habits.shownHabits, hasLength(12));
     final names = [for (final habit in habits.shownHabits) habit.name];
-    expect(names, contains('Read 10 pages'));
+    // In the order they were added, the same every time.
+    expect(names.take(3), ['Read 10 pages', 'Stretch', 'Walk outside']);
     expect(names, isNot(contains('Read')));
     expect(names, isNot(contains('Cold shower')));
     expect(names, isNot(contains('Strech')));
