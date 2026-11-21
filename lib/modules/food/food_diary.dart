@@ -21,6 +21,7 @@ class FoodDiary {
     required this.foods,
     required this.entries,
     required this.invalidCount,
+    this.dayMarks = const {},
   });
 
   /// The current state for [appState], worked out once per change of
@@ -66,6 +67,7 @@ class FoodDiary {
       foods: foods,
       entries: entries,
       invalidCount: invalidCount,
+      dayMarks: _dayMarksFrom(events),
     );
   }
 
@@ -74,6 +76,15 @@ class FoodDiary {
 
   /// Every entry, including deleted ones, in the order they were made.
   final List<FoodEntry> entries;
+
+  /// The user's mark for each day ever marked (`YYYY-MM-DD`): true if
+  /// everything eaten that day is logged, false if not. See
+  /// `diary_day_marked` in `docs/data-format.md`.
+  final Map<String, bool> dayMarks;
+
+  /// Whether [date] is marked complete (true), marked not complete
+  /// (false), or was never marked (null).
+  bool? markOn(String date) => dayMarks[date];
 
   /// How many foods or entries were skipped because their data was not
   /// valid. Shown to the user, so nothing is hidden.
@@ -165,4 +176,22 @@ FoodEntry? latestTimedEntry(List<FoodEntry> entries) {
     }
   }
   return latest;
+}
+
+/// The latest `diary_day_marked` of each day in [events] (oldest first,
+/// so a later mark replaces an earlier one). Events that are not valid
+/// are skipped.
+Map<String, bool> _dayMarksFrom(List<Event> events) {
+  final marks = <String, bool>{};
+  for (final event in events) {
+    if (event.module != foodModuleName || event.type != 'diary_day_marked') {
+      continue;
+    }
+    final date = event.data['date'];
+    final complete = event.data['complete'];
+    if (date is String && isValidDate(date) && complete is bool) {
+      marks[date] = complete;
+    }
+  }
+  return marks;
 }

@@ -202,6 +202,12 @@ class FoodActions {
   Future<Event> restoreEntry(String entryId) =>
       _write('food_entry_restored', {'target_id': entryId});
 
+  /// Marks [date] (`YYYY-MM-DD`) as having everything eaten logged
+  /// ([complete] true), or not. Researchers use it to tell a complete day
+  /// from a partly logged one, whose totals would be too low.
+  Future<Event> markDay(String date, {required bool complete}) =>
+      _write('diary_day_marked', {'date': date, 'complete': complete});
+
   Future<Event> _write(String type, Map<String, Object?> data) {
     return appState.writeEvent(module: foodModuleName, type: type, data: data);
   }

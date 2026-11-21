@@ -3,6 +3,7 @@
 /// The food module's main screen: what was eaten on one day.
 library;
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
@@ -110,6 +111,14 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
   /// it. The food's name stands out; its time and amount are smaller and
   /// grey under it; its energy sits on the right, in one column, so it is
   /// easy to scan.
+  Future<void> _markDay(String date, bool complete) async {
+    HapticFeedback.selectionClick();
+    await saveOrShowError(
+      context,
+      () => FoodActions(widget.appState).markDay(date, complete: complete),
+    );
+  }
+
   Widget _entryRow(FoodEntry entry) {
     final textTheme = Theme.of(context).textTheme;
     return Dismissible(
@@ -304,6 +313,16 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                       if (index > 0) const Divider(height: 1),
                       _entryRow(entry),
                     ],
+                    // The user's word that the day is fully logged, so an
+                    // analysis can tell a complete day from a partial one.
+                    const Divider(height: Spacing.screen),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Day complete'),
+                      subtitle: const Text('Everything eaten is logged.'),
+                      value: diary.markOn(date) ?? false,
+                      onChanged: (complete) => _markDay(date, complete),
+                    ),
                   ],
                 ),
               ],

@@ -285,6 +285,16 @@ closes at once. The ✕ calls `Navigator.maybePop`, so it goes through
 the guard too.
 
 
+### The food diary's "Day complete"
+
+The Eaten card ends with a **Day complete** switch ("Everything eaten is
+logged."). It writes the user's word that the day is fully logged, so
+an analysis can leave out partly logged days, which would otherwise look
+like days of eating little (see `docs/data-principles.md`). Off means
+"not said" until it is first switched; switching it off again records
+"not complete".
+
+
 ## 3. Fields, information and buttons
 
 Every element is exactly one of these kinds, and each kind always looks
