@@ -15,5 +15,5 @@
     <!-- The sun, behind the farthest steps. -->
     <path
         android:fillColor="#FFFFF8EA"
-        android:pathData="M54.5,49 A9.5,9.5 0 1,0 73.5,49 A9.5,9.5 0 1,0 54.5,49 Z" />
+        android:pathData="M50.5,45 A11.5,11.5 0 1,0 73.5,45 A11.5,11.5 0 1,0 50.5,45 Z" />
 </vector>

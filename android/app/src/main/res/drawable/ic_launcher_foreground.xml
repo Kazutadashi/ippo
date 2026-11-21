@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- The front of Ippo's launcher icon: three ridges of steps climbing to
-     the right, one step at a time, each paler with the distance. The sky
+     the right, one step at a time, each paler with the distance. Every
+     ridge has the same rhythm (two steps, 26 wide and 6 high), with the
+     top corners of the steps a little rounded. The sky
      and sun are ic_launcher_background.xml. The source drawing is
      docs/artwork/launcher-icon.svg. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,13 +14,13 @@
     <!-- The farthest steps. -->
     <path
         android:fillColor="#FFF0A48F"
-        android:pathData="M0,108 V58 H36 V53 H58 V49 H108 V108 Z" />
+        android:pathData="M0,108 V58 H40 V53.8 Q40,52 41.8,52 H66 V47.8 Q66,46 67.8,46 H108 V108 Z" />
     <!-- The middle steps. -->
     <path
         android:fillColor="#FFC2697F"
-        android:pathData="M0,108 V68 H28 V63 H52 V58 H108 V108 Z" />
+        android:pathData="M0,108 V68 H30 V63.8 Q30,62 31.8,62 H56 V57.8 Q56,56 57.8,56 H108 V108 Z" />
     <!-- The nearest steps. -->
     <path
         android:fillColor="#FF5A2C5C"
-        android:pathData="M0,108 V79 H22 V74 H44 V69 H70 V64 H108 V108 Z" />
+        android:pathData="M0,108 V78 H22 V73.8 Q22,72 23.8,72 H48 V67.8 Q48,66 49.8,66 H108 V108 Z" />
 </vector>
