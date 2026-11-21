@@ -92,16 +92,10 @@ class TimeSpanBar extends StatelessWidget {
                 color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: _stretch(start, end, color),
+              child: _stretch(color),
             ),
             const SizedBox(height: 3),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(startLabel, style: style),
-                Text(endLabel, style: style),
-              ],
-            ),
+            _labels(style),
           ],
         ),
       ),
@@ -112,14 +106,38 @@ class TimeSpanBar extends StatelessWidget {
   /// side by side, sized in proportion: before the stretch, the stretch,
   /// and after it. (Flex parts rather than measured widths, so the
   /// tile's height can be worked out before it is laid out.)
-  Widget _stretch(ClockTime from, ClockTime to, Color color) {
-    final start = _position(from);
-    final end = _position(to);
-    // In thousandths of the bar; the stretch is never thinner than a
-    // sliver, so it always shows.
+  /// The bar's parts, in thousandths of its width: before the stretch,
+  /// the stretch (never thinner than a sliver, so it always shows), and
+  /// after it.
+  (int, int, int) _parts() {
+    final start = _position(this.start);
+    final end = _position(this.end);
     final before = (start * 1000).round();
     final filled = max(30, ((end - start) * 1000).round());
     final after = max(0, 1000 - before - filled);
+    return (before, filled, after);
+  }
+
+  /// The two times under the two ends of the stretch, not under the
+  /// ends of the bar: the bar is a whole night and day, and the times
+  /// belong to the sleep in it. The space around them is shared out as
+  /// the bar is, so they sit close to the stretch's ends, and never run
+  /// off the edge.
+  Widget _labels(TextStyle? style) {
+    final (before, filled, after) = _parts();
+    return Row(
+      children: [
+        if (before > 0) Spacer(flex: before),
+        Text(startLabel, style: style),
+        Spacer(flex: filled),
+        Text(endLabel, style: style),
+        if (after > 0) Spacer(flex: after),
+      ],
+    );
+  }
+
+  Widget _stretch(Color color) {
+    final (before, filled, after) = _parts();
     return Row(
       // The filled part takes the bar's full height.
       crossAxisAlignment: CrossAxisAlignment.stretch,
