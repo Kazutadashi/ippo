@@ -22,17 +22,22 @@ import '../habit_order.dart';
 /// How many days the grid shows; scroll sideways to see further back.
 const int _shownDays = 60;
 
-/// The width of one past day's column. Narrow, so more days fit.
-const double _dayWidth = 34;
+/// The narrowest a past day's column may be. Narrow, so more days fit;
+/// the columns are then widened a little so whole days fill the card.
+const double _minDayWidth = 34;
 
 /// Today's column is wider: it is the one tapped every day, and the
 /// extra width keeps it apart from yesterday, so mis-taps are rarer.
 const double _todayWidth = 40;
 
 /// The height of one habit's row. Compact on purpose, so many habits
-/// fit on one screen; under the usual 48 tap target, but a whole row of
-/// a column is easy to hit.
-const double _rowHeight = 36;
+/// fit on one screen, yet tall enough for a name on two lines. Under the
+/// usual 48 tap target, but over WCAG's 24 (see "Accessibility" in
+/// docs/design.md).
+const double _rowHeight = 42;
+
+/// How round the ends of today's column are.
+const Radius _todayCorner = Radius.circular(10);
 
 /// The height of the row of dates at the top.
 const double _headerHeight = 34;
@@ -124,10 +129,12 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
                   Card(
                     margin: const EdgeInsets.only(top: Spacing.tight),
                     clipBehavior: Clip.antiAlias,
-                    // Room above the dates, so they do not touch the
-                    // card's edge.
+                    // Room above the dates and below the last habit, so
+                    // today's column ends inside the card, not at its edge.
                     child: Padding(
-                      padding: const EdgeInsets.only(top: Spacing.small),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: Spacing.small,
+                      ),
                       child: _HabitGrid(
                         today: today(),
                         appState: appState,
@@ -185,6 +192,14 @@ class _HabitGrid extends StatelessWidget {
         // Names get just over a quarter of the width, so most of it
         // shows days; long names wrap onto a second line.
         final nameWidth = (constraints.maxWidth * 0.27).clamp(80.0, 150.0);
+        // As many whole past days as fit beside today, widened to fill
+        // the card exactly, so no column is cut in half at the edge.
+        final pastWidth = constraints.maxWidth - nameWidth - _todayWidth;
+        final pastShown = (pastWidth / _minDayWidth).floor();
+        final dayWidth = pastShown > 0 ? pastWidth / pastShown : _minDayWidth;
+        final lastHabit = habits.last;
+        // The whole width of the days, for the lines between habits.
+        final allDaysWidth = _todayWidth + dayWidth * (days.length - 1);
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -193,8 +208,11 @@ class _HabitGrid extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: _headerHeight),
-                  for (final habit in habits)
+                  for (final habit in habits) ...[
                     _HabitName(habit: habit, onTap: () => onEditHabit(habit)),
+                    if (habit != lastHabit)
+                      const _RowLine(width: double.infinity, indent: 10),
+                  ],
                 ],
               ),
             ),
@@ -207,10 +225,14 @@ class _HabitGrid extends StatelessWidget {
                     Row(
                       children: [
                         for (final day in days)
-                          _DayHeader(day: day, isToday: day == todayDate),
+                          _DayHeader(
+                            day: day,
+                            isToday: day == todayDate,
+                            width: day == todayDate ? _todayWidth : dayWidth,
+                          ),
                       ],
                     ),
-                    for (final habit in habits)
+                    for (final habit in habits) ...[
                       Row(
                         children: [
                           for (final day in days)
@@ -220,9 +242,13 @@ class _HabitGrid extends StatelessWidget {
                               habit: habit,
                               day: day,
                               isToday: day == todayDate,
+                              isLastRow: habit == lastHabit,
+                              width: day == todayDate ? _todayWidth : dayWidth,
                             ),
                         ],
                       ),
+                      if (habit != lastHabit) _RowLine(width: allDaysWidth),
+                    ],
                   ],
                 ),
               ),
@@ -230,6 +256,28 @@ class _HabitGrid extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// A faint line between two habits, so the eye can follow a row across
+/// the days. [indent] leaves room on the left, under the names.
+class _RowLine extends StatelessWidget {
+  const _RowLine({required this.width, this.indent = 0});
+
+  /// How long the line is: a scrolling row has no width of its own.
+  final double width;
+
+  final double indent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: 1,
+      margin: EdgeInsets.only(left: indent),
+      color: Theme.of(context).colorScheme.outlineVariant
+          .withValues(alpha: 0.35),
     );
   }
 }
@@ -276,10 +324,17 @@ class _HabitName extends StatelessWidget {
 /// A day at the top of a column: weekday and day of the month, with
 /// today in the accent colour.
 class _DayHeader extends StatelessWidget {
-  const _DayHeader({required this.day, required this.isToday});
+  const _DayHeader({
+    required this.day,
+    required this.isToday,
+    required this.width,
+  });
 
   final DateTime day;
   final bool isToday;
+
+  /// The column's width.
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -288,9 +343,13 @@ class _DayHeader extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final color = isToday ? colors.primary : colors.onSurfaceVariant;
     return Container(
-      width: isToday ? _todayWidth : _dayWidth,
+      width: width,
       height: _headerHeight,
-      color: isToday ? colors.primary.withValues(alpha: 0.08) : null,
+      // Today's column is a soft band with a rounded top.
+      decoration: BoxDecoration(
+        color: isToday ? colors.primary.withValues(alpha: 0.08) : null,
+        borderRadius: const BorderRadius.vertical(top: _todayCorner),
+      ),
       // With large text, the day and date shrink to fit the header,
       // instead of spilling out of it.
       child: FittedBox(
@@ -334,6 +393,8 @@ class _DayCell extends StatelessWidget {
     required this.habit,
     required this.day,
     required this.isToday,
+    required this.isLastRow,
+    required this.width,
   });
 
   final AppState appState;
@@ -343,6 +404,13 @@ class _DayCell extends StatelessWidget {
 
   /// Today's column has a soft tint, so it stands out.
   final bool isToday;
+
+  /// Whether this is the bottom habit, where today's band gets its
+  /// rounded end.
+  final bool isLastRow;
+
+  /// The column's width.
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -392,6 +460,9 @@ class _DayCell extends StatelessWidget {
         color: isToday
             ? colors.primary.withValues(alpha: 0.08)
             : Colors.transparent,
+        borderRadius: isLastRow
+            ? const BorderRadius.vertical(bottom: _todayCorner)
+            : null,
         child: InkWell(
           onTap: () {
             // A light tick confirms the tap at once, before saving.
@@ -402,7 +473,7 @@ class _DayCell extends StatelessWidget {
             );
           },
           child: SizedBox(
-            width: isToday ? _todayWidth : _dayWidth,
+            width: width,
             height: _rowHeight,
             // The new mark grows in, so the change is easy to see.
             child: AnimatedSwitcher(
