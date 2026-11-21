@@ -3,6 +3,7 @@
 /// Adding a habit, or renaming or deleting one.
 library;
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/app_state.dart';
@@ -16,6 +17,7 @@ import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
 import '../habit_frequency.dart';
+import '../habit_log.dart';
 import '../habit_marks.dart';
 
 /// The form for a habit: its name, how often, and its colour, with a
@@ -380,8 +382,9 @@ class _Option extends StatelessWidget {
 }
 
 /// The habit as it will look in the grid: its name in its colour, how
-/// often under it, and a few days of marks.
-class _HabitPreview extends StatelessWidget {
+/// often under it, and four days to tap through ✓, ✗ and nothing, as in
+/// the grid. Only a preview: nothing here is saved.
+class _HabitPreview extends StatefulWidget {
   const _HabitPreview({
     required this.name,
     required this.color,
@@ -398,64 +401,148 @@ class _HabitPreview extends StatelessWidget {
   final HabitFrequency? frequency;
 
   @override
+  State<_HabitPreview> createState() => _HabitPreviewState();
+}
+
+class _HabitPreviewState extends State<_HabitPreview> {
+  /// The marks shown, today first: today waiting, then three days done.
+  final List<DayMark> _marks = [
+    DayMark.none,
+    DayMark.done,
+    DayMark.done,
+    DayMark.done,
+  ];
+
+  /// Moves day [index] on, as a tap in the grid does: nothing → ✓ → ✗ →
+  /// nothing.
+  void _cycle(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _marks[index] = switch (_marks[index]) {
+        DayMark.none => DayMark.done,
+        DayMark.done => DayMark.notDone,
+        DayMark.notDone => DayMark.none,
+      };
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
     // A habit that is never saved, only to get its colours.
     final habit = Habit(
       id: '',
-      name: name.isEmpty ? 'Read 10 pages' : name,
+      name: widget.name.isEmpty ? 'Read 10 pages' : widget.name,
       valueType: 'yes_no',
-      color: color,
+      color: widget.color,
       isArchived: false,
       isDeleted: false,
     );
-    final markColor = habit.displayColor(theme);
-    final frequency = this.frequency;
-    return ExcludeSemantics(
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.medium,
-            vertical: Spacing.small,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      habit.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: habit.textColor(theme),
-                        fontWeight: FontWeight.w500,
-                      ),
+    final frequency = widget.frequency;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.only(left: Spacing.medium, right: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    habit.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: habit.textColor(theme),
+                      fontWeight: FontWeight.w500,
                     ),
-                    if (frequency != null)
-                      Text(
-                        frequency.describe(),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: muted,
-                        ),
-                      ),
-                  ],
-                ),
+                  ),
+                  if (frequency != null)
+                    Text(
+                      frequency.describe(),
+                      style: theme.textTheme.bodySmall?.copyWith(color: muted),
+                    ),
+                ],
               ),
-              // Today waiting, then three days done, as in the grid.
-              Icon(
+            ),
+            for (var index = 0; index < _marks.length; index++)
+              _PreviewDay(
+                mark: _marks[index],
+                isToday: index == 0,
+                color: habit.displayColor(theme),
+                onTap: () => _cycle(index),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One day in the preview: its mark drawn as the grid draws it, in a
+/// 48 × 48 tap area.
+class _PreviewDay extends StatelessWidget {
+  const _PreviewDay({
+    required this.mark,
+    required this.isToday,
+    required this.color,
+    required this.onTap,
+  });
+
+  final DayMark mark;
+  final bool isToday;
+
+  /// The habit's colour.
+  final Color color;
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final Widget icon;
+    final String meaning;
+    switch (mark) {
+      case DayMark.done:
+        icon = BoldCheck(size: 18, color: color);
+        meaning = 'done';
+      case DayMark.notDone:
+        icon = Icon(
+          Icons.close,
+          size: 18,
+          color: muted.withValues(alpha: 0.45),
+        );
+        meaning = 'not done';
+      case DayMark.none:
+        icon = isToday
+            ? Icon(
                 Icons.circle_outlined,
                 size: 15,
-                color: markColor.withValues(alpha: 0.7),
-              ),
-              for (var day = 0; day < 3; day++) ...[
-                const SizedBox(width: 14),
-                BoldCheck(size: 18, color: markColor),
-              ],
-            ],
+                color: color.withValues(alpha: 0.7),
+              )
+            : Icon(
+                Icons.circle,
+                size: 5,
+                color: Theme.of(context).colorScheme.outlineVariant,
+              );
+        meaning = 'not recorded';
+    }
+    return Semantics(
+      button: true,
+      label: 'Preview, ${isToday ? 'today' : 'a past day'}: $meaning',
+      child: InkResponse(
+        onTap: onTap,
+        radius: 22,
+        child: SizedBox.square(
+          dimension: 48,
+          // The new mark grows in, as in the grid.
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 150),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: Center(key: ValueKey(mark), child: icon),
           ),
         ),
       ),
