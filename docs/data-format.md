@@ -514,14 +514,14 @@ micrograms, `_kcal` kilocalories.
 | `energy_kcal` | energy |
 | `proteins_g` | protein |
 | `carbohydrates_g` | carbohydrates |
-| `sugars_g` | of which sugars |
-| `added_sugars_g` | of which added sugars |
+| `sugars_g` | sugars (part of carbohydrates) |
+| `added_sugars_g` | added sugars (part of carbohydrates) |
 | `fiber_g` | fibre |
 | `fat_g` | fat |
-| `saturated_fat_g` | of which saturated |
-| `monounsaturated_fat_g` | of which monounsaturated |
-| `polyunsaturated_fat_g` | of which polyunsaturated |
-| `trans_fat_g` | of which trans |
+| `saturated_fat_g` | saturated fat (part of fat) |
+| `monounsaturated_fat_g` | monounsaturated fat (part of fat) |
+| `polyunsaturated_fat_g` | polyunsaturated fat (part of fat) |
+| `trans_fat_g` | trans fat (part of fat) |
 | `cholesterol_mg` | cholesterol |
 | `salt_g` | salt |
 | `sodium_mg` | sodium |

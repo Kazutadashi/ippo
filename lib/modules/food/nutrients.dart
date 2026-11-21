@@ -10,8 +10,8 @@ import '../../core/number_input.dart';
 
 /// One kind of nutrient: its name in the data, on screen, and its unit.
 class NutrientKind {
-  /// Creates a nutrient kind.
-  const NutrientKind(this.key, this.label, this.unit);
+  /// Creates a nutrient kind, which is [partOf] another, if given.
+  const NutrientKind(this.key, this.label, this.unit, {this.partOf});
 
   /// The field name in the data, for example `proteins_g`.
   final String key;
@@ -21,6 +21,12 @@ class NutrientKind {
 
   /// The unit on screen, for example `g`.
   final String unit;
+
+  /// The field name of the nutrient this one is part of, or null: sugars
+  /// are part of carbohydrates, saturated fat part of fat. Screens list
+  /// it just under that one, a little indented. In the data it is a
+  /// nutrient of its own, with its own column over time.
+  final String? partOf;
 }
 
 /// Energy for people, in whole kilocalories with a thousands separator,
@@ -45,14 +51,29 @@ const List<NutrientKind> allNutrientKinds = [
   NutrientKind(energyKey, 'Energy', 'kcal'),
   NutrientKind('proteins_g', 'Protein', 'g'),
   NutrientKind('carbohydrates_g', 'Carbohydrates', 'g'),
-  NutrientKind('sugars_g', '  of which sugars', 'g'),
-  NutrientKind('added_sugars_g', '  of which added sugars', 'g'),
+  NutrientKind('sugars_g', 'Sugars', 'g', partOf: 'carbohydrates_g'),
+  NutrientKind(
+    'added_sugars_g',
+    'Added sugars',
+    'g',
+    partOf: 'carbohydrates_g',
+  ),
   NutrientKind('fiber_g', 'Fibre', 'g'),
   NutrientKind('fat_g', 'Fat', 'g'),
-  NutrientKind('saturated_fat_g', '  of which saturated', 'g'),
-  NutrientKind('monounsaturated_fat_g', '  of which monounsaturated', 'g'),
-  NutrientKind('polyunsaturated_fat_g', '  of which polyunsaturated', 'g'),
-  NutrientKind('trans_fat_g', '  of which trans', 'g'),
+  NutrientKind('saturated_fat_g', 'Saturated fat', 'g', partOf: 'fat_g'),
+  NutrientKind(
+    'monounsaturated_fat_g',
+    'Monounsaturated fat',
+    'g',
+    partOf: 'fat_g',
+  ),
+  NutrientKind(
+    'polyunsaturated_fat_g',
+    'Polyunsaturated fat',
+    'g',
+    partOf: 'fat_g',
+  ),
+  NutrientKind('trans_fat_g', 'Trans fat', 'g', partOf: 'fat_g'),
   NutrientKind('cholesterol_mg', 'Cholesterol', 'mg'),
   NutrientKind('salt_g', 'Salt', 'g'),
   NutrientKind('sodium_mg', 'Sodium', 'mg'),

@@ -31,8 +31,8 @@ final List<String> allNutrientFieldKeys = [
 ];
 
 /// Short names for the fields, which sit side by side: "Carbs" rather
-/// than "Carbohydrates", and "Saturated fat" rather than "of which
-/// saturated". The same words are used everywhere in the app.
+/// than "Carbohydrates", "Monounsat. fat" rather than "Monounsaturated
+/// fat".
 String nutrientFieldName(String key) {
   const short = {
     energyKey: 'Energy',

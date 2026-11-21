@@ -133,8 +133,8 @@ class AllNutrientsList extends StatelessWidget {
     );
   }
 
-  /// One nutrient: its name, the amount, and "of …" with a bar when it
-  /// has a daily amount.
+  /// One nutrient: its name, the amount, and "of … a day" with a bar
+  /// when it has a daily reference amount.
   Widget _line(NutrientKind kind, TextTheme textTheme, Color muted) {
     final amount = nutrients.values[kind.key]!;
     final reference = references[kind.key];
@@ -145,17 +145,19 @@ class AllNutrientsList extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(kind.label.trim(), style: textTheme.bodyMedium),
-              ),
+              // A part of the nutrient above (sugars of carbohydrates) is
+              // indented a little under it.
+              if (kind.partOf != null) const SizedBox(width: Spacing.medium),
+              Expanded(child: Text(kind.label, style: textTheme.bodyMedium)),
               Text(
                 formatNutrientAmount(amount, kind.unit),
                 style: textTheme.titleSmall,
               ),
               if (reference != null) ...[
                 const SizedBox(width: Spacing.tight),
+                // Against the daily reference amount.
                 Text(
-                  'of ${formatNutrientAmount(reference, kind.unit)}',
+                  'of ${formatNutrientAmount(reference, kind.unit)} a day',
                   style: textTheme.bodySmall?.copyWith(color: muted),
                 ),
               ],
