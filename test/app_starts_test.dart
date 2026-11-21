@@ -111,9 +111,11 @@ void main() {
 
     expect(find.text(greetingFor(DateTime.now())), findsOneWidget);
     expect(find.text(describeToday(today())), findsOneWidget);
-    // A tile per module, all waiting for data, and no week yet.
+    // A tile per module, all waiting for data, and no week yet: three
+    // quiet dashes, and Exercise says its steps are not in yet.
     expect(find.byType(HomeTileCard), findsNWidgets(4));
-    expect(find.text('–'), findsNWidgets(4));
+    expect(find.text('–'), findsNWidgets(3));
+    expect(find.text('No steps yet'), findsOneWidget);
     expect(find.byType(WeekGrid), findsNothing);
     // Everything tappable is the gear, the day bar, or a tile (which
     // opens its tab).

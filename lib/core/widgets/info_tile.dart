@@ -236,6 +236,27 @@ class HomeTileCard extends StatelessWidget {
             child: Text(value, style: big?.copyWith(color: muted)),
           )
         : ValueText(value, style: big, unitStyle: small);
+    // Unknown with a note: only the note, quietly, on the line where the
+    // number would be ("No steps yet"), not a dash beside a unit. An
+    // empty text in the large size keeps the line as tall as the other
+    // tiles' numbers, so the tiles stay level.
+    if (value == unknownTileValue && note != null) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text('', style: big),
+          Flexible(
+            child: Text(
+              note,
+              style: textTheme.titleSmall?.copyWith(color: muted),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      );
+    }
     // A value that is too wide shrinks rather than wrapping.
     return FittedBox(
       fit: BoxFit.scaleDown,
@@ -245,8 +266,7 @@ class HomeTileCard extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         children: [
           valueText,
-          // The note says what the value is, even before it is known
-          // ("– steps").
+          // The note says what the value is ("steps").
           if (note != null) ...[
             const SizedBox(width: 6),
             Text(note, style: small),

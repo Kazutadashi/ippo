@@ -46,30 +46,30 @@ class ExerciseModule extends IppoModule {
     final done = log.activeExercises
         .where((exercise) => log.setsOn(date, exercise.id).isNotEmpty)
         .length;
-    final trainedDays = daysBefore(day)
-        .where((before) => _trainedOn(log, formatDate(before)))
-        .length;
     final averageSteps = _averageSteps(log, day);
     return HomeTile(
       value: steps == null
           ? HomeTile.unknownValue
           : formatThousands(steps.steps),
-      valueNote: 'steps',
-      mark: _WorkoutBadge(
-        text: done == 0
-            ? 'Rest day'
-            : '$done ${done == 1 ? 'exercise' : 'exercises'}'
-                  '${isToday ? ' today' : ''}',
-        isRest: done == 0,
+      valueNote: steps == null ? 'No steps yet' : 'steps',
+      // The week at a glance: which of the last seven days had a
+      // workout. Nothing is planned, so a day without one is simply that.
+      mark: _WorkoutWeek(
+        days: weekEndingOn(day),
+        trained: {
+          for (final weekDay in weekEndingOn(day))
+            if (_trainedOn(log, formatDate(weekDay))) weekDay,
+        },
+        shown: day,
       ),
       rows: [
-        if (done == 0)
-          TileRow('Last workout', _lastWorkout(log, day, isToday: isToday))
-        else
+        if (done > 0)
           TileRow(
-            'Workouts (7 days)',
-            trainedDays == 1 ? '1 day' : '$trainedDays days',
-          ),
+            isToday ? 'Today' : 'This day',
+            '$done ${done == 1 ? 'exercise' : 'exercises'}',
+          )
+        else
+          TileRow('Last workout', _lastWorkout(log, day, isToday: isToday)),
         if (averageSteps != null)
           TileRow('Avg (7 days)', '${formatThousands(averageSteps)} steps'),
       ],
@@ -214,39 +214,83 @@ bool _trainedOn(ExerciseLog log, String date) => log.activeExercises.any(
   (exercise) => log.setsOn(date, exercise.id).isNotEmpty,
 );
 
-/// A small rounded badge with the dumbbell: "4 exercises today" in the
-/// accent colour, or "Rest day" in grey.
-class _WorkoutBadge extends StatelessWidget {
-  const _WorkoutBadge({required this.text, required this.isRest});
+/// The last seven days as a bar of seven segments, the day shown last:
+/// filled on a day with a workout, an outline on a day without. Under
+/// it, each day's letter, the day shown in the accent colour. The same
+/// look as the habits bar: filled is done, outlined is not.
+class _WorkoutWeek extends StatelessWidget {
+  const _WorkoutWeek({
+    required this.days,
+    required this.trained,
+    required this.shown,
+  });
 
-  final String text;
-  final bool isRest;
+  /// The seven days, oldest first.
+  final List<DateTime> days;
+
+  /// Those with a workout.
+  final Set<DateTime> trained;
+
+  /// The day shown on Home, the last of them.
+  final DateTime shown;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final tone = isRest ? colors.onSurfaceVariant : colors.primary;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: tone.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DumbbellIcon(size: 16, color: tone),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: tone),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    const letters = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    return Semantics(
+      label:
+          'Workouts in the last 7 days: ${trained.length} '
+          '${trained.length == 1 ? 'day' : 'days'}',
+      child: ExcludeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                for (final (index, day) in days.indexed) ...[
+                  if (index > 0) const SizedBox(width: 4),
+                  Expanded(
+                    child: Container(
+                      height: 10,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: trained.contains(day) ? colors.primary : null,
+                        border: trained.contains(day)
+                            ? null
+                            : Border.all(
+                                color: colors.primary.withValues(alpha: 0.6),
+                                width: 1.5,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 3),
+            Row(
+              children: [
+                for (final (index, day) in days.indexed) ...[
+                  if (index > 0) const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      letters[day.weekday - 1],
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: day == shown
+                            ? colors.primary
+                            : colors.onSurfaceVariant,
+                        fontWeight: day == shown ? FontWeight.bold : null,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
