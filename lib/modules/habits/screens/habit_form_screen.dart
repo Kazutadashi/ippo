@@ -15,6 +15,7 @@ import '../../../core/widgets/discard_guard.dart';
 import '../../../core/widgets/section_card.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
+import '../habit_frequency.dart';
 
 /// The form for a habit: its name and colour.
 class HabitFormScreen extends StatefulWidget {
@@ -40,25 +41,80 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   /// The picked colour, or null for the accent colour.
   late Color? _color = widget.habit?.color;
 
+  /// How often, when one of the presets is chosen; null when "Other" is.
+  late HabitFrequency? _preset = _startingPreset;
+
+  /// "Other": how many times, and in how many days.
+  late final TextEditingController _timesField = TextEditingController(
+    text: '${widget.habit?.frequency.times ?? 1}',
+  );
+  late final TextEditingController _daysField = TextEditingController(
+    text: '${widget.habit?.frequency.perDays ?? 1}',
+  );
+  String? _frequencyProblem;
+
+  /// The habit's frequency if it is a preset (every day for a new one),
+  /// else null, which opens "Other".
+  HabitFrequency? get _startingPreset {
+    final frequency = widget.habit?.frequency ?? HabitFrequency.everyDay;
+    return HabitFrequency.presets.contains(frequency) ? frequency : null;
+  }
+
+  /// The frequency chosen: a preset, or what is typed under "Other";
+  /// null if what is typed is not a frequency.
+  HabitFrequency? get _frequency {
+    final preset = _preset;
+    if (preset != null) {
+      return preset;
+    }
+    final times = int.tryParse(_timesField.text.trim());
+    final days = int.tryParse(_daysField.text.trim());
+    if (times == null || days == null) {
+      return null;
+    }
+    if (times < 1 || days < 1 || times > days || days > 365) {
+      return null;
+    }
+    return HabitFrequency(times, days);
+  }
+
   @override
   void dispose() {
     _nameField.dispose();
+    _timesField.dispose();
+    _daysField.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final problem = checkHabitName(_nameField.text);
-    setState(() => _nameProblem = problem);
-    if (problem != null) {
+    final frequency = _frequency;
+    setState(() {
+      _nameProblem = problem;
+      _frequencyProblem = frequency == null
+          ? 'Enter how many times (at least 1) in how many days (up to '
+                '365, and at least as many as the times).'
+          : null;
+    });
+    if (problem != null || frequency == null) {
       return;
     }
     final actions = HabitActions(widget.appState);
     final habit = widget.habit;
     final saved = await saveOrShowError(context, () {
       if (habit == null) {
-        return actions.createHabit(_nameField.text, color: _color);
+        return actions.createHabit(
+          _nameField.text,
+          color: _color,
+          frequency: frequency,
+        );
       }
-      return actions.changeHabit(habit, _nameField.text, _color);
+      return actions.changeHabit(
+        habit,
+        _nameField.text,
+        _color,
+        newFrequency: frequency,
+      );
     });
     if (saved && mounted) {
       Navigator.of(context).pop();
@@ -118,7 +174,13 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
   }
 
   /// Everything the user can change here, for the discard guard.
-  String _snapshot() => [_nameField.text, _color?.toARGB32()].join('\n');
+  String _snapshot() => [
+    _nameField.text,
+    _color?.toARGB32(),
+    _preset?.toJson(),
+    _timesField.text,
+    _daysField.text,
+  ].join('\n');
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +215,67 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               ),
               onSubmitted: (_) => _save(),
             ),
+            const SizedBox(height: 20),
+            // Not every habit is for every day: a waiting day between
+            // turns is never counted as missed.
+            const FieldLabel('How often'),
+            Wrap(
+              spacing: Spacing.tight,
+              runSpacing: Spacing.tight,
+              children: [
+                for (final preset in HabitFrequency.presets)
+                  ChoiceChip(
+                    label: Text(preset.describe()),
+                    selected: _preset == preset,
+                    onSelected: (_) => setState(() {
+                      _preset = preset;
+                      _frequencyProblem = null;
+                    }),
+                  ),
+                ChoiceChip(
+                  label: const Text('Other'),
+                  selected: _preset == null,
+                  onSelected: (_) => setState(() => _preset = null),
+                ),
+              ],
+            ),
+            if (_preset == null) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 72,
+                    child: TextField(
+                      controller: _timesField,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(labelText: 'Times'),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.small),
+                  const Text('every'),
+                  const SizedBox(width: Spacing.small),
+                  SizedBox(
+                    width: 72,
+                    child: TextField(
+                      controller: _daysField,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(labelText: 'Days'),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.small),
+                  const Text('days'),
+                ],
+              ),
+            ],
+            if (_frequencyProblem != null) ...[
+              const SizedBox(height: 8),
+              ProblemText(_frequencyProblem!),
+            ],
             const SizedBox(height: 20),
             const FieldLabel('Colour'),
             ColorCircleGrid(circles: _colorCircles(context)),

@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/app_state.dart';
 import '../../core/dates.dart';
 import '../../core/module.dart';
-import '../../core/number_input.dart';
 import 'habit.dart';
 import 'habit_log.dart';
 import 'habit_marks.dart';
@@ -45,9 +44,12 @@ class HabitsModule extends IppoModule {
     }
     final date = formatDate(day);
     final streak = _longestStreak(log, habits, day);
-    final average = _averageDone(log, habits, day);
+    final average = _averagePercent(log, habits, day);
     return HomeTile(
-      value: '${_doneOn(log, habits, date)} of ${habits.length}',
+      // Of the habits that count today: due, or done anyway. A habit
+      // waiting for its next turn is not "not done".
+      value:
+          '${_doneOn(log, habits, date)} of ${_countingOn(log, habits, date)}',
       valueNote: 'done',
       mark: HabitBar(habits: habits, log: log, date: date),
       rows: [
@@ -55,10 +57,7 @@ class HabitsModule extends IppoModule {
         // run yet.
         if (streak.days >= 2) TileRow('Best streak', '${streak.days} days'),
         if (average != null)
-          TileRow(
-            'Avg (7 days)',
-            '${formatAmount(average)} of ${habits.length}',
-          ),
+          TileRow('Avg (7 days)', '${average.round()} % done'),
       ],
     );
   }
@@ -78,15 +77,14 @@ class HabitsModule extends IppoModule {
       final anyMarked = habits.any(
         (habit) => log.markOn(habit.id, date) != DayMark.none,
       );
-      final percent = (100 * _doneOn(log, habits, date) / habits.length)
-          .round();
-      cells.add(anyMarked ? '$percent' : null);
+      final percent = _percentOn(log, habits, date);
+      cells.add(anyMarked && percent != null ? '${percent.round()}' : null);
     }
     return [
       WeekRow(
         label: 'Habits (%)',
         cells: cells,
-        description: 'Percentage of habits done each day',
+        description: 'Percentage of the day\'s due habits done each day',
       ),
     ];
   }
@@ -116,9 +114,7 @@ class HabitsModule extends IppoModule {
           final anyMarked = habits.any(
             (habit) => log.markOn(habit.id, date) != DayMark.none,
           );
-          return anyMarked
-              ? 100 * _doneOn(log, habits, date) / habits.length
-              : null;
+          return anyMarked ? _percentOn(log, habits, date) : null;
         },
         format: (percent) => '${percent.round()} %',
       ),
@@ -133,22 +129,43 @@ class HabitsModule extends IppoModule {
 int _doneOn(HabitLog log, List<Habit> habits, String date) =>
     habits.where((habit) => log.markOn(habit.id, date) == DayMark.done).length;
 
-/// The average number of [habits] done a day over the week before
-/// [day], counting only days with any habit marked; null without any.
-double? _averageDone(HabitLog log, List<Habit> habits, DateTime day) {
-  var done = 0;
-  var markedDays = 0;
+/// How many of [habits] count on [date]: those due that day, and any
+/// done although not due. A habit waiting for its next turn does not
+/// count, so it never looks missed.
+int _countingOn(HabitLog log, List<Habit> habits, String date) => habits
+    .where(
+      (habit) =>
+          log.isDueOn(habit, date) ||
+          log.markOn(habit.id, date) == DayMark.done,
+    )
+    .length;
+
+/// The share of the habits that count on [date] (see [_countingOn])
+/// that were done, from 0 to 100; null when none count.
+double? _percentOn(HabitLog log, List<Habit> habits, String date) {
+  final counting = _countingOn(log, habits, date);
+  return counting == 0 ? null : 100 * _doneOn(log, habits, date) / counting;
+}
+
+/// The average share of habits done a day over the week before [day]
+/// (see [_percentOn]), counting only days with any habit marked; null
+/// without any.
+double? _averagePercent(HabitLog log, List<Habit> habits, DateTime day) {
+  final percents = <double>[];
   for (final before in daysBefore(day)) {
     final date = formatDate(before);
     final anyMarked = habits.any(
       (habit) => log.markOn(habit.id, date) != DayMark.none,
     );
-    if (anyMarked) {
-      done += _doneOn(log, habits, date);
-      markedDays++;
+    final percent = _percentOn(log, habits, date);
+    if (anyMarked && percent != null) {
+      percents.add(percent);
     }
   }
-  return markedDays == 0 ? null : done / markedDays;
+  if (percents.isEmpty) {
+    return null;
+  }
+  return percents.reduce((a, b) => a + b) / percents.length;
 }
 
 /// The habit with the longest current streak on [day], and its length.
@@ -157,9 +174,9 @@ double? _averageDone(HabitLog log, List<Habit> habits, DateTime day) {
   List<Habit> habits,
   DateTime day,
 ) {
-  var best = (habit: habits.first, days: log.streakOn(habits.first.id, day));
+  var best = (habit: habits.first, days: log.streakOn(habits.first, day));
   for (final habit in habits.skip(1)) {
-    final days = log.streakOn(habit.id, day);
+    final days = log.streakOn(habit, day);
     if (days > best.days) {
       best = (habit: habit, days: days);
     }

@@ -5,23 +5,27 @@ library;
 
 import '../../core/dates.dart';
 import '../../core/module.dart';
+import 'habit_frequency.dart';
 import 'habit_log.dart';
 
 /// One made-up habit: its name, its colour (`#RRGGBB`, or null for the
 /// accent colour), how often it gets done (0 to 1), how many days ago it
-/// was started (null for the first day of the demo), and the name it
-/// had before being renamed a few days in (null if never renamed).
+/// was started (null for the first day of the demo), the name it had
+/// before being renamed a few days in (null if never renamed), and how
+/// often it is meant to be done.
 typedef _DemoHabit = ({
   String name,
   String? color,
   double chance,
   int? startedDaysAgo,
   String? formerName,
+  HabitFrequency frequency,
 });
 
 /// A dozen everyday habits, in colours all around the wheel (so "By
 /// colour" has something to sort), some kept up nearly every day and
-/// some hard, one started only last week.
+/// some hard, one started only last week, and four not meant for every
+/// day (three times a week, twice a week, every 3 days, once a week).
 const List<_DemoHabit> _habits = [
   (
     name: 'Read 10 pages',
@@ -29,6 +33,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.9,
     startedDaysAgo: null,
     formerName: 'Read',
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Stretch',
@@ -36,6 +41,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.65,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Walk outside',
@@ -43,6 +49,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.8,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Drink water',
@@ -50,6 +57,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.95,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Journal',
@@ -57,6 +65,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.45,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Meditate',
@@ -64,13 +73,15 @@ const List<_DemoHabit> _habits = [
     chance: 0.6,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
-    name: 'Floss',
+    name: 'Water the plants',
     color: '#00ACC1',
     chance: 0.7,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency(1, 3),
   ),
   (
     name: 'Vitamins',
@@ -78,6 +89,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.85,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'No phone in bed',
@@ -85,6 +97,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.4,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency.everyDay,
   ),
   (
     name: 'Practise Spanish',
@@ -92,13 +105,15 @@ const List<_DemoHabit> _habits = [
     chance: 0.7,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency(3, 7),
   ),
   (
-    name: 'Make the bed',
+    name: 'Call family',
     color: '#6D4C41',
     chance: 0.9,
     startedDaysAgo: null,
     formerName: null,
+    frequency: HabitFrequency(1, 7),
   ),
   (
     name: 'Cook dinner',
@@ -106,6 +121,7 @@ const List<_DemoHabit> _habits = [
     chance: 0.55,
     startedDaysAgo: 8,
     formerName: null,
+    frequency: HabitFrequency(2, 7),
   ),
 ];
 
@@ -128,7 +144,7 @@ List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
       {
         'name': habit.formerName ?? habit.name,
         'value_type': 'yes_no',
-        'frequency': {'times': 1, 'per_days': 1},
+        'frequency': habit.frequency.toJson(),
         if (habit.color != null) 'color': habit.color,
       },
     );
@@ -147,6 +163,9 @@ List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
         ),
       );
     }
+    // The days it was done so far, to know when a habit that is not for
+    // every day is due again.
+    final doneDays = <DateTime>[];
     for (final day in plan.days) {
       if (day.isBefore(started)) {
         continue;
@@ -156,16 +175,24 @@ List<DemoEvent> habitsDemoEvents(DemoPlan plan) {
       if (isToday && habit.chance < 0.8) {
         continue;
       }
+      // A waiting day (done often enough lately): nothing to record.
+      final window = habit.frequency.perDays;
+      final doneLately = doneDays
+          .where((done) => day.difference(done).inDays < window)
+          .length;
+      if (doneLately >= habit.frequency.times) {
+        continue;
+      }
+      final isDone = plan.chance(habit.chance);
+      if (isDone) {
+        doneDays.add(day);
+      }
       events.add(
         plan.event(
           plan.at(day, isToday ? 8.5 : 21),
           habitsModuleName,
           'habit_entry_recorded',
-          {
-            'habit_id': created.id,
-            'date': formatDate(day),
-            'value': plan.chance(habit.chance),
-          },
+          {'habit_id': created.id, 'date': formatDate(day), 'value': isDone},
         ),
       );
     }

@@ -165,7 +165,7 @@ void main() {
       // The week before: 2 done on the 16th and 1 on the 15th.
       expect(
         describeTile(module.homeTile(appState, currentDay(now), now)),
-        '1 of 3 done | Best streak 3 days, Avg (7 days) 1.5 of 3',
+        '1 of 3 done | Best streak 3 days, Avg (7 days) 50 % done',
       );
       final row = module.weekRows(appState, currentDay(now)).single;
       expect(row.label, 'Habits (%)');
@@ -178,19 +178,19 @@ void main() {
     final read = (await actions.createHabit('Read')).id;
     final log0 = HabitLog.fromEvents(appState.eventLog!.events);
     final tuesday = DateTime(2026, 11, 17);
-    expect(log0.streakOn(read, tuesday), 0);
+    expect(log0.streakOn(log0.habits[read]!, tuesday), 0);
 
     await actions.recordDay(read, '2026-11-14', done: true);
     await actions.recordDay(read, '2026-11-15', done: false);
     await actions.recordDay(read, '2026-11-16', done: true);
     var log = HabitLog.fromEvents(appState.eventLog!.events);
     // Tuesday has no mark yet: the streak still counts up to Monday.
-    expect(log.streakOn(read, tuesday), 1);
+    expect(log.streakOn(log.habits[read]!, tuesday), 1);
 
     await actions.recordDay(read, '2026-11-17', done: true);
     log = HabitLog.fromEvents(appState.eventLog!.events);
     // Saturday's "not done" ends the run before it.
-    expect(log.streakOn(read, tuesday), 2);
+    expect(log.streakOn(log.habits[read]!, tuesday), 2);
   });
 
   testWidgets('the grid: habits down, today on the left, tap to mark', (

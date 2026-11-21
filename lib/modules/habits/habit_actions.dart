@@ -13,6 +13,7 @@ import '../../core/events/event.dart';
 import '../../core/theme.dart';
 import 'habit.dart';
 import 'habit_log.dart';
+import 'habit_frequency.dart';
 
 /// Writes the habits module's events through [appState].
 ///
@@ -25,30 +26,38 @@ class HabitActions {
   /// The app state that writes the events.
   final AppState appState;
 
-  /// Creates a yes/no habit done once a day, drawn in [color] (null for
-  /// the accent colour). Returns the event, whose id is the habit's.
-  Future<Event> createHabit(String name, {Color? color}) {
+  /// Creates a yes/no habit, done as often as [frequency] says (every
+  /// day if not given), drawn in [color] (null for the accent colour).
+  /// Returns the event, whose id is the habit's.
+  Future<Event> createHabit(
+    String name, {
+    Color? color,
+    HabitFrequency frequency = HabitFrequency.everyDay,
+  }) {
     return _write('habit_created', {
       'name': name.trim(),
       'value_type': 'yes_no',
-      'frequency': {'times': 1, 'per_days': 1},
+      'frequency': frequency.toJson(),
       if (color != null) 'color': accentColorToHex(color),
     });
   }
 
-  /// Gives [habit] the name [newName] and the colour [newColor] (null for
-  /// the accent colour). Only what actually changed is written, so a
+  /// Gives [habit] the name [newName], the colour [newColor] (null for
+  /// the accent colour) and, if given, the frequency [newFrequency]. Only what actually changed is written, so a
   /// rename on one device and a new colour on another both survive.
   /// Returns null if nothing changed.
   Future<Event?> changeHabit(
     Habit habit,
     String newName,
-    Color? newColor,
-  ) async {
+    Color? newColor, {
+    HabitFrequency? newFrequency,
+  }) async {
     final changes = <String, Object?>{
       if (newName.trim() != habit.name) 'name': newName.trim(),
       if (newColor?.toARGB32() != habit.color?.toARGB32())
         'color': newColor == null ? null : accentColorToHex(newColor),
+      if (newFrequency != null && newFrequency != habit.frequency)
+        'frequency': newFrequency.toJson(),
     };
     if (changes.isEmpty) {
       return null;

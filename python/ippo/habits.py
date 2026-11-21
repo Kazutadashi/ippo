@@ -11,14 +11,34 @@ def habits(events):
 
     Columns: ``habit_id``, ``name``, ``value_type`` (``"yes_no"``,
     ``"number"``, ...), ``unit``, ``description``, ``color``
-    (``"#RRGGBB"``, or empty for the app's accent colour), ``archived``,
-    ``deleted``, ``recorded_utc`` (when it was created).
+    (``"#RRGGBB"``, or empty for the app's accent colour), ``times`` and
+    ``per_days`` (how often: ``times`` in every ``per_days`` days; 1 and
+    1 for every day), ``archived``, ``deleted``, ``recorded_utc`` (when it
+    was created).
     """
     rows = collect_things(events, "habits", "habit_created", "habit")
-    columns = ["id", "name", "value_type", "unit", "description", "color", "archived", "deleted", "recorded_utc"]
+    for row in rows:
+        row["times"], row["per_days"] = _frequency(row.get("frequency"))
+    columns = [
+        "id", "name", "value_type", "unit", "description", "color",
+        "times", "per_days", "archived", "deleted", "recorded_utc",
+    ]
     result = table(rows, columns).rename(columns={"id": "habit_id"})
     result["archived"] = result["archived"].eq(True)
     return result
+
+
+def _frequency(value):
+    """How often a habit applies, as ``(times, per_days)``. Anything that
+    is not a sensible frequency means every day, ``(1, 1)``, as in the
+    app (``HabitFrequency.fromJson``)."""
+    if not isinstance(value, dict):
+        return 1, 1
+    times, per_days = value.get("times"), value.get("per_days")
+    is_whole = all(isinstance(number, int) and not isinstance(number, bool) for number in (times, per_days))
+    if not is_whole or times < 1 or per_days < 1 or times > per_days or per_days > 365:
+        return 1, 1
+    return times, per_days
 
 
 def habit_entries(events):

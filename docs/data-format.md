@@ -373,10 +373,18 @@ record a value for it.
 | `value_type` | string | What is recorded each day: `"yes_no"`, `"number"`, `"duration"` or `"time_of_day"`. Cannot be changed later. |
 | `unit` | string, optional | Only for `"number"`: a label such as `"pages"` or `"cards"`. |
 | `target` | object, optional | The goal. See below. If missing, any recorded value counts as done. |
-| `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week. |
+| `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week; `{"times": 1, "per_days": 3}` means every 3 days. Whole numbers, `times` at least 1 and at most `per_days`, `per_days` at most 365; anything else is read as every day. Changed later with `habit_changed`. |
 | `description` | string, optional | A note for yourself. |
 | `color` | string, optional | A display colour, `"#RRGGBB"`. Missing or `null` means the app's accent colour. |
 | `archived` | boolean, optional | `true` hides the habit without deleting it. Usually set later with `habit_changed`. |
+
+**When a habit is due.** A habit is due on a day until it has been done
+`times` times in the `per_days` days ending that day; the other days are
+waiting days. So "every 3 days" (1 in 3) done on Monday is not due on
+Tuesday or Wednesday, and is due again on Thursday. A waiting day is
+never counted as missed: the app leaves it out of "done of due" and of
+percentages, and it does not break a streak. The Python package gives
+`times` and `per_days` as columns of the habits table.
 
 `target` has two fields:
 

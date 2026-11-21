@@ -134,17 +134,49 @@ class HabitLog {
     return DayMark.none;
   }
 
-  /// How many days in a row [habitId] was done, up to and including
-  /// [day]. If [day] has no mark yet (the day is not over), the streak
-  /// counts up to the day before, so it does not drop to zero each
-  /// morning. A "not done" mark, or a day with nothing recorded, ends it.
-  int streakOn(String habitId, DateTime day) {
+  /// Whether [habit] is due on [date] (`YYYY-MM-DD`): not yet done as
+  /// often as its frequency asks in the days ending that day. A daily
+  /// habit is always due. See [HabitFrequency].
+  bool isDueOn(Habit habit, String date) {
+    final frequency = habit.frequency;
+    if (frequency.isEveryDay) {
+      return true;
+    }
+    final day = parseDate(date);
+    if (day == null) {
+      return true;
+    }
+    // The days before [date] in its window: done there counts.
+    var done = 0;
+    for (var back = 1; back < frequency.perDays; back++) {
+      if (markOn(habit.id, formatDate(addDays(day, -back))) == DayMark.done) {
+        done++;
+      }
+    }
+    return done < frequency.times;
+  }
+
+  /// How many days in a row [habit] was kept up, up to and including
+  /// [day]: done, or not due (a waiting day of a habit that is not for
+  /// every day). If [day] is due and has no mark yet (the day is not
+  /// over), the streak counts up to the day before, so it does not drop
+  /// to zero each morning. A due day not done, or with nothing recorded,
+  /// ends it.
+  int streakOn(Habit habit, DateTime day) {
     var current = day;
-    if (markOn(habitId, formatDate(current)) == DayMark.none) {
+    final today = formatDate(current);
+    // A due day with nothing marked yet is not over: count from the day
+    // before. (A waiting day needs nothing, so it counts as it is.)
+    if (markOn(habit.id, today) == DayMark.none && isDueOn(habit, today)) {
       current = addDays(current, -1);
     }
     var streak = 0;
-    while (markOn(habitId, formatDate(current)) == DayMark.done) {
+    while (true) {
+      final date = formatDate(current);
+      final isDone = markOn(habit.id, date) == DayMark.done;
+      if (!isDone && isDueOn(habit, date)) {
+        break;
+      }
       streak++;
       current = addDays(current, -1);
     }

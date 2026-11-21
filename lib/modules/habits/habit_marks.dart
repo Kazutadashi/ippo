@@ -10,8 +10,9 @@ import 'habit.dart';
 import 'habit_log.dart';
 
 /// A bar across the tile with one segment per habit, in the habit's own
-/// colour: filled when done, an outline when not marked yet, and a faint
-/// outline when marked not done.
+/// colour: filled when done, an outline when not marked yet, a faint
+/// outline when marked not done, and a thin line on a day it is not due
+/// (a habit not meant for every day, waiting for its next turn).
 class HabitBar extends StatelessWidget {
   /// Creates the bar for [habits] on [date] (`YYYY-MM-DD`).
   const HabitBar({
@@ -83,6 +84,10 @@ class HabitBar extends StatelessWidget {
                             habits[row * perRow + column].id,
                             date,
                           ),
+                          isDue: log.isDueOn(
+                            habits[row * perRow + column],
+                            date,
+                          ),
                           height: height,
                         )
                       // An empty place, so the last row's segments are as
@@ -107,21 +112,41 @@ const int _perRowLimit = 8;
 const int _rowLimit = 4;
 
 /// One habit's part of the bar: filled in its colour when done, an
-/// outline of it when not marked yet, and a faint outline when marked
-/// not done.
+/// outline of it when not marked yet, a faint outline when marked not
+/// done, and a thin line when it is not due that day.
 class _Segment extends StatelessWidget {
   const _Segment({
     required this.color,
     required this.mark,
+    required this.isDue,
     required this.height,
   });
 
   final Color color;
   final DayMark mark;
+
+  /// Whether the habit is due that day; a habit waiting for its next
+  /// turn (not every day) is only a thin line: nothing needed.
+  final bool isDue;
   final double height;
 
   @override
   Widget build(BuildContext context) {
+    // Waiting for its next turn and not done: a thin line, centred.
+    if (!isDue && mark != DayMark.done) {
+      return SizedBox(
+        height: height,
+        child: Center(
+          child: Container(
+            height: 2,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ),
+      );
+    }
     // Done is filled; the others are only an outline, so done and not
     // done differ in shape, not only in how pale they are: easy to tell
     // apart at a glance, also with weak eyesight or colour blindness.

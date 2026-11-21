@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/dates.dart';
 import '../../core/events/things.dart';
 import '../../core/theme.dart';
+import 'habit_frequency.dart';
 
 /// The value types a habit can have. The names are stored in the data and
 /// must never change. The app currently creates yes/no habits only.
@@ -32,6 +33,7 @@ class Habit {
     required this.color,
     required this.isArchived,
     required this.isDeleted,
+    this.frequency = HabitFrequency.everyDay,
   });
 
   /// Reads a habit from its collected events. Returns null if the data is
@@ -53,6 +55,7 @@ class Habit {
       color: parseHexColor(record.fields['color']),
       isArchived: record.fields['archived'] == true,
       isDeleted: record.isDeleted,
+      frequency: HabitFrequency.fromJson(record.fields['frequency']),
     );
   }
 
@@ -81,6 +84,9 @@ class Habit {
     }
     return habitColourAsShown(color, theme);
   }
+
+  /// How often the habit is meant to be done; every day by default.
+  final HabitFrequency frequency;
 
   /// Whether the habit is hidden without being deleted.
   final bool isArchived;

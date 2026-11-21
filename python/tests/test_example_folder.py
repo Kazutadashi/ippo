@@ -72,6 +72,17 @@ class HabitsTest(unittest.TestCase):
         self.assertIn("Evening walk", habits.index)
         self.assertTrue(habits.loc["Stretch", "deleted"])
 
+    def test_frequency_columns_default_to_every_day(self):
+        habits = self.data.habits().set_index("name")
+        self.assertEqual(habits.loc["Read", "times"], 1)
+        self.assertEqual(habits.loc["Read", "per_days"], 1)
+
+    def test_odd_frequencies_mean_every_day(self):
+        from ippo.habits import _frequency
+        self.assertEqual(_frequency({"times": 3, "per_days": 7}), (3, 7))
+        for odd in [None, "daily", {"times": 5, "per_days": 3}, {"times": 1.5, "per_days": 7}, {"times": True, "per_days": 2}]:
+            self.assertEqual(_frequency(odd), (1, 1))
+
     def test_one_value_per_habit_per_day_latest_wins(self):
         entries = self.data.habit_entries()
         values = {(row.habit, row.date): row.value for row in entries.itertuples()}
