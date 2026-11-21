@@ -23,6 +23,7 @@ class AppSettings {
     required this.clockStyle,
     this.usesTrueBlack = false,
     this.units,
+    this.habitOrder,
   });
 
   /// Creates settings for a fresh install: a new random device id and
@@ -63,6 +64,7 @@ class AppSettings {
       clockStyle: _textOrNull(json['clock_style']),
       usesTrueBlack: json['true_black'] == true,
       units: _textOrNull(json['units']),
+      habitOrder: _textOrNull(json['habit_order']),
     );
   }
 
@@ -101,6 +103,14 @@ class AppSettings {
   /// Whether measurements are shown in imperial units.
   bool get usesImperialUnits => units == 'imperial';
 
+  /// The order habits are listed in: `added` (as they were added) or
+  /// `colour` (similar colours together), or null for the default
+  /// (as added).
+  final String? habitOrder;
+
+  /// Whether habits are listed by colour.
+  bool get sortsHabitsByColour => habitOrder == 'colour';
+
   /// Whether times are shown on a 12-hour clock.
   bool get uses12HourClock => clockStyle == '12h';
 
@@ -113,6 +123,7 @@ class AppSettings {
     String? clockStyle,
     bool? usesTrueBlack,
     String? units,
+    String? habitOrder,
   }) {
     return AppSettings(
       deviceId: deviceId,
@@ -123,6 +134,7 @@ class AppSettings {
       clockStyle: clockStyle ?? this.clockStyle,
       usesTrueBlack: usesTrueBlack ?? this.usesTrueBlack,
       units: units ?? this.units,
+      habitOrder: habitOrder ?? this.habitOrder,
     );
   }
 
@@ -136,6 +148,7 @@ class AppSettings {
     'clock_style': clockStyle,
     'true_black': usesTrueBlack,
     'units': units,
+    'habit_order': habitOrder,
   };
 }
 

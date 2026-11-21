@@ -415,6 +415,10 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(clockStyle: clockStyle),
   );
 
+  /// Lists habits `added` (as they were added) or by `colour`.
+  Future<void> setHabitOrder(String order) =>
+      _changeDisplaySetting((settings) => settings.copyWith(habitOrder: order));
+
   /// Shows measurements in `metric` or `imperial` units.
   Future<void> setUnits(String units) =>
       _changeDisplaySetting((settings) => settings.copyWith(units: units));

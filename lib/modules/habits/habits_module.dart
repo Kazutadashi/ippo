@@ -14,6 +14,7 @@ import 'habit_log.dart';
 import 'habit_marks.dart';
 import 'screens/habits_screen.dart';
 import 'habits_demo.dart';
+import 'habit_order.dart';
 
 /// The habits module, as seen by the core app.
 class HabitsModule extends IppoModule {
@@ -35,7 +36,7 @@ class HabitsModule extends IppoModule {
   @override
   HomeTile homeTile(AppState appState, DateTime day, DateTime now) {
     final log = HabitLog.of(appState);
-    final habits = log.shownHabits;
+    final habits = habitsInOrder(appState, log);
     if (habits.isEmpty) {
       return const HomeTile(
         value: HomeTile.unknownValue,

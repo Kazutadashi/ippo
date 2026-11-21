@@ -10,8 +10,8 @@ import 'habit.dart';
 import 'habit_log.dart';
 
 /// A bar across the tile with one segment per habit, in the habit's own
-/// colour: filled when done, a faint tint when not marked yet, and
-/// fainter still when marked not done.
+/// colour: filled when done, an outline when not marked yet, and a faint
+/// outline when marked not done.
 class HabitBar extends StatelessWidget {
   /// Creates the bar for [habits] on [date] (`YYYY-MM-DD`).
   const HabitBar({
@@ -106,9 +106,9 @@ const int _perRowLimit = 8;
 /// tile does not grow.
 const int _rowLimit = 4;
 
-/// One habit's part of the bar: filled in its colour when done, a faint
-/// tint of it when not marked yet, and fainter still when marked not
-/// done, so what is still open stands out from what was skipped.
+/// One habit's part of the bar: filled in its colour when done, an
+/// outline of it when not marked yet, and a faint outline when marked
+/// not done.
 class _Segment extends StatelessWidget {
   const _Segment({
     required this.color,
@@ -122,15 +122,22 @@ class _Segment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Done is filled; the others are only an outline, so done and not
+    // done differ in shape, not only in how pale they are: easy to tell
+    // apart at a glance, also with weak eyesight or colour blindness.
     return Container(
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(height / 2),
-        color: switch (mark) {
-          DayMark.done => color,
-          DayMark.none => color.withValues(alpha: 0.16),
-          DayMark.notDone => color.withValues(alpha: 0.07),
-        },
+        color: mark == DayMark.done ? color : null,
+        border: mark == DayMark.done
+            ? null
+            : Border.all(
+                color: color.withValues(
+                  alpha: mark == DayMark.none ? 0.8 : 0.3,
+                ),
+                width: 1.5,
+              ),
       ),
     );
   }

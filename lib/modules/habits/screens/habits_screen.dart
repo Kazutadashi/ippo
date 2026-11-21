@@ -17,6 +17,7 @@ import '../habit.dart';
 import '../habit_actions.dart';
 import '../habit_log.dart';
 import 'habit_form_screen.dart';
+import '../habit_order.dart';
 
 /// How many days the grid shows; scroll sideways to see further back.
 const int _shownDays = 60;
@@ -66,7 +67,10 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SkyAppBar(title: const Text('Habits')),
+      appBar: SkyAppBar(
+        title: const Text('Habits'),
+        actions: [_OrderButton(appState: appState)],
+      ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
         // sync.
@@ -75,7 +79,7 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
           listenable: appState,
           builder: (context, _) {
             final log = HabitLog.of(appState);
-            final habits = log.shownHabits;
+            final habits = habitsInOrder(appState, log);
             return ListView(
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
@@ -444,4 +448,35 @@ class _CheckPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_CheckPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// The top bar's button for the order of the habits: as added, or by
+/// colour (similar colours together). The choice is saved, and Home's
+/// tile follows it.
+class _OrderButton extends StatelessWidget {
+  const _OrderButton({required this.appState});
+
+  final AppState appState;
+
+  @override
+  Widget build(BuildContext context) {
+    final byColour = appState.settings?.sortsHabitsByColour ?? false;
+    return PopupMenuButton<String>(
+      tooltip: 'Order of the habits',
+      icon: const Icon(Icons.sort),
+      onSelected: appState.setHabitOrder,
+      itemBuilder: (context) => [
+        CheckedPopupMenuItem(
+          value: 'added',
+          checked: !byColour,
+          child: const Text('As added'),
+        ),
+        CheckedPopupMenuItem(
+          value: 'colour',
+          checked: byColour,
+          child: const Text('By colour'),
+        ),
+      ],
+    );
+  }
 }
