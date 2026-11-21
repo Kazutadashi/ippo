@@ -6,6 +6,7 @@ library;
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ippo/core/widgets/day_bar.dart';
 import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
@@ -64,7 +65,12 @@ void main() {
       MaterialApp(home: FoodDiaryScreen(appState: appState)),
     );
 
-    expect(find.text('Today'), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(DayBar), matching: find.text('Today')),
+      findsOneWidget,
+    );
+    // The day's weight can be typed in right here.
+    expect(find.text('Weight'), findsOneWidget);
     expect(find.text('380 kcal'), findsOneWidget);
     expect(find.text('Protein'), findsOneWidget);
     expect(find.text('10 g'), findsOneWidget);

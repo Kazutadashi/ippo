@@ -20,6 +20,7 @@ import '../food_entry.dart';
 import '../nutrients.dart';
 import '../../body/body_log.dart';
 import '../../body/screens/body_screen.dart';
+import '../../body/screens/weight_card.dart';
 import '../daily_references.dart';
 import 'nutrient_bars.dart';
 import 'choose_food_screen.dart';
@@ -280,6 +281,15 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                       ),
                     ],
                   ],
+                ),
+                // The day's weight, typed in right here: the Food tab is
+                // opened every day, so the weight is not forgotten.
+                WeightCard(
+                  key: ValueKey('weight $date'),
+                  appState: widget.appState,
+                  log: body,
+                  date: date,
+                  isCompact: true,
                 ),
                 SectionCard(
                   children: [
