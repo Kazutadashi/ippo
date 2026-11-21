@@ -14,7 +14,6 @@ import '../../../core/units.dart';
 import '../../../core/widgets/section_card.dart';
 import '../body_actions.dart';
 import '../body_log.dart';
-import 'body_screen.dart' show describeDayOf;
 
 /// The weight on [date], with Save (Saved once it is), and below it the
 /// last few weighings (or, when [isCompact], only the one before, while
@@ -77,7 +76,7 @@ class _WeightCardState extends State<WeightCard> {
   }
 
   Future<void> _save() async {
-    final shown = _positive(_weight);
+    final shown = parsePositive(_weight.text);
     final weight = shown == null ? null : kilogramsFromShown(shown);
     if (weight == null || weight > 500) {
       setState(() => _problem = 'Enter your weight in $weightUnit.');
@@ -168,10 +167,4 @@ class _WeightCardState extends State<WeightCard> {
       ],
     );
   }
-}
-
-/// The number typed in [field] if it is above 0, else null.
-double? _positive(TextEditingController field) {
-  final value = double.tryParse(field.text.trim().replaceAll(',', '.'));
-  return value == null || value <= 0 ? null : value;
 }

@@ -93,7 +93,7 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
                   slept: sleptBefore,
                   bedtime: log.bedtimeOf(formatDate(addDays(shownDay, -1))),
                   wakeUp: wakeUp,
-                  average: _averageBefore(log, shownDay),
+                  average: log.averageSleepBefore(shownDay),
                   isToday: showsToday,
                 ),
                 SectionCard(
@@ -414,21 +414,6 @@ class _DayEntryState extends State<_DayEntry> {
       ],
     );
   }
-}
-
-/// The average sleep a night over the week before [day], counting only
-/// nights logged; null without any.
-Duration? _averageBefore(SleepLog log, DateTime day) {
-  var total = Duration.zero;
-  var nights = 0;
-  for (var back = 1; back <= 7; back++) {
-    final slept = log.sleepBefore(formatDate(addDays(day, -back)));
-    if (slept != null) {
-      total += slept;
-      nights++;
-    }
-  }
-  return nights == 0 ? null : total ~/ nights;
 }
 
 /// Last night, large: the hours slept with a moon, the night as a bar

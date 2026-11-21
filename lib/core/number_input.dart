@@ -17,6 +17,13 @@ double? parseAmount(String text) {
   return number;
 }
 
+/// Reads a number above 0 typed by the user, as [parseAmount] does;
+/// null if there is none, or it is 0.
+double? parsePositive(String text) {
+  final number = parseAmount(text);
+  return number == null || number == 0 ? null : number;
+}
+
 /// Shows a number without needless decimals: `150`, `12.5`, `0.3`.
 ///
 /// Numbers are rounded to one decimal place.

@@ -121,6 +121,22 @@ class SleepLog {
     return found;
   }
 
+  /// The average sleep a night over the 7 nights before [day], counting
+  /// only nights logged; null without any. The Home tile and the Sleep
+  /// tab both show it.
+  Duration? averageSleepBefore(DateTime day) {
+    var total = Duration.zero;
+    var nights = 0;
+    for (var back = 1; back <= 7; back++) {
+      final slept = sleepBefore(formatDate(addDays(day, -back)));
+      if (slept != null) {
+        total += slept;
+        nights++;
+      }
+    }
+    return nights == 0 ? null : total ~/ nights;
+  }
+
   /// The latest moment of [kind] recorded for [date], if any. If several
   /// were recorded, the last one counts.
   SleepMoment? _momentOn(String date, MomentKind kind) =>

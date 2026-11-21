@@ -189,3 +189,10 @@ String formatDateAndTime(DateTime moment) {
   final local = moment.toLocal();
   return '${formatShortDate(local)}, ${showTimeOfDay(local)}';
 }
+
+/// A date (`YYYY-MM-DD`) as on screen, such as "Mon 16 Nov"; the text as
+/// it is if it is not a date.
+String describeDayOf(String date) {
+  final day = parseDate(date);
+  return day == null ? date : formatShortDate(day);
+}

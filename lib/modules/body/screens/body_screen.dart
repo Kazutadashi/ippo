@@ -69,12 +69,6 @@ class _SourcesButton extends StatelessWidget {
   }
 }
 
-/// Reads a positive number typed in [field], or null.
-double? _positive(TextEditingController field) {
-  final value = double.tryParse(field.text.trim().replaceAll(',', '.'));
-  return value == null || value <= 0 ? null : value;
-}
-
 /// Sex, year of birth and height: set once, changed rarely.
 class _ProfileCard extends StatefulWidget {
   const _ProfileCard({required this.appState, required this.log});
@@ -147,7 +141,9 @@ class _ProfileCardState extends State<_ProfileCard> {
     if (log.sex == null || log.birthYear == null || heightCm == null) {
       return false;
     }
-    final height = showImperialUnits ? _imperialHeight() : _positive(_height);
+    final height = showImperialUnits
+        ? _imperialHeight()
+        : parsePositive(_height.text);
     return _sex == log.sex &&
         int.tryParse(_birthYear.text.trim()) == log.birthYear &&
         height != null &&
@@ -157,7 +153,9 @@ class _ProfileCardState extends State<_ProfileCard> {
   Future<void> _save() async {
     final sex = _sex;
     final year = int.tryParse(_birthYear.text.trim());
-    final height = showImperialUnits ? _imperialHeight() : _positive(_height);
+    final height = showImperialUnits
+        ? _imperialHeight()
+        : parsePositive(_height.text);
     final thisYear = DateTime.now().year;
     if (sex == null ||
         year == null ||
@@ -238,12 +236,6 @@ class _ProfileCardState extends State<_ProfileCard> {
   }
 }
 
-/// A date (`YYYY-MM-DD`) as on screen, such as "Mon 16 Nov".
-String describeDayOf(String date) {
-  final day = parseDate(date);
-  return day == null ? date : formatShortDate(day);
-}
-
 /// The BMR, the energy used in a day at each activity level, and the
 /// daily limit.
 class _CaloriesCard extends StatefulWidget {
@@ -288,7 +280,7 @@ class _CaloriesCardState extends State<_CaloriesCard> {
   }
 
   Future<void> _save({bool remove = false}) async {
-    final limit = remove ? null : _positive(_limit);
+    final limit = remove ? null : parsePositive(_limit.text);
     if (!remove && (limit == null || limit > 10000)) {
       setState(() => _problem = 'Enter a limit in kcal.');
       return;

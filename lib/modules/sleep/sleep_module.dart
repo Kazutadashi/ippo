@@ -46,7 +46,7 @@ class SleepModule extends IppoModule {
     final sleptBefore = log.sleepBefore(date);
     final bedtimeBefore = log.bedtimeOf(formatDate(addDays(day, -1)));
     final wakeUp = log.wakeUpOn(date);
-    final average = _averageSleep(log, day);
+    final average = log.averageSleepBefore(day);
     final averageRow = average == null
         ? null
         : TileRow('Avg (7 nights)', formatDuration(average));
@@ -143,21 +143,6 @@ class SleepModule extends IppoModule {
 
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => sleepDemoEvents(plan);
-}
-
-/// The average sleep a night over the week before [day], counting only
-/// nights logged; null without any.
-Duration? _averageSleep(SleepLog log, DateTime day) {
-  var total = Duration.zero;
-  var nights = 0;
-  for (final before in daysBefore(day)) {
-    final slept = log.sleepBefore(formatDate(before));
-    if (slept != null) {
-      total += slept;
-      nights++;
-    }
-  }
-  return nights == 0 ? null : total ~/ nights;
 }
 
 /// One fact about the day after the night: how long you have been awake
