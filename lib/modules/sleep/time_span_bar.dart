@@ -11,9 +11,13 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/clock_time.dart';
 import '../../core/dates.dart';
 
+/// How tall the dashed midnight line is: well above and below the bar.
+const double _midnightLineHeight = 22;
+
 /// A stretch from [start] to [end] as the filled part of a bar that
-/// covers [trackHours] hours from [trackStartHour], with a label under
-/// each end. A mark, not a chart: it shows at a glance whether the
+/// covers [trackHours] hours from [trackStartHour]: its two times above
+/// its ends, a dashed line at midnight, and a scale under the bar every
+/// 6 hours. A mark, not a chart: it shows at a glance whether the
 /// stretch was early or late, long or short.
 class TimeSpanBar extends StatelessWidget {
   /// Creates the bar.
@@ -86,10 +90,10 @@ class TimeSpanBar extends StatelessWidget {
             // before the stretch, the stretch, and after it. (Flex parts
             // rather than measured widths, so the tile's height can be
             // worked out before it is laid out.)
-            // Midnight, where one day ends and the next begins, is a thin
-            // line across the bar.
+            // Midnight, where one day ends and the next begins, is a
+            // tall, faint dashed line across the bar.
             SizedBox(
-              height: 12,
+              height: _midnightLineHeight,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -104,10 +108,12 @@ class TimeSpanBar extends StatelessWidget {
                   if (_midnight != null)
                     Align(
                       alignment: Alignment(-1 + 2 * _midnight!, 0),
-                      child: Container(
-                        width: 1.5,
-                        height: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      child: CustomPaint(
+                        size: const Size(1.5, _midnightLineHeight),
+                        painter: _DashedLinePainter(
+                          Theme.of(context).colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                        ),
                       ),
                     ),
                 ],
@@ -223,4 +229,32 @@ String hourLabel(int hour) {
   }
   final onTwelve = hour % 12 == 0 ? 12 : hour % 12;
   return '$onTwelve ${hour < 12 ? 'am' : 'pm'}';
+}
+
+/// A vertical dashed line, filling its height: short dashes with gaps.
+class _DashedLinePainter extends CustomPainter {
+  _DashedLinePainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const dash = 3.0;
+    const gap = 2.0;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = size.width;
+    final x = size.width / 2;
+    for (var y = 0.0; y < size.height; y += dash + gap) {
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x, (y + dash).clamp(0, size.height)),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedLinePainter oldDelegate) =>
+      oldDelegate.color != color;
 }
