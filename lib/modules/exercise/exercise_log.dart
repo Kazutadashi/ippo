@@ -82,15 +82,15 @@ class ExerciseLog {
   /// The steps on [date] (`YYYY-MM-DD`): the count logged last for that
   /// day that is not deleted, or null if none. (Normally there is one per
   /// day, changed in place; two can arrive from two devices.)
-  StepCount? stepsOn(String date) {
-    StepCount? latest;
-    for (final count in steps) {
-      if (count.date == date && !count.isDeleted) {
-        latest = count;
-      }
-    }
-    return latest;
-  }
+  StepCount? stepsOn(String date) => _latestSteps[date];
+
+  /// The last count on each day that is not deleted. Built once, the
+  /// first time it is needed (a later count for a day replaces an
+  /// earlier one in the map, so the last one counts).
+  late final Map<String, StepCount> _latestSteps = {
+    for (final count in steps)
+      if (!count.isDeleted) count.date: count,
+  };
 
   /// How many things were skipped because their data was not valid.
   final int invalidCount;

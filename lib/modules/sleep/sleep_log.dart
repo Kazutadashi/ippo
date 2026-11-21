@@ -123,13 +123,15 @@ class SleepLog {
 
   /// The latest moment of [kind] recorded for [date], if any. If several
   /// were recorded, the last one counts.
-  SleepMoment? _momentOn(String date, MomentKind kind) {
-    SleepMoment? found;
-    for (final moment in moments) {
-      if (moment.kind == kind && moment.date == date && !moment.isDeleted) {
-        found = moment;
-      }
-    }
-    return found;
-  }
+  SleepMoment? _momentOn(String date, MomentKind kind) =>
+      _latestMoments['${kind.name} $date'];
+
+  /// The last moment of each kind on each day that is not deleted, by
+  /// `"<kind> <date>"`. Built once, the first time it is needed, so the
+  /// screens that look at many nights do not search every moment each
+  /// time.
+  late final Map<String, SleepMoment> _latestMoments = {
+    for (final moment in moments)
+      if (!moment.isDeleted) '${moment.kind.name} ${moment.date}': moment,
+  };
 }

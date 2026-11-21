@@ -34,12 +34,6 @@ class NutrientKind {
 /// anyone, so the screen leaves it out; the data keeps it.
 String formatEnergy(double kcal) => '${formatThousands(kcal.round())} kcal';
 
-/// Grams for people: whole grams from 10 g on (`168 g`), and a tenth
-/// below that, where it still matters (`2.5 g`). The data keeps every
-/// decimal.
-String formatGrams(double grams) =>
-    grams >= 10 ? '${grams.round()} g' : '${formatAmount(grams)} g';
-
 /// The field name for energy, the one nutrient that is always required.
 const String energyKey = 'energy_kcal';
 

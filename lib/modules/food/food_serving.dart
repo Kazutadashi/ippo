@@ -56,12 +56,6 @@ class FoodServing {
   /// The grams (or millilitres) in one piece.
   double get amountPerUnit => amount / count;
 
-  /// Turns [units] pieces into grams (or millilitres).
-  double unitsToAmount(double units) => units * amountPerUnit;
-
-  /// Turns grams (or millilitres) into pieces.
-  double amountToUnits(double amount) => amount / amountPerUnit;
-
   /// Turns the serving size into event data.
   Map<String, Object?> toJson() => {
     'unit': unit.trim(),

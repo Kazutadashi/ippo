@@ -81,11 +81,25 @@ class FoodDiary {
 
   /// The entries on [date] (`YYYY-MM-DD`) that are not deleted, in the
   /// order they were made.
-  List<FoodEntry> entriesOn(String date) {
-    return entries
-        .where((entry) => entry.date == date && !entry.isDeleted)
-        .toList();
-  }
+  List<FoodEntry> entriesOn(String date) => _entriesByDay[date] ?? const [];
+
+  /// The entries that are not deleted, by day, in the order they were
+  /// made. Built once, the first time it is needed, so the screens that
+  /// look at many days (Home's week, Lately) do not search every entry
+  /// for each day.
+  late final Map<String, List<FoodEntry>> _entriesByDay = () {
+    final byDay = <String, List<FoodEntry>>{};
+    for (final entry in entries) {
+      if (!entry.isDeleted) {
+        byDay.putIfAbsent(entry.date, () => []).add(entry);
+      }
+    }
+    // Read-only, as every caller gets the same list.
+    return {
+      for (final day in byDay.entries)
+        day.key: List<FoodEntry>.unmodifiable(day.value),
+    };
+  }();
 
   /// The most recent entry of the food [foodId] that is not deleted, or
   /// null if it was never logged. Its amount is a good first guess for

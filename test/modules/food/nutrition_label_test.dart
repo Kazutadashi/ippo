@@ -203,9 +203,9 @@ salt: 0.4 g
     const chips = FoodServing(unit: 'chips', count: 9, amount: 28);
 
     test('converts pieces and grams both ways', () {
-      expect(chips.unitsToAmount(9), 28);
-      expect(chips.unitsToAmount(18), 56);
-      expect(chips.amountToUnits(56), closeTo(18, 1e-9));
+      expect(9 * chips.amountPerUnit, 28);
+      expect(18 * chips.amountPerUnit, 56);
+      expect(56 / chips.amountPerUnit, closeTo(18, 1e-9));
     });
 
     test('is written and read back', () {

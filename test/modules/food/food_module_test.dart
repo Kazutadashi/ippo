@@ -360,7 +360,7 @@ void main() {
         date: day,
         time: null,
         food: currentDiary().foods[id]!,
-        amount: chips.unitsToAmount(9),
+        amount: 9 * chips.amountPerUnit,
         unitCount: 9,
         unitName: 'chips',
       );
