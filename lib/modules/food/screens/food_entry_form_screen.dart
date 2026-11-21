@@ -250,13 +250,76 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
     }
   }
 
-  void _editFood() {
-    Navigator.of(context).push(
+  /// The food this form is about: the one being logged, or, for a meal
+  /// already logged, the food it was made from (null for a quick entry,
+  /// or a food that is gone).
+  Food? get _food {
+    final food = widget.food;
+    if (food != null) {
+      return food;
+    }
+    final foodId = widget.entry?.foodId;
+    return foodId == null ? null : FoodDiary.of(widget.appState).foods[foodId];
+  }
+
+  /// Opens the food itself to change it. For a meal already logged, if
+  /// the food's name or values changed, asks whether this meal should
+  /// take them too (it keeps its own copy otherwise).
+  Future<void> _editFood() async {
+    final before = _food!;
+    await Navigator.of(context).push(
       MaterialPageRoute<String>(
         builder: (context) =>
-            FoodFormScreen.edit(appState: widget.appState, food: widget.food!),
+            FoodFormScreen.edit(appState: widget.appState, food: before),
       ),
     );
+    final entry = widget.entry;
+    final after = FoodDiary.of(widget.appState).foods[before.id];
+    if (entry == null || after == null || !mounted) {
+      return;
+    }
+    final changed =
+        after.name != before.name ||
+        after.nutrientsPer100.toJson().toString() !=
+            before.nutrientsPer100.toJson().toString();
+    if (!changed) {
+      return;
+    }
+    final useNew = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Update this meal too?'),
+        content: Text(
+          'You changed ${after.name}. This meal still has the values it '
+          'was logged with. Use the new values for this meal? Other '
+          'meals keep theirs.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep old'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Use new values'),
+          ),
+        ],
+      ),
+    );
+    if (useNew != true || !mounted) {
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    final updated = await saveOrShowError(
+      context,
+      () => FoodActions(widget.appState).refreshEntryFromFood(entry, after),
+    );
+    if (updated && mounted) {
+      Navigator.of(context).pop(true);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('This meal now has the new values.')),
+      );
+    }
   }
 
   Future<void> _delete() async {
@@ -298,7 +361,16 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: Text(_name),
-          actions: [AppBarSaveButton(onPressed: _save)],
+          actions: [
+            // The food itself (its name or label values), right here.
+            if (_food != null)
+              IconButton(
+                tooltip: 'Edit this food',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: _editFood,
+              ),
+            AppBarSaveButton(onPressed: _save),
+          ],
         ),
         body: ListView(
           padding: belowNavigationBar(context, const EdgeInsets.all(16)),
@@ -370,7 +442,7 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               DeleteButton(label: 'Delete this entry', onPressed: _delete),
             // Changing the food itself (its name or label values) starts
             // here, where the food is already open.
-            if (widget.food != null)
+            if (_food != null)
               Align(
                 alignment: Alignment.centerLeft,
                 child: TextButton.icon(

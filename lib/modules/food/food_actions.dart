@@ -162,6 +162,20 @@ class FoodActions {
     });
   }
 
+  /// Gives [entry] the name and values of [food] as it is now, for the
+  /// same amount: after fixing a food's label values, to fix a meal of
+  /// it too. Only done when the user asks, so otherwise past meals keep
+  /// the values they were logged with.
+  Future<Event> refreshEntryFromFood(FoodEntry entry, Food food) {
+    return _write('food_entry_changed', {
+      'target_id': entry.id,
+      'changes': {
+        'name': food.name,
+        'nutrients': food.nutrientsFor(entry.amount ?? 0).toJson(),
+      },
+    });
+  }
+
   /// Changes the name, nutrients and time (`HH:MM`, or null if not
   /// known) of a quick entry. The time is only written when it changed.
   Future<Event> changeQuickEntry(

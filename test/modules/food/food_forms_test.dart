@@ -185,6 +185,53 @@ void main() {
     expect(diary.entries.where((entry) => !entry.isDeleted), isEmpty);
   });
 
+  testWidgets('a logged meal can open its food, and take its new values', (
+    tester,
+  ) async {
+    await setUpApp(tester);
+    late String foodId;
+    await tester.runAsync(() async {
+      final actions = FoodActions(appState);
+      foodId = (await actions.createFood(
+        name: 'Rolled oats',
+        measuredIn: 'g',
+        nutrientsPer100: const Nutrients({'energy_kcal': 380}),
+      )).id;
+      final food = FoodDiary.fromEvents(appState.eventLog!.events)
+          .foods[foodId]!;
+      await actions.recordFoodEntry(
+        date: '2026-11-18',
+        time: '07:30',
+        food: food,
+        amount: 50,
+      );
+    });
+    var diary = FoodDiary.fromEvents(appState.eventLog!.events);
+    final entry = diary.entries.single;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FoodEntryFormScreen.edit(appState: appState, entry: entry),
+      ),
+    );
+    // The food can be changed from the meal, at the top and below.
+    expect(find.byTooltip('Edit this food'), findsOneWidget);
+    expect(find.text('Edit this food'), findsOneWidget);
+
+    // A fixed label value reaches this meal only when asked.
+    await tester.runAsync(() async {
+      final actions = FoodActions(appState);
+      await actions.changeFood(
+        foodId,
+        nutrientsPer100: const Nutrients({'energy_kcal': 400}),
+      );
+      final fixed = FoodDiary.fromEvents(appState.eventLog!.events)
+          .foods[foodId]!;
+      await actions.refreshEntryFromFood(entry, fixed);
+    });
+    diary = FoodDiary.fromEvents(appState.eventLog!.events);
+    expect(diary.entries.single.nutrients.energyKcal, 200);
+  });
+
   testWidgets('an amount can be typed in pieces or grams', (tester) async {
     await setUpApp(tester);
     late String foodId;
