@@ -67,14 +67,6 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: SkyAppBar(title: const Text('Habits')),
-      floatingActionButton: FloatingActionButton.extended(
-        // Every floating button needs its own tag: all tabs stay alive at
-        // once, and Flutter cannot animate two buttons with one tag.
-        heroTag: 'new-habit',
-        onPressed: () => _open(context, HabitFormScreen(appState: appState)),
-        icon: const Icon(Icons.add),
-        label: const Text('New habit'),
-      ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
         // sync.
@@ -88,14 +80,34 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
 
-              // Room at the bottom, so the button never hides a habit.
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 96),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
               children: [
                 if (log.invalidCount > 0)
                   ProblemText(
                     '${log.invalidCount} items in the data could not be read '
                     'and are not shown.',
                   ),
+                // A new habit, just above the habits: in the right half,
+                // where Add food and New exercise are on their tabs.
+                Padding(
+                  padding: const EdgeInsets.only(top: Spacing.tight),
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      const SizedBox(width: Spacing.small),
+                      Expanded(
+                        child: FilledButton.tonalIcon(
+                          onPressed: () => _open(
+                            context,
+                            HabitFormScreen(appState: appState),
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: const Text('New habit'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (habits.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: Spacing.screen),

@@ -157,38 +157,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
           DayBar(day: shownDay, onChanged: showDay),
         ],
       ),
-      // Adding to the whole day: buttons at the bottom right, as on the
-      // other screens. Each needs its own hero tag, because Flutter
-      // animates floating buttons between screens by this tag.
-      // IntrinsicWidth with "stretch" gives both buttons the width of the
-      // wider one, so they line up.
-      floatingActionButton: IntrinsicWidth(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // The quieter of the two: one accent-filled button is
-            // enough, and Add food is the usual way.
-            FloatingActionButton.extended(
-              heroTag: 'quick-food',
-              backgroundColor: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              onPressed: _addQuickFood,
-              icon: const Icon(Icons.bolt),
-              label: const Text('Quick food'),
-            ),
-            const SizedBox(height: 12),
-            FloatingActionButton.extended(
-              heroTag: 'add-food',
-              onPressed: _addEntry,
-              icon: const Icon(Icons.add),
-              label: const Text('Add food'),
-            ),
-          ],
-        ),
-      ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
         // sync.
@@ -207,8 +175,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
 
-              // Room at the bottom, so the buttons never hide an entry.
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 if (diary.invalidCount > 0)
                   ProblemText(
@@ -290,6 +257,29 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                   log: body,
                   date: date,
                   isCompact: true,
+                ),
+                // Adding to the day, just above what was eaten: Quick food
+                // (a name and numbers) and Add food (from your foods),
+                // side by side, the usual one filled.
+                const SizedBox(height: Spacing.small),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _addQuickFood,
+                        icon: const Icon(Icons.bolt),
+                        label: const Text('Quick food'),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.small),
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        onPressed: _addEntry,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add food'),
+                      ),
+                    ),
+                  ],
                 ),
                 SectionCard(
                   children: [

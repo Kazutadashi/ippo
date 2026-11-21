@@ -77,8 +77,11 @@ Contents:
    a fixed width. There is no day after today: no data can be there.
 2. **Cards** (`SectionCard`), one per section, each starting with a
    `CardHeader`.
-4. **Floating buttons** at the bottom right, for creating things for the
-   whole screen (section 4).
+3. **Create buttons** in the page, just above the list they add to, in
+   one row: the usual one (**+ Add food**, **+ New exercise**, **+ New
+   habit**) tonal in the right half, a second one (**Quick food**)
+   outlined in the left half (section 4). The module tabs have no
+   floating buttons: they took too much room and covered the list.
 
 Nothing sits outside a card except short notes or problems at the top.
 
@@ -281,7 +284,8 @@ Rules:
 
 | Action | Where | Looks like | Examples |
 | --- | --- | --- | --- |
-| Create something for the whole screen | Bottom right, stacked at equal width if more than one | Extended floating button: icon and a short label | **+ New exercise**, **Quick food**, **+ New food** |
+| Create something on a module tab | In the page, just above the list it adds to; one row, right half for the usual one, left half for a second | Tonal button (usual) and outlined button (second), icon and a short label | **+ Add food** with **Quick food**, **+ New exercise**, **+ New habit** |
+| Create something on a list screen (not a tab) | Bottom right | Extended floating button: icon and a short label | **+ New food** (Add food, Your foods) |
 | An action for one card | Right side of the card's header | Text button with icon: `HeaderAddButton`, `HeaderEditButton` | **+ Add** (naps), **Edit** (a logged night), **Refresh** |
 | Change one row of a list | The whole row | `ListTile` with `onTap` | a food entry, a nap |
 | Pick from a list (a chooser) | The whole row; changing the thing itself is on the next screen | `ListTile` with `onTap` | a food in "Add food" |
@@ -292,16 +296,17 @@ Rules:
 - At most **one filled button** is in view on a card or form, so the
   main action is obvious. An action repeated on every card (an exercise's
   **Add**) is **tonal** (`FilledButton.tonal`), and the second of two
-  floating buttons is the quieter one, so accent colour stays scarce.
+  create buttons is the quieter (outlined) one, so accent colour stays
+  scarce.
 - A Save on a module's own screen says **Saved** (disabled, with a ✓)
   when nothing is waiting to be saved, which also confirms that saving
   worked.
-- Every floating button has its own `heroTag`. All tabs stay alive at
-  once, and Flutter cannot animate two floating buttons with the same
-  tag (opening another screen would fail).
+- Every floating button has its own `heroTag`: Flutter cannot animate
+  two floating buttons with the same tag (opening another screen would
+  fail).
 - A card header has **at most one** action.
-- Leave room at the bottom of a scrolling screen so floating buttons
-  never cover the last row (96 pixels for one button, 160 for two).
+- On a screen with a floating button, leave room at the bottom so it
+  never covers the last row (96 pixels).
 
 
 ## 5. Lists
@@ -480,7 +485,7 @@ Fixed sizes:
 | Card header height | 36, icon 20 |
 | Home tile icon | 16 |
 | Smallest tap target | 48 × 48 (exception: habit grid cells are 34 × 36, and today's column 40 × 36, so the grid stays compact) |
-| Room under the last card when there are floating buttons | 96 (one), 160 (two) |
+| Room under the last card when there is a floating button | 96 |
 
 
 ## 11. Feedback: saving, errors, undo
@@ -544,15 +549,10 @@ Scaffold(
     // With FollowsToday mixed into the screen's State.
     actions: [DayBar(day: shownDay, onChanged: showDay)],
   ),
-  floatingActionButton: FloatingActionButton.extended(
-    onPressed: createSomething,
-    icon: const Icon(Icons.add),
-    label: const Text('New thing'),
-  ),
   body: ListenableBuilder(
     listenable: appState,
     builder: (context, _) => ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
         SectionCard(
           children: [

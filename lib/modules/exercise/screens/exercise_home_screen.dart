@@ -90,14 +90,6 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
         title: const Text('Exercise'),
         actions: [DayBar(day: shownDay, onChanged: showDay)],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        // Every floating button needs its own tag: all tabs stay alive at
-        // once, and Flutter cannot animate two buttons with one tag.
-        heroTag: 'new-exercise',
-        onPressed: () => _open(ExerciseFormScreen(appState: widget.appState)),
-        icon: const Icon(Icons.add),
-        label: const Text('New exercise'),
-      ),
       body: RefreshIndicator(
         // Pull down to read the data folder again, for example after a
         // sync.
@@ -110,8 +102,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
               // Pull to refresh works even when the content is short.
               physics: const AlwaysScrollableScrollPhysics(),
 
-              // Leave room at the bottom so the button never hides a card.
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
               children: [
                 if (log.invalidCount > 0)
                   ProblemText(
@@ -131,6 +122,24 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
                   appState: widget.appState,
                   date: formatDate(shownDay),
                   saved: log.stepsOn(formatDate(shownDay)),
+                ),
+                // A new exercise, just above the exercises: in the right
+                // half, where Add food is on the Food tab.
+                const SizedBox(height: Spacing.small),
+                Row(
+                  children: [
+                    const Spacer(),
+                    const SizedBox(width: Spacing.small),
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        onPressed: () => _open(
+                          ExerciseFormScreen(appState: widget.appState),
+                        ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('New exercise'),
+                      ),
+                    ),
+                  ],
                 ),
                 // Says once how to fix a mistake, which is otherwise
                 // hidden.
