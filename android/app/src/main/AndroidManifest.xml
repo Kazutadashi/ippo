@@ -1,8 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Privacy: Android may copy an app's private files to the user's
+         cloud backup, or to a new phone. Ippo turns all of that off
+         (allowBackup, and dataExtractionRules for Android 12 and later),
+         so its settings never leave this phone. It also refuses plain,
+         unencrypted network traffic, though it has no network access at
+         all (no INTERNET permission). See docs/permissions.md. -->
     <application
         android:label="Ippo"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".MainActivity"
             android:exported="true"

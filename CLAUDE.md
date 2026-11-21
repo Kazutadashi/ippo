@@ -49,7 +49,7 @@ License: GPL-3.0-or-later (`LICENSE`). Every source file starts with an
 - **No server, no network.** The app reads and writes plain files in a
   data folder the user picks in settings. It must work with any folder;
   never hard-code paths. Syncing between devices is the user's job
-  (for example Synology Drive, Syncthing).
+  (for example Syncthing, or a NAS's own sync app).
 - **Append-only event log, one file per device**:
   `<data folder>/events/<device id>.jsonl`. The device id is random,
   generated once per install (names can collide; ids cannot). A device

@@ -14,6 +14,23 @@ not have to trust our word that it never goes online. A test
 (`test/no_internet_permission_test.dart`) fails if anyone adds this
 permission to the release manifest.
 
+### No backups or transfers of the app's own files
+
+Android can copy an app's private files to your cloud backup (your
+Google account) or to a new phone. Ippo turns this off
+(`android:allowBackup="false"`, and for Android 12 and later
+`android:dataExtractionRules`, which excludes everything from both,
+in `res/xml/data_extraction_rules.xml`). Those private files are only
+the settings (this device's id and name, the chosen folder, display
+choices), but they stay on this phone. Your data is in the folder you
+chose, which you back up and sync with your own tools. After a
+reinstall, Ippo starts fresh: choose the folder again and it finds all
+your data there. The same test as above checks this.
+
+Ippo also refuses plain, unencrypted network traffic
+(`android:usesCleartextTraffic="false"`). It has no network access at
+all, so this only makes the intent explicit.
+
 ### Not permissions, but worth knowing
 
 **Folder access.** You choose Ippo's data folder in Android's own
