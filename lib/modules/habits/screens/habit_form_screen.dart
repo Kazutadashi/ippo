@@ -414,11 +414,13 @@ class _HabitPreviewState extends State<_HabitPreview> {
   ];
 
   /// Moves day [index] on, as a tap in the grid does: nothing → ✓ → ✗ →
-  /// nothing.
+  /// nothing, and a covered day (a dot) straight to ✓.
   void _cycle(int index) {
     HapticFeedback.selectionClick();
+    final isCovered = _marks[index] != DayMark.done && _isCovered(index);
     setState(() {
       _marks[index] = switch (_marks[index]) {
+        _ when isCovered => DayMark.done,
         DayMark.none => DayMark.done,
         DayMark.done => DayMark.notDone,
         DayMark.notDone => DayMark.none,
@@ -489,7 +491,7 @@ class _HabitPreviewState extends State<_HabitPreview> {
               _PreviewDay(
                 mark: _marks[index],
                 isToday: index == 0,
-                isCovered: _isCovered(index),
+                isCovered: _marks[index] != DayMark.done && _isCovered(index),
                 color: habit.displayColor(theme),
                 onTap: () => _cycle(index),
               ),
@@ -514,8 +516,8 @@ class _PreviewDay extends StatelessWidget {
   final DayMark mark;
   final bool isToday;
 
-  /// Whether the habit's frequency covers this day, so a ✗ here is
-  /// shown as fine.
+  /// Whether the habit's frequency covers this day (not done, but the
+  /// chain held around it), so it shows as fine.
   final bool isCovered;
 
   /// The habit's colour.
@@ -529,12 +531,12 @@ class _PreviewDay extends StatelessWidget {
     final Widget icon;
     final String meaning;
     switch (mark) {
+      case _ when isCovered:
+        icon = CoveredMark(size: 18, color: color);
+        meaning = 'covered';
       case DayMark.done:
         icon = BoldCheck(size: 18, color: color);
         meaning = 'done';
-      case DayMark.notDone when isCovered:
-        icon = CoveredMark(size: 18, color: color);
-        meaning = 'not done, but covered';
       case DayMark.notDone:
         icon = Icon(
           Icons.close,

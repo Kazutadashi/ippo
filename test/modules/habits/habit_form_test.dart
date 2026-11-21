@@ -84,9 +84,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     final pastDone = find.bySemanticsLabel('Preview, a past day: done');
     final pastNotDone = find.bySemanticsLabel('Preview, a past day: not done');
-    final pastCovered = find.bySemanticsLabel(
-      'Preview, a past day: not done, but covered',
-    );
+    final pastCovered = find.bySemanticsLabel('Preview, a past day: covered');
 
     // Every day: the middle one of the three past ✓ becomes ✗.
     await tester.tap(pastDone.at(1));
@@ -98,6 +96,16 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(pastCovered, findsOneWidget);
     expect(find.byType(CoveredMark), findsOneWidget);
+
+    // Tapping the covered day turns it to ✓, and again back to the dot:
+    // the dot cannot be taken away while the chain holds.
+    await tester.tap(pastCovered);
+    await tester.pump(const Duration(seconds: 1));
+    expect(pastCovered, findsNothing);
+    expect(pastDone, findsNWidgets(3));
+    await tester.tap(pastDone.at(1));
+    await tester.pump(const Duration(seconds: 1));
+    expect(pastCovered, findsOneWidget);
 
     // The newer ✓ becomes ✗ too: the chain broke, so both are ✗.
     await tester.tap(pastDone.first);

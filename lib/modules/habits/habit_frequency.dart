@@ -78,8 +78,8 @@ class HabitFrequency {
     return '$times times every $perDays days';
   }
 
-  /// Whether a day marked not done is *covered*: the chain held around
-  /// it, so the ✗ did no harm. That is, every stretch of [perDays] days
+  /// Whether a day not done (marked ✗, or not marked) is *covered*: the
+  /// chain held around it, so it needed nothing. That is, every stretch of [perDays] days
   /// that includes the day has the habit done at least [times] times.
   ///
   /// "Every other day" (1 in 2), ✓ Monday, ✗ Tuesday, ✓ Wednesday:
@@ -103,16 +103,24 @@ class HabitFrequency {
       return false;
     }
     // Each stretch that includes the day starts between [firstStart] and
-    // the day itself.
-    for (var start = firstStart; start <= 0; start++) {
-      var done = 0;
-      for (var offset = start; offset < start + perDays; offset++) {
-        if (isDoneAt(offset)) {
-          done++;
-        }
+    // the day itself. Count the first stretch, then slide it a day at a
+    // time: add the day coming in, take away the day going out. (Asking
+    // once per day keeps a long frequency, such as once a year, quick.)
+    var done = 0;
+    for (var offset = firstStart; offset < firstStart + perDays; offset++) {
+      if (isDoneAt(offset)) {
+        done++;
       }
+    }
+    for (var start = firstStart; start <= 0; start++) {
       if (done < times) {
         return false;
+      }
+      if (isDoneAt(start)) {
+        done--;
+      }
+      if (isDoneAt(start + perDays)) {
+        done++;
       }
     }
     return true;

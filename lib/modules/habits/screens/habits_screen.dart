@@ -419,17 +419,19 @@ class _DayCell extends StatelessWidget {
     final colors = theme.colorScheme;
     final date = formatDate(day);
     final mark = log.markOn(habit.id, date);
+    // A day not done where the chain held around it needed nothing: a
+    // dot in the habit's colour, whether it is marked ✗ or not at all.
+    // It comes from the days around it, so tapping cannot take it away.
+    final isCovered = mark != DayMark.done && log.isCoveredOn(habit, date);
     final Widget icon;
     final String meaning;
     switch (mark) {
+      case _ when isCovered:
+        icon = CoveredMark(size: _markSize, color: habit.displayColor(theme));
+        meaning = 'covered';
       case DayMark.done:
         icon = BoldCheck(size: _markSize, color: habit.displayColor(theme));
         meaning = 'done';
-      case DayMark.notDone when log.isCoveredOn(habit, date):
-        // Not done, but the chain held around it ("every other day" with
-        // a ✓ on each side): a dot in its colour, so it does not look missed.
-        icon = CoveredMark(size: _markSize, color: habit.displayColor(theme));
-        meaning = 'not done, but covered';
       case DayMark.notDone:
         // Quieter than a ✓: a "no" is information, not an alarm.
         icon = Icon(
@@ -464,10 +466,15 @@ class _DayCell extends StatelessWidget {
           onTap: () {
             // A light tick confirms the tap at once, before saving.
             HapticFeedback.selectionClick();
-            saveOrShowError(
-              context,
-              () => HabitActions(appState).cycleDay(habit.id, date, log),
-            );
+            final actions = HabitActions(appState);
+            saveOrShowError(context, () {
+              // A covered day goes straight to ✓: stepping it to ✗ or to
+              // nothing would leave the same dot, a tap that does nothing.
+              if (isCovered) {
+                return actions.recordDay(habit.id, date, done: true);
+              }
+              return actions.cycleDay(habit.id, date, log);
+            });
           },
           child: SizedBox(
             width: width,
