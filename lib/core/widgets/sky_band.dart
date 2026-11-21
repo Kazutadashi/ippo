@@ -161,7 +161,23 @@ class _DayRow extends StatelessWidget {
                 ),
               ),
             ),
-            DayBar(day: day, onChanged: onChanged),
+            // White on the sky in light mode too, as on Home: there,
+            // the theme's dark greys (a greyed-out ›) would vanish.
+            Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: Theme.of(context).colorScheme.copyWith(
+                  onSurface: Colors.white,
+                  onSurfaceVariant: Colors.white,
+                  secondaryContainer: Colors.white24,
+                  onSecondaryContainer: Colors.white,
+                ),
+              ),
+              // A Theme resets the icon colour, so white again here.
+              child: IconTheme.merge(
+                data: const IconThemeData(color: Colors.white),
+                child: DayBar(day: day, onChanged: onChanged),
+              ),
+            ),
           ],
         ),
       ),

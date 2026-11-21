@@ -177,10 +177,18 @@ class DateTimeField extends StatelessWidget {
                 color: greyed ? muted : null,
               ),
             ),
+            // "Not set" smaller than a time, so it does not read as one,
+            // but on a line of the same height.
             Text(
               value == null ? 'Not set' : showTimeOfDay(value),
-              style: textTheme.titleLarge?.copyWith(
-                color: greyed ? muted : null,
+              style: value == null
+                  ? textTheme.bodyLarge?.copyWith(color: muted)
+                  : textTheme.titleLarge?.copyWith(
+                      color: greyed ? muted : null,
+                    ),
+              strutStyle: StrutStyle.fromTextStyle(
+                textTheme.titleLarge!,
+                forceStrutHeight: true,
               ),
             ),
           ],

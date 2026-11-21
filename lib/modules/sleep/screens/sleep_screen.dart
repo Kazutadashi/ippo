@@ -411,18 +411,64 @@ class _DayEntryState extends State<_DayEntry> {
                   : 'Going to bed now',
             ),
           ),
-          const SizedBox(height: 8),
         ],
-        if (_hasChanges)
-          FilledButton(onPressed: _save, child: const Text('Save'))
-        else
-          FilledButton.icon(
-            onPressed: null,
-            icon: const Icon(Icons.check),
-            label: const Text('Saved'),
+        if (_hasChanges) ...[
+          if (_nowKind != null) const SizedBox(height: 8),
+          FilledButton(onPressed: _save, child: const Text('Save')),
+        ],
+        // A quiet last row: "Saved" when nothing is waiting to be saved
+        // (the sign that saving worked), and Clear on the right.
+        if (!_hasChanges || _hasSomethingSaved)
+          Padding(
+            padding: const EdgeInsets.only(top: Spacing.tight),
+            // Each side may wrap its words with very large text, rather
+            // than push the other off the card.
+            child: Row(
+              mainAxisAlignment: _hasChanges
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.spaceBetween,
+              children: [
+                if (!_hasChanges) const Flexible(child: _SavedNote()),
+                if (_hasSomethingSaved)
+                  Flexible(
+                    child: TextButton(
+                      onPressed: _clear,
+                      child: Text(
+                        'Clear this day',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        if (_hasSomethingSaved)
-          DeleteButton(label: 'Clear this day', onPressed: _clear),
+      ],
+    );
+  }
+}
+
+/// A small "✓ Saved", in grey: everything shown is saved.
+class _SavedNote extends StatelessWidget {
+  const _SavedNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.check, size: 18, color: muted),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            'Saved',
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: muted),
+          ),
+        ),
       ],
     );
   }
