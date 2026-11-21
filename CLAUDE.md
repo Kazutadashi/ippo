@@ -36,6 +36,16 @@ be easy to chart and to use for time series and machine learning.
 Record raw observations (not judgements like "good"), stable IDs,
 the day an entry is about, and explicit units.
 
+**The data is the product.** Future data scientists, statisticians and
+researchers using this data are the most important audience, above the
+in-app display. Every decision is weighed first by what it does to the
+data: standard vocabularies and units, compatibility with analysis
+tools, easy access and extraction, and nothing ambiguous or missing
+without saying so. The binding rules are in `docs/data-principles.md`.
+Breaking the format is acceptable when it makes the data clearly
+better, with a converter for existing data; losing or silently changing
+data is not.
+
 More modules should be addable without touching existing ones.
 
 Toolchain setup for contributors: `docs/development-setup.md`.

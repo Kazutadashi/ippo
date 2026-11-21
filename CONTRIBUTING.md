@@ -74,6 +74,8 @@ Features (habits, calisthenics, meals, ...) are **modules**.
 - Adding a new module should not require changing existing modules.
 
 ### Data
+- The data is the product: follow `docs/data-principles.md` for
+  anything that records, changes or exports data.
 - All data is stored as plain, human-readable files the user controls.
 - The app works with **any data folder the user chooses**. Never
   hard-code paths, device names, or personal data.
