@@ -151,12 +151,19 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   bottom: 0,
                   child: Row(
                     children: [
+                      // Always one line: a long day name shrinks a little
+                      // rather than wrapping.
                       Expanded(
-                        child: Text(
-                          describeToday(day),
-                          style: textTheme.titleSmall?.copyWith(
-                            color: Colors.white,
-                            shadows: _onLandscape,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            describeToday(day),
+                            maxLines: 1,
+                            style: textTheme.titleSmall?.copyWith(
+                              color: Colors.white,
+                              shadows: _onLandscape,
+                            ),
                           ),
                         ),
                       ),
