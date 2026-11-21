@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Small pictures of habits for the home screen: dots and squares that
-/// are quicker to read than numbers. They are marks, not charts.
+/// A small picture of the day's habits for the home screen, quicker to
+/// read than numbers: a mark, not a chart.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -9,11 +9,12 @@ import 'package:material_ui/material_ui.dart';
 import 'habit.dart';
 import 'habit_log.dart';
 
-/// One dot per habit, in the habit's own colour: filled when done, an
-/// empty ring when not marked yet, and a faint ring when marked not done.
-class HabitDots extends StatelessWidget {
-  /// Creates the dots for [habits] on [date] (`YYYY-MM-DD`).
-  const HabitDots({
+/// A bar across the tile with one segment per habit, in the habit's own
+/// colour: filled when done, a faint tint when not marked yet, and
+/// fainter still when marked not done.
+class HabitBar extends StatelessWidget {
+  /// Creates the bar for [habits] on [date] (`YYYY-MM-DD`).
+  const HabitBar({
     super.key,
     required this.habits,
     required this.log,
@@ -39,15 +40,19 @@ class HabitDots extends StatelessWidget {
     return Semantics(
       label: done.isEmpty ? 'None done yet' : 'Done: ${done.join(', ')}',
       child: ExcludeSemantics(
-        child: Wrap(
-          spacing: 6,
-          runSpacing: 6,
+        // One bar across the tile, a segment per habit, like the bars
+        // of the other tiles.
+        child: Row(
           children: [
-            for (final habit in habits)
-              _Dot(
-                color: habit.displayColor(theme),
-                mark: log.markOn(habit.id, date),
+            for (final (index, habit) in habits.indexed) ...[
+              if (index > 0) SizedBox(width: habits.length > 10 ? 2 : 4),
+              Expanded(
+                child: _Segment(
+                  color: habit.displayColor(theme),
+                  mark: log.markOn(habit.id, date),
+                ),
               ),
+            ],
           ],
         ),
       ),
@@ -55,8 +60,11 @@ class HabitDots extends StatelessWidget {
   }
 }
 
-class _Dot extends StatelessWidget {
-  const _Dot({required this.color, required this.mark});
+/// One habit's part of the bar: filled in its colour when done, a faint
+/// tint of it when not marked yet, and fainter still when marked not
+/// done, so what is still open stands out from what was skipped.
+class _Segment extends StatelessWidget {
+  const _Segment({required this.color, required this.mark});
 
   final Color color;
   final DayMark mark;
@@ -64,19 +72,14 @@ class _Dot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 12,
-      height: 12,
+      height: 10,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: mark == DayMark.done ? color : null,
-        border: mark == DayMark.done
-            ? null
-            : Border.all(
-                color: mark == DayMark.notDone
-                    ? color.withValues(alpha: 0.35)
-                    : color,
-                width: 1.5,
-              ),
+        borderRadius: BorderRadius.circular(5),
+        color: switch (mark) {
+          DayMark.done => color,
+          DayMark.none => color.withValues(alpha: 0.28),
+          DayMark.notDone => color.withValues(alpha: 0.1),
+        },
       ),
     );
   }

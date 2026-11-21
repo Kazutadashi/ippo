@@ -48,7 +48,7 @@ class HabitsModule extends IppoModule {
     return HomeTile(
       value: '${_doneOn(log, habits, date)} of ${habits.length}',
       valueNote: 'done',
-      mark: HabitDots(habits: habits, log: log, date: date),
+      mark: HabitBar(habits: habits, log: log, date: date),
       rows: [
         // The longest run of days in a row of any habit; one day is not a
         // run yet.

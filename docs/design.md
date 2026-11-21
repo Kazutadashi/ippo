@@ -177,7 +177,9 @@ anything today, does not belong on Home.
 - Every tile must earn its place: something a person wants to know at
   a glance and can act on. Totals that mix unlike things (all reps of
   all exercises) do not; steps, a streak, calories left do. A mark
-  must work with any number of things: dots wrap.
+  must work with any number of things, and fill the tile's width like
+  the others: the habits bar has one segment per habit, which get
+  narrower as habits are added.
 - Facts are **never joined into one line** with "·" or commas.
 - Durations ago are rounded for a glance: "25 min ago", then whole
   hours, "8 h ago". Home redraws every minute so they stay current.
