@@ -438,15 +438,6 @@ class _DayCell extends StatelessWidget {
           color: colors.onSurfaceVariant.withValues(alpha: 0.45),
         );
         meaning = 'not done';
-      case DayMark.none when !log.isDueOn(habit, date):
-        // Not due (a habit for some days only, waiting for its next
-        // turn): a short dash, so a waiting day never looks missed.
-        icon = Container(
-          width: 10,
-          height: 2,
-          color: habit.displayColor(theme).withValues(alpha: 0.5),
-        );
-        meaning = 'not due';
       case DayMark.none:
         // Today, an empty ring in the habit's colour: a box waiting to be
         // ticked. Past days, only a quiet dot, so the grid stays calm.
