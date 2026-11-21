@@ -34,9 +34,10 @@ Contents:
 1. **Logging is fast.** The everyday entry takes one or two taps on the
    module's own screen. Fields start with sensible values: last night's
    bedtime, the last set's reps, the current time.
-2. **Only what is needed.** No decoration, quotes, or statistics unless
-   someone asks for them. Analysis happens outside the app, on the plain
-   data files.
+2. **Only what is needed.** No decoration or quotes. Statistics live
+   in one place, the Charts screen (section 2), not on the logging
+   screens. Deeper analysis happens outside the app, on the plain data
+   files.
 3. **Obvious at a glance.** Anyone can tell what can be changed, what is
    only information, and what does something (see section 3).
 4. **The same everywhere.** The same kind of thing looks and sits the
@@ -89,10 +90,11 @@ Nothing sits outside a card except short notes or problems at the top.
 
 Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
-modules; on Home, the Settings gear and the day bar can be tapped (the
+modules; on Home, the chart button (Charts), the Settings gear and
+the day bar can be tapped (the
 day bar looks back at earlier days: "Looking back" replaces the
-greeting, and times since become clock times), a tile opens its tab,
-and a day in the week grid shows that day.
+greeting, and times since become clock times), a tile opens its tab, a day in the week grid shows that day, and the
+Lately card opens Charts.
 
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
 of day (dawn with a low sun and mist, a blue day with a few birds, dusk
@@ -185,6 +187,54 @@ anything today, does not belong on Home.
 - Durations ago are rounded for a glance: "25 min ago", then whole
   hours, "8 h ago". Home redraws every minute so they stay current.
 - Screen readers read a tile as one item.
+
+### Charts
+
+Every measure over time, on one screen opened from Home (the chart
+button beside the gear, or tapping Lately). It is not a tab: Android
+recommends at most five, and Home and the modules already use them.
+
+The charts are meant to be read like figures in a paper, on a phone:
+
+- **An index first, so a chart is quick to find.** Charts lists one
+  card per module (in the order of `allModules`), with one row per
+  chart: its name and unit, its change per week over the last 30 days,
+  a small line of those days (`ChartSparkline`), and its latest 7-day
+  mean, labelled. Tapping a row opens the chart on a screen of its own
+  (`ChartScreen`). A module offers its charts with `IppoModule.charts`,
+  as `ChartSpec`s: one value per day logged, and optionally a limit, a
+  recommended band or spans (bedtime to waking up). The core draws them
+  all the same way (`lib/core/charts/`), so a new chart is a few lines
+  in its module.
+- **Any days.** A chart's screen has the usual periods (Week, Month,
+  3 mo, Year, All, each ending today) and under them the days shown, as
+  a button that opens a calendar to pick any first and last day, with
+  ‹ › to step back and forward by as many days. › stops at today. A
+  period reaching back before anything was logged starts at the first
+  day logged instead.
+- **The raw values faint, the running mean strong.** Dots for
+  measurements (weight, best set), bars from zero for amounts (energy,
+  steps). The line is the mean of the values in the 7 days ending each
+  logged day (28 days once a chart spans more than four months), worked
+  out only on logged days and broken across gaps as long as the window.
+  A missing day is never a zero.
+- **Axes like graph paper**: round numbers (1, 2, 2.5 or 5 times a power
+  of ten; hours by 1, 2, 3 or 6; counts never by less than 1), light
+  grid lines, dates as Mondays, months or years. Measurements zoom in
+  on their values, so a change of a kilogram shows; bars start at zero,
+  so a bar's length is its value.
+- **Four numbers sum up the period**, labelled: Mean, SD (the sample
+  standard deviation), Per week (the slope of the least-squares line,
+  only with 3 values over 7 days or more), and how many values. Tapping
+  or dragging across a plot reads out one day in their place.
+- **Today's running totals** (food, steps, habits) are drawn fainter,
+  named "Today so far", and left out of the mean and the summary, as
+  on Home.
+- **Every mark is in the legend**, and a band from a published source
+  names it in a note under the chart (sleep: 7–9 h, Hirshkowitz et al.,
+  2015).
+- Accent colour and theme greys only, never colour alone: every mark
+  differs in shape too (dot, bar, line, dashes, band).
 
 ### Daily amounts and the calorie limit
 
@@ -416,6 +466,8 @@ by themselves unless the user picked another day.
 | This device | `smartphone` |
 | Other devices | `devices`, `devices_other` |
 | Read again | `refresh` |
+| Charts | `show_chart` (the button on Home) |
+| Weight | `monitor_weight_outlined` |
 
 Card headers show their icon in the accent colour. Home tiles use their
 module's icon, so a glance says which tab a tile belongs to.
@@ -624,6 +676,7 @@ A new module also needs:
 
 - `homeTile` (its tile on Home), and if it has them, `weekRows` (its
   rows of the week grid), `trendMeasures` (its rows of Lately),
+  `charts` (its charts on the Charts screen),
   `datesLogged` (days with anything logged, for Lately's last line),
   `demoEvents` (its demo data) and
   `buildSettingsCard` (a card in Settings), from `IppoModule`;

@@ -17,6 +17,9 @@ Ippo is built from modules:
 - **Time tracking:** tap what you are doing now; see how each day was
   spent.
 - **Sleep:** when you went to bed and woke up, plus naps.
+- **Charts:** every measure over time (weight, energy, steps, best sets,
+  sleep, habits), with a running mean, the standard deviation and the
+  change per week, for the last month, three months, year, or all.
 
 You can add more modules without changing the existing ones.
 

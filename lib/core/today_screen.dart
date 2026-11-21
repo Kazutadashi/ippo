@@ -4,7 +4,7 @@
 ///
 /// Like a weather app, it is information: a greeting, the date, and a
 /// grid of tiles from every module. The bar at the bottom leads to each
-/// module; the only thing to tap here is the gear for Settings.
+/// module; the gear opens Settings and the chart button the charts.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -30,6 +30,7 @@ class TodayScreen extends StatefulWidget {
     super.key,
     required this.appState,
     required this.onOpenSettings,
+    required this.onOpenCharts,
     required this.onOpenModule,
   });
 
@@ -38,6 +39,9 @@ class TodayScreen extends StatefulWidget {
 
   /// Opens the settings screen.
   final VoidCallback onOpenSettings;
+
+  /// Opens the charts screen, from the chart button and the Lately card.
+  final VoidCallback onOpenCharts;
 
   /// Opens the tab of the module at this place in `allModules`, when its
   /// tile is tapped.
@@ -151,6 +155,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                         ),
                       ),
                       IconButton(
+                        tooltip: 'Charts',
+                        color: Colors.white,
+                        icon: const Icon(Icons.show_chart),
+                        onPressed: widget.onOpenCharts,
+                      ),
+                      IconButton(
                         tooltip: 'Settings',
                         color: Colors.white,
                         icon: const Icon(Icons.settings_outlined),
@@ -252,6 +262,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                       trends: trends,
                       daysLogged: daysLogged,
                       isToday: day == today(),
+                      onTap: widget.onOpenCharts,
                     ),
                   ],
                 ],

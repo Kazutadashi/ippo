@@ -16,6 +16,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ippo/core/about_screen.dart';
 import 'package:ippo/core/app_state.dart';
+import 'package:ippo/core/charts/chart_screen.dart';
+import 'package:ippo/core/charts/charts_screen.dart';
 import 'package:ippo/core/settings/settings_screen.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/core/theme.dart';
@@ -51,6 +53,7 @@ void main() {
     'home': () => TodayScreen(
       appState: appState,
       onOpenSettings: () {},
+      onOpenCharts: () {},
       onOpenModule: (_) {},
     ),
     'habits': () => HabitsScreen(appState: appState),
@@ -58,6 +61,12 @@ void main() {
     'exercise': () => ExerciseHomeScreen(appState: appState),
     'sleep': () => SleepScreen(appState: appState),
     'settings': () => SettingsScreen(appState: appState),
+    'charts': () => ChartsScreen(appState: appState),
+    'weight chart': () => ChartScreen(
+      appState: appState,
+      module: allModules.firstWhere((module) => module.moduleName == 'food'),
+      title: 'Weight',
+    ),
     'body': () => BodyScreen(appState: appState),
     'foods': () => FoodsScreen(appState: appState),
     'habit form': () => HabitFormScreen(appState: appState),

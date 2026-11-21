@@ -23,6 +23,7 @@ class LatelyCard extends StatelessWidget {
     required this.trends,
     required this.daysLogged,
     required this.isToday,
+    this.onTap,
   });
 
   /// One trend per measure, in the order to show them.
@@ -35,6 +36,10 @@ class LatelyCard extends StatelessWidget {
   /// Whether the day shown is today, for the wording: "before today" or
   /// "before this day".
   final bool isToday;
+
+  /// Called when the card is tapped: Home opens the charts, which show
+  /// the same measures over a longer time.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -49,55 +54,59 @@ class LatelyCard extends StatelessWidget {
     final shownDay = isToday ? 'today' : 'this day';
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          tilePadding,
-          10,
-          tilePadding,
-          tilePadding,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // The same header as a tile, with the columns' names.
-            Row(
-              children: [
-                Icon(Icons.insights, size: 14, color: colors.primary),
-                const SizedBox(width: 6),
-                Expanded(child: Text('LATELY', style: heading)),
-                SizedBox(
-                  width: _valueWidth,
-                  child: Text(
-                    'LAST 7 DAYS',
-                    textAlign: TextAlign.end,
-                    style: heading,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            tilePadding,
+            10,
+            tilePadding,
+            tilePadding,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // The same header as a tile, with the columns' names.
+              Row(
+                children: [
+                  Icon(Icons.insights, size: 14, color: colors.primary),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text('LATELY', style: heading)),
+                  SizedBox(
+                    width: _valueWidth,
+                    child: Text(
+                      'LAST 7 DAYS',
+                      textAlign: TextAlign.end,
+                      style: heading,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: _valueWidth,
-                  child: Text(
-                    'USUAL',
-                    textAlign: TextAlign.end,
-                    style: heading,
+                  SizedBox(
+                    width: _valueWidth,
+                    child: Text(
+                      'USUAL',
+                      textAlign: TextAlign.end,
+                      style: heading,
+                    ),
                   ),
-                ),
-                const SizedBox(width: _arrowWidth),
-              ],
-            ),
-            const SizedBox(height: 6),
-            for (final trend in trends) _TrendRow(trend: trend),
-            const SizedBox(height: 8),
-            Text(
-              hasUsual
-                  ? 'The 7 days before $shownDay, against your usual (the 4 '
-                        'weeks before them). Logged on $daysLogged of those '
-                        '${trendRecentDays + trendUsualDays} days.'
-                  : 'Your usual shows here after about two weeks of '
-                        'logging. Logged on $daysLogged of the last '
-                        '${trendRecentDays + trendUsualDays} days.',
-              style: theme.textTheme.bodySmall?.copyWith(color: muted),
-            ),
-          ],
+                  const SizedBox(width: _arrowWidth),
+                ],
+              ),
+              const SizedBox(height: 6),
+              for (final trend in trends) _TrendRow(trend: trend),
+              const SizedBox(height: 8),
+              Text(
+                hasUsual
+                    ? 'The 7 days before $shownDay, against your usual (the 4 '
+                          'weeks before them). Logged on $daysLogged of those '
+                          '${trendRecentDays + trendUsualDays} days.'
+                    : 'Your usual shows here after about two weeks of '
+                          'logging. Logged on $daysLogged of the last '
+                          '${trendRecentDays + trendUsualDays} days.',
+                style: theme.textTheme.bodySmall?.copyWith(color: muted),
+              ),
+            ],
+          ),
         ),
       ),
     );

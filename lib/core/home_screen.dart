@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../modules/all_modules.dart';
 import 'app_state.dart';
+import 'charts/charts_screen.dart';
 import 'settings/settings_screen.dart';
 import 'today_screen.dart';
 
@@ -31,6 +32,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   /// The open tab: 0 is Home, 1 the first module, and so on.
   int _selectedTab = 0;
+
+  void _openCharts() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => ChartsScreen(appState: widget.appState),
+      ),
+    );
+  }
 
   void _openSettings() {
     Navigator.of(context).push(
@@ -63,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? TodayScreen(
                     appState: widget.appState,
                     onOpenSettings: _openSettings,
+                    onOpenCharts: _openCharts,
                     // Home is the first tab; the modules come after it.
                     onOpenModule: (index) =>
                         setState(() => _selectedTab = index + 1),
