@@ -110,19 +110,50 @@ class HabitsModule extends IppoModule {
     return [
       TrendMeasure(
         label: 'Habits done',
-        valueOn: (date) {
-          final anyMarked = habits.any(
-            (habit) => log.markOn(habit.id, date) != DayMark.none,
-          );
-          return anyMarked ? _percentOn(log, habits, date) : null;
-        },
+        valueOn: (date) => _percentIfMarked(log, habits, date),
         format: (percent) => '${percent.round()} %',
+      ),
+    ];
+  }
+
+  /// The share of habits done each day any habit was marked.
+  @override
+  List<ChartSpec> charts(AppState appState) {
+    final log = HabitLog.of(appState);
+    final habits = log.shownHabits;
+    final dates = datesLogged(appState);
+    if (habits.isEmpty || dates.isEmpty) {
+      return const [];
+    }
+    return [
+      ChartSpec(
+        title: 'Habits done',
+        unit: '%',
+        values: dailyValues(
+          dates,
+          (date) => _percentIfMarked(log, habits, date),
+        ),
+        format: (percent) => '${percent.round()} %',
+        fixedMin: 0,
+        fixedMax: 100,
+        // Habits are ticked through the day: today is not done yet.
+        isRunningTotal: true,
       ),
     ];
   }
 
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => habitsDemoEvents(plan);
+}
+
+/// The share of [habits] done on [date] (see [_percentOn]), or null on a
+/// day with no habit marked at all: a day nobody looked at the habits is
+/// not a day of none done.
+double? _percentIfMarked(HabitLog log, List<Habit> habits, String date) {
+  final anyMarked = habits.any(
+    (habit) => log.markOn(habit.id, date) != DayMark.none,
+  );
+  return anyMarked ? _percentOn(log, habits, date) : null;
 }
 
 /// How many of [habits] are done on [date] (`YYYY-MM-DD`).

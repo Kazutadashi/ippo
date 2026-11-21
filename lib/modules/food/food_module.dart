@@ -16,6 +16,7 @@ import 'nutrients.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
 import 'screens/food_diary_screen.dart';
+import 'food_charts.dart';
 import 'food_demo.dart';
 import '../../core/number_input.dart';
 import '../../core/units.dart';
@@ -179,6 +180,9 @@ class FoodModule extends IppoModule {
         ),
     ];
   }
+
+  @override
+  List<ChartSpec> charts(AppState appState) => foodCharts(appState);
 
   @override
   List<DemoEvent> demoEvents(DemoPlan plan) => foodDemoEvents(plan);
