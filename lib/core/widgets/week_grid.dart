@@ -5,6 +5,7 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../dates.dart';
 import '../module.dart';
 import 'info_tile.dart';
 
@@ -23,13 +24,21 @@ const double _rowHeight = 22;
 /// day, like a small table.
 class WeekGrid extends StatelessWidget {
   /// Creates the grid for the seven days ending on [day].
-  const WeekGrid({super.key, required this.day, required this.rows});
+  const WeekGrid({
+    super.key,
+    required this.day,
+    required this.rows,
+    required this.onDaySelected,
+  });
 
   /// The last day shown, in the right-hand column.
   final DateTime day;
 
   /// The rows, one per module that has one.
   final List<WeekGridRow> rows;
+
+  /// Called with a day when its column is tapped, to show that day.
+  final ValueChanged<DateTime> onDaySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +126,23 @@ class WeekGrid extends StatelessWidget {
                         for (final row in rows) _row(context, row),
                       ],
                     ),
+                    // Each day's column, top to bottom, is a button that
+                    // shows that day, as the day bar's arrows do.
+                    for (var index = 0; index < days.length; index++)
+                      Positioned(
+                        top: 0,
+                        bottom: 0,
+                        left: _nameWidth + index * columnWidth,
+                        width: columnWidth,
+                        child: Semantics(
+                          button: true,
+                          label: 'Show ${formatShortDate(days[index])}',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () => onDaySelected(days[index]),
+                          ),
+                        ),
+                      ),
                   ],
                 );
               },

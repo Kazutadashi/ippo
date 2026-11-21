@@ -160,6 +160,42 @@ void main() {
     expect(find.byType(LatelyCard), findsNothing);
   });
 
+  testWidgets('tapping a day in the week grid shows that day', (tester) async {
+    await startApp(
+      tester,
+      before: (appState) async {
+        await appState.writeEvent(
+          module: 'food',
+          type: 'food_entry_recorded',
+          data: {
+            'date': formatDate(today()),
+            'name': 'Apple',
+            'nutrients': {'energy_kcal': 80},
+          },
+        );
+      },
+    );
+
+    final yesterday = addDays(today(), -1);
+    await tester.tap(
+      find.bySemanticsLabel('Show ${formatShortDate(yesterday)}'),
+    );
+    await tester.pumpAndSettle();
+
+    // The day bar now shows yesterday, and Today is there to go back.
+    expect(
+      find.descendant(
+        of: find.byType(DayBar),
+        matching: find.text('Yesterday'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: find.byType(DayBar), matching: find.text('Today')),
+      findsOneWidget,
+    );
+  });
+
   test('the greeting follows the time of day', () {
     expect(greetingFor(DateTime(2026, 1, 1, 7)), 'Good morning');
     expect(greetingFor(DateTime(2026, 1, 1, 13)), 'Good afternoon');

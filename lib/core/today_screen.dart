@@ -206,7 +206,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   // The week first, the wider view; then today, module by
                   // module.
                   if (weekRows.isNotEmpty) ...[
-                    WeekGrid(day: day, rows: weekRows),
+                    WeekGrid(day: day, rows: weekRows, onDaySelected: showDay),
                     const SizedBox(height: tileGap),
                   ],
                   _TileGrid(tiles: tiles),

@@ -203,6 +203,10 @@ class SkyHeader extends StatelessWidget {
   }
 }
 
+/// How far above [SkyHeader.clearTop] the Home greeting starts (Home
+/// puts it 2 below the status bar, and the land 44 below it).
+const double _greetingTop = 42;
+
 class _SkyPainter extends CustomPainter {
   _SkyPainter({
     required this.palette,
@@ -796,12 +800,23 @@ class _SkyPainter extends CustomPainter {
   }
 
   /// A shooting star: a short bright streak that fades along its tail.
+  ///
+  /// It never crosses text. On Home it is in the top left, just above
+  /// the greeting (which starts [_greetingTop] above [clearTop]), below
+  /// the phone's status bar. In the tabs' sky-only band, where the
+  /// title sits there, it is in the open sky at the top centre.
   void _shootingStar(Canvas canvas, Size size, Random random) {
-    final start = Offset(
-      size.width * (0.1 + random.nextDouble() * 0.5),
-      clearTop * (0.3 + random.nextDouble() * 0.5),
-    );
-    final end = start + Offset(-46 - random.nextDouble() * 20, 18);
+    final topOfText = clearTop - _greetingTop;
+    final start = skyOnly
+        ? Offset(
+            size.width * (0.58 + random.nextDouble() * 0.08),
+            topOfText * (0.35 + random.nextDouble() * 0.15),
+          )
+        : Offset(
+            size.width * (0.3 + random.nextDouble() * 0.1),
+            topOfText - 8 - random.nextDouble() * 4,
+          );
+    final end = start + Offset(-50 - random.nextDouble() * 16, 6);
     canvas.drawLine(
       start,
       end,
