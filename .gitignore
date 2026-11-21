@@ -54,3 +54,7 @@ python/*.egg-info/
 
 # Experience passes: screenshots and review notes, kept locally only.
 /experience-passes/
+
+# Everything made along the way (screenshots, concepts, reports), kept
+# locally for the record; never committed.
+/posterity/
