@@ -141,12 +141,8 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     children: [
                       Expanded(
                         child: Text(
-                          // On another day, the heading says which way.
-                          showsToday
-                              ? greetingFor(now)
-                              : day.isAfter(today())
-                              ? 'Looking ahead'
-                              : 'Looking back',
+                          // On an earlier day, the heading says so.
+                          showsToday ? greetingFor(now) : 'Looking back',
                           style: textTheme.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,

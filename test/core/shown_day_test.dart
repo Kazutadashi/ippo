@@ -27,5 +27,9 @@ void main() {
     appState.showDay(today());
     expect(appState.shownDay, today());
     expect(told, 2);
+
+    // There is no data ahead: a later day shows today instead.
+    appState.showDay(addDays(today(), 1));
+    expect(appState.shownDay, today());
   });
 }

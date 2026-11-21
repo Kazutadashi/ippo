@@ -34,7 +34,8 @@ class DayBar extends StatelessWidget {
       context: context,
       initialDate: day,
       firstDate: DateTime(2000),
-      lastDate: addDays(today(), 365),
+      // Only days that have been: there is no data ahead.
+      lastDate: today(),
     );
     if (picked != null) {
       onChanged(picked);
@@ -79,21 +80,17 @@ class DayBar extends StatelessWidget {
             ),
           ),
         ),
+        // Greyed out on today: there is nothing ahead to show.
         IconButton(
           tooltip: 'Next day',
           icon: const Icon(Icons.chevron_right),
-          onPressed: () => onChanged(addDays(day, 1)),
+          onPressed: isToday ? null : () => onChanged(addDays(day, 1)),
         ),
         // Straight to today, always in its place at the end, as in
         // calendar apps: greyed out on today, so nothing appears or moves.
-        // » points the way to today (« when looking ahead).
         IconButton(
           tooltip: 'Go to today',
-          icon: Icon(
-            day.isAfter(today())
-                ? Icons.keyboard_double_arrow_left
-                : Icons.keyboard_double_arrow_right,
-          ),
+          icon: const Icon(Icons.keyboard_double_arrow_right),
           onPressed: isToday ? null : () => onChanged(today()),
         ),
         const SizedBox(width: 4),
@@ -102,7 +99,7 @@ class DayBar extends StatelessWidget {
   }
 }
 
-/// Names a day: `Today`, `Yesterday`, `Tomorrow`, or for example
+/// Names a day: `Today`, `Yesterday`, or for example
 /// `Mon 16 Nov`. Today is the day you are in (see [currentDay]).
 String describeDay(DateTime day) {
   final todayDate = today();
@@ -111,9 +108,6 @@ String describeDay(DateTime day) {
   }
   if (day == addDays(todayDate, -1)) {
     return 'Yesterday';
-  }
-  if (day == addDays(todayDate, 1)) {
-    return 'Tomorrow';
   }
   return formatShortDate(day);
 }

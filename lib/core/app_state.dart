@@ -180,9 +180,10 @@ class AppState extends ChangeNotifier {
   DateTime get shownDay => _pickedDay ?? today();
 
   /// Shows [day] on every tab. Picking today means following today
-  /// again, so the screens move on by themselves after midnight.
+  /// again, so the screens move on by themselves after midnight. A day
+  /// after today is never shown: there is no data ahead.
   void showDay(DateTime day) {
-    _pickedDay = day == today() ? null : day;
+    _pickedDay = day.isBefore(today()) ? day : null;
     notifyListeners();
   }
 
