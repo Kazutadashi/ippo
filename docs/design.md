@@ -398,7 +398,7 @@ by themselves unless the user picked another day.
 | Home | `home` (outlined when not selected) |
 | Habits | `check_circle_outline` |
 | Done / not done (habit grid) | `check` / `close` |
-| Not done, but covered by the habit's frequency (habit grid) | `link` in the habit's colour (`CoveredMark`): every stretch of the habit's period through the day was kept, so the chain held. "Every other day" with ✓ Monday and ✓ Wednesday covers a ✗ on Tuesday; with ✗ Wednesday too, the chain broke and both stay ✗ |
+| Not done, but covered by the habit's frequency (habit grid) | a small dot in the habit's colour (`CoveredMark`): every stretch of the habit's period through the day was kept, so the chain held. "Every other day" with ✓ Monday and ✓ Wednesday covers a ✗ on Tuesday; with ✗ Wednesday too, the chain broke and both stay ✗ |
 | Food, food eaten | `restaurant` |
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |
