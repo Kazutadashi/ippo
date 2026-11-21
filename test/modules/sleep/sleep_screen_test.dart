@@ -193,9 +193,10 @@ void main() {
     expect(hourLabel(20), '20:00');
 
     showTimesIn24Hours = false;
-    expect(hourLabel(20), '8 pm');
-    expect(hourLabel(4), '4 am');
-    expect(hourLabel(12), 'noon');
-    expect(hourLabel(0), 'midnight');
+    expect(hourLabel(18), '6 pm');
+    expect(hourLabel(6), '6 am');
+    // The same form for every hour: no "noon" or "midnight".
+    expect(hourLabel(12), '12 pm');
+    expect(hourLabel(0), '12 am');
   });
 }

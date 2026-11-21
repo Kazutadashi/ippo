@@ -28,11 +28,13 @@ class TimeSpanBar extends StatelessWidget {
     required this.description,
   });
 
-  /// The night that sleep usually falls in: 20:00 to noon.
-  static const int nightStartHour = 20;
+  /// The night that sleep usually falls in: 18:00 to noon the next
+  /// day, so the scale under the bar reads every 6 hours: 6 pm, 12 am,
+  /// 6 am, 12 pm.
+  static const int nightStartHour = 18;
 
   /// How long that night bar is, in hours.
-  static const int nightHours = 16;
+  static const int nightHours = 18;
 
   /// Where the filled part begins.
   final ClockTime start;
@@ -84,18 +86,36 @@ class TimeSpanBar extends StatelessWidget {
             // before the stretch, the stretch, and after it. (Flex parts
             // rather than measured widths, so the tile's height can be
             // worked out before it is laid out.)
-            Container(
-              height: 6,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(3),
+            // Midnight, where one day ends and the next begins, is a thin
+            // line across the bar.
+            SizedBox(
+              height: 12,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: _stretch(color),
+                  ),
+                  if (_midnight != null)
+                    Align(
+                      alignment: Alignment(-1 + 2 * _midnight!, 0),
+                      child: Container(
+                        width: 1.5,
+                        height: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
               ),
-              child: _stretch(color),
             ),
             const SizedBox(height: 2),
-            // The scale under the bar, quiet like an axis: where the bar
-            // starts, its middle and where it ends, so it is clear the
-            // bar is one night (8 pm to noon), not a whole day.
+            // The scale under the bar, quiet like an axis: every 6 hours,
+            // so it is clear the bar is one night, not a whole day.
             _scale(
               style?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -142,20 +162,32 @@ class TimeSpanBar extends StatelessWidget {
     );
   }
 
-  /// The hours at the bar's start, middle and end, such as "8 pm",
-  /// "4 am" and "noon".
+  /// Where midnight is along the bar, from 0 to 1, or null if the bar
+  /// does not cross it.
+  double? get _midnight {
+    final hoursToMidnight = (24 - trackStartHour) % 24;
+    if (hoursToMidnight == 0 || hoursToMidnight >= trackHours) {
+      return null;
+    }
+    return hoursToMidnight / trackHours;
+  }
+
+  /// The hours under the bar, every 6 hours from its start to its end
+  /// (`6 pm · 12 am · 6 am · 12 pm`), each placed where it is along the
+  /// bar.
   Widget _scale(TextStyle? style) {
-    Widget hour(int offset, Alignment alignment) => Expanded(
-      child: Align(
-        alignment: alignment,
-        child: Text(hourLabel((trackStartHour + offset) % 24), style: style),
-      ),
-    );
-    return Row(
+    return Stack(
       children: [
-        hour(0, Alignment.centerLeft),
-        hour(trackHours ~/ 2, Alignment.center),
-        hour(trackHours, Alignment.centerRight),
+        // Keeps the row one line tall.
+        Text('', style: style),
+        for (var offset = 0; offset <= trackHours; offset += 6)
+          Align(
+            alignment: Alignment(-1 + 2 * offset / trackHours, 0),
+            child: Text(
+              hourLabel((trackStartHour + offset) % 24),
+              style: style,
+            ),
+          ),
       ],
     );
   }
@@ -182,17 +214,13 @@ class TimeSpanBar extends StatelessWidget {
   }
 }
 
-/// An hour on the clock, short, as a scale shows it: `8 pm`, `4 am`,
-/// `noon`, `midnight`; or `20:00` with the 24-hour clock.
+/// An hour on the clock, short, as a scale shows it: `6 pm`, `12 am`,
+/// `12 pm`; or `18:00` with the 24-hour clock. The same form for every
+/// hour, so the scale reads evenly.
 String hourLabel(int hour) {
   if (showTimesIn24Hours) {
     return '${hour.toString().padLeft(2, '0')}:00';
   }
-  if (hour == 0) {
-    return 'midnight';
-  }
-  if (hour == 12) {
-    return 'noon';
-  }
-  return hour < 12 ? '$hour am' : '${hour - 12} pm';
+  final onTwelve = hour % 12 == 0 ? 12 : hour % 12;
+  return '$onTwelve ${hour < 12 ? 'am' : 'pm'}';
 }
