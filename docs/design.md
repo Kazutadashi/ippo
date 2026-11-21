@@ -65,11 +65,16 @@ Contents:
 
 ### A module screen, top to bottom
 
-1. **Top bar** with the module's name ("Sleep") on the left and, if the
-   screen shows one day, the day picker (`DayBar`: ‹ Today ▾ ›) on the
-   right, in `AppBar.actions`. It does not take a row of its own. On
-   any day but today, the day is shown in a tinted pill, because logging
-   to the wrong day is easy to miss.
+1. **Top bar** (`SkyAppBar`) on a band of the Home sky (its birds by
+   day, its stars and shooting star by night; no sun, moon or land),
+   fading into the page, with the module's name ("Sleep") on the left
+   and, if the screen shows one day, the day picker (`DayBar`:
+   ‹ 📅 Today › ») on the right, in `AppBar.actions`. The day is the
+   same on every tab (kept in `AppState`). On any day but today, the day
+   is shown in a tinted pill, because logging to the wrong day is easy
+   to miss; » goes straight back to today. › and » are greyed out on
+   today, and nothing in the bar moves as the day changes: the day has
+   a fixed width. There is no day after today: no data can be there.
 2. **Cards** (`SectionCard`), one per section, each starting with a
    `CardHeader`.
 4. **Floating buttons** at the bottom right, for creating things for the
@@ -81,9 +86,10 @@ Nothing sits outside a card except short notes or problems at the top.
 
 Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
-modules; the only things on Home to tap are the Settings gear and the
-day bar, which looks back at earlier days ("Looking back" replaces the
-greeting, and times since become clock times).
+modules; on Home, the Settings gear and the day bar can be tapped (the
+day bar looks back at earlier days: "Looking back" replaces the
+greeting, and times since become clock times), a tile opens its tab,
+and a day in the week grid shows that day.
 
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
 of day (dawn with a low sun and mist, a blue day with a few birds, dusk
@@ -124,11 +130,13 @@ be. A number that needs explaining, or that does not help decide
 anything today, does not belong on Home.
 
 - **The week grid** ("Last 7 days", `WeekGrid`): the days across the
-  top, today's in the accent colour, and one row per module, named with
+  top, the day shown in the accent colour with a soft column behind
+  it, and one row per module, named with
   its unit on the left ("Habits (%)", "Food (kcal)", "Exercises",
   "Steps (k)", "Sleep (h)"), with one short value per day, like a small
   table (`IppoModule.weekRows`). A day without data shows a quiet dash.
-  A module without any data yet has no row.
+  A module without any data yet has no row. Tapping a day shows it;
+  the seven days stay put while the day shown is one of them.
 - **Lately** (`LatelyCard`), at the bottom: one row per measure
   (`IppoModule.trendMeasures`): the average of the 7 days before the
   day shown (not the day itself, which is not over: half a day would
@@ -351,7 +359,7 @@ numbers line up in columns and values that change do not shift.
 | Durations | Hours and minutes, no zeros | `7 h 30 min`, `8 h`, `45 min` |
 | Time since | Duration and "ago" | `3 h 15 min ago`, `Just now` |
 | Dates in lists | `YYYY-MM-DD` | `2026-11-18` |
-| Days in the day bar | `Today`, `Yesterday`, `Tomorrow`, else weekday and date | `Mon 16 Nov` |
+| Days in the day bar | `Today`, `Yesterday`, else weekday and date | `Mon 16 Nov` |
 | A date and time in a field | Short date above the time | `Thu 19 Nov` / `01:00` |
 | Amounts | No needless decimals, at most one | `150`, `12.5` |
 | Energy | Number, space, `kcal` | `200 kcal` |
