@@ -77,8 +77,8 @@ class _Segment extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
         color: switch (mark) {
           DayMark.done => color,
-          DayMark.none => color.withValues(alpha: 0.28),
-          DayMark.notDone => color.withValues(alpha: 0.1),
+          DayMark.none => color.withValues(alpha: 0.16),
+          DayMark.notDone => color.withValues(alpha: 0.07),
         },
       ),
     );
