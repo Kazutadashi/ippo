@@ -8,6 +8,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../dates.dart';
 
+/// How wide the day is in the bar, whatever its name: wide enough for
+/// "Wed 18 Nov" with its calendar icon (a longer name shrinks to fit).
+const double _dayWidth = 124;
+
+/// How wide the "Today" button is, and the room kept for it.
+const double _todayWidth = 56;
+
 /// Shows the chosen day with buttons for the previous and next day.
 /// Tapping the day opens a calendar. It goes in a screen's top bar
 /// (`AppBar.actions`), next to the title.
@@ -55,33 +62,47 @@ class DayBar extends StatelessWidget {
         ),
         // The day, with a calendar icon that says tapping it opens a
         // calendar. Another day than today is in a tinted pill, as
-        // logging to the wrong day is easy to miss otherwise.
-        TextButton.icon(
-          onPressed: () => _pickDay(context),
-          style: TextButton.styleFrom(
-            backgroundColor: isToday ? null : colors.secondaryContainer,
-            foregroundColor: isToday ? foreground : colors.onSecondaryContainer,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+        // logging to the wrong day is easy to miss otherwise. Always the
+        // same width, so the arrows never move as the day changes.
+        SizedBox(
+          width: _dayWidth,
+          child: TextButton.icon(
+            onPressed: () => _pickDay(context),
+            style: TextButton.styleFrom(
+              backgroundColor: isToday ? null : colors.secondaryContainer,
+              foregroundColor: isToday
+                  ? foreground
+                  : colors.onSecondaryContainer,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            icon: const Icon(Icons.calendar_today_outlined, size: 16),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(describeDay(day)),
+            ),
           ),
-          icon: const Icon(Icons.calendar_today_outlined, size: 16),
-          label: Text(describeDay(day)),
         ),
         IconButton(
           tooltip: 'Next day',
           icon: const Icon(Icons.chevron_right),
           onPressed: () => onChanged(addDays(day, 1)),
         ),
-        // On another day, one tap goes back to today.
-        if (!isToday)
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: foreground,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(48, 40),
-            ),
-            onPressed: () => onChanged(today()),
-            child: const Text('Today'),
-          ),
+        // On another day, one tap goes back to today. Its room is kept
+        // on today too (empty), so nothing shifts when it appears.
+        SizedBox(
+          width: _todayWidth,
+          child: isToday
+              ? null
+              : TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: foreground,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(_todayWidth, 40),
+                  ),
+                  onPressed: () => onChanged(today()),
+                  child: const Text('Today'),
+                ),
+        ),
         const SizedBox(width: 4),
       ],
     );

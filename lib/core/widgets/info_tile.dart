@@ -227,20 +227,15 @@ class HomeTileCard extends StatelessWidget {
     final note = valueNote;
     final big = textTheme.headlineSmall?.copyWith(height: 1.1);
     final small = textTheme.labelLarge?.copyWith(color: muted);
-    // A new value fades in, so a change is noticed but calm.
-    final valueText = AnimatedSwitcher(
-      duration: const Duration(milliseconds: 150),
-      child: KeyedSubtree(
-        key: ValueKey(value),
-        child: value == unknownTileValue
-            // A quiet dash: an empty tile steps back. Screen readers skip
-            // it and read the lines instead.
-            ? ExcludeSemantics(
-                child: Text(value, style: big?.copyWith(color: muted)),
-              )
-            : ValueText(value, style: big, unitStyle: small),
-      ),
-    );
+    // A new value shows at once: flipping through days must feel
+    // instant (a fade read as lag).
+    final valueText = value == unknownTileValue
+        // A quiet dash: an empty tile steps back. Screen readers skip it
+        // and read the lines instead.
+        ? ExcludeSemantics(
+            child: Text(value, style: big?.copyWith(color: muted)),
+          )
+        : ValueText(value, style: big, unitStyle: small);
     // A value that is too wide shrinks rather than wrapping.
     return FittedBox(
       fit: BoxFit.scaleDown,
