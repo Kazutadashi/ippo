@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// The top bar of the Habits, Food, Exercise and Sleep tabs, on the
-/// Home landscape, cut off.
+/// Home sky.
 library;
 
 import 'package:flutter/services.dart';
@@ -10,13 +10,14 @@ import 'package:material_ui/material_ui.dart';
 import '../dates.dart';
 import 'sky_header.dart';
 
-/// How much taller than a plain top bar the band is: room for the tops
-/// of the mountains, and for the fade into the page.
-const double _extraHeight = 36;
+/// How much taller than a plain top bar the band is: room for the fade
+/// into the page.
+const double _extraHeight = 20;
 
-/// A tab's top bar on the same picture as the top of Home (the same sky,
-/// moon or sun, stars and mountains, made the same way for the day), cut
-/// off below the title and fading into the page. The title and buttons
+/// A tab's top bar on the sky of the top of Home: the same colours for
+/// the hour, with its birds by day, or its stars and shooting star at
+/// dusk and night; no sun, moon or mountains, which stay Home's. It
+/// fades into the page below the title. The title and buttons
 /// are white on it, whatever the theme.
 ///
 /// It is a plain [AppBar] otherwise, with the same [title] and
@@ -49,7 +50,7 @@ class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
       // White on the sky; white icons in the phone's status bar too.
       foregroundColor: Colors.white,
       systemOverlayStyle: SystemUiOverlayStyle.light,
-      // Room below the buttons for the mountains and the fade.
+      // Room below the buttons for the fade.
       bottom: const PreferredSize(
         preferredSize: Size.fromHeight(_extraHeight),
         child: SizedBox.shrink(),
@@ -58,8 +59,8 @@ class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: ClipRect(
           child: Stack(
             children: [
-              // The whole Home picture, at Home's size and place; the
-              // bar shows only its top.
+              // Home's sky, at Home's size and place, so its stars and
+              // birds sit where they do on Home; the bar shows its top.
               Positioned(
                 top: 0,
                 left: 0,
@@ -69,6 +70,7 @@ class SkyAppBar extends StatelessWidget implements PreferredSizeWidget {
                   height: topInset + 156,
                   clearTop: topInset + 44,
                   seed: SkyHeader.seedFor(currentDay(now)),
+                  skyOnly: true,
                 ),
               ),
               // Fading into the page, so the cut is never a hard edge.
