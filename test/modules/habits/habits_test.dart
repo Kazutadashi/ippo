@@ -15,6 +15,7 @@ import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/habits/habit_actions.dart';
 import 'package:ippo/modules/habits/habit_log.dart';
 import 'package:ippo/modules/habits/habits_module.dart';
+import 'package:ippo/modules/habits/habit_marks.dart';
 import 'package:ippo/modules/habits/screens/habits_screen.dart';
 import 'package:material_ui/material_ui.dart';
 

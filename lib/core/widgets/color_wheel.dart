@@ -72,32 +72,19 @@ class CustomColorCircle extends StatelessWidget {
       label: 'Other $purpose: pick from a colour wheel',
       selected: chosen != null,
       button: true,
-      child: InkWell(
+      child: ColorSwatchButton(
+        isSelected: chosen != null,
         onTap: () => _open(context),
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: colorCircleSize,
-          height: colorCircleSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: chosen,
-            // A rainbow until a custom colour is chosen.
-            gradient: chosen == null
-                ? const SweepGradient(colors: _hueColors)
-                : null,
-            border: Border.all(
-              color: chosen == null
-                  ? Colors.transparent
-                  : Theme.of(context).colorScheme.onSurface,
-              width: 2,
-            ),
-          ),
-          child: Icon(
-            chosen == null ? Icons.palette_outlined : Icons.check,
-            color: chosen == null || _isDark(chosen)
-                ? Colors.white
-                : Colors.black,
-          ),
+        // A rainbow until a custom colour is chosen.
+        swatch: chosen == null
+            ? const BoxDecoration(gradient: SweepGradient(colors: _hueColors))
+            : BoxDecoration(color: chosen),
+        mark: Icon(
+          chosen == null ? Icons.palette_outlined : Icons.check,
+          size: 20,
+          color: chosen == null || _isDark(chosen)
+              ? Colors.white
+              : Colors.black,
         ),
       ),
     );

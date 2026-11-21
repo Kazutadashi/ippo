@@ -167,3 +167,49 @@ class _Segment extends StatelessWidget {
     );
   }
 }
+
+/// A check mark with a thick, rounded stroke: Material's ✓ is thin and
+/// hard to see at a glance in a grid.
+class BoldCheck extends StatelessWidget {
+  /// Creates the mark.
+  const BoldCheck({super.key, required this.size, required this.color});
+
+  /// The width and height.
+  final double size;
+
+  /// The colour, such as the habit's own.
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(painter: _CheckPainter(color)),
+    );
+  }
+}
+
+class _CheckPainter extends CustomPainter {
+  _CheckPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.16
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    // The short stroke down to the bottom, then the long one up.
+    final path = Path()
+      ..moveTo(size.width * 0.16, size.height * 0.54)
+      ..lineTo(size.width * 0.40, size.height * 0.76)
+      ..lineTo(size.width * 0.86, size.height * 0.26);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_CheckPainter oldDelegate) => oldDelegate.color != color;
+}

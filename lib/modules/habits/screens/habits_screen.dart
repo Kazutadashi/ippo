@@ -16,6 +16,7 @@ import '../../../core/widgets/sky_band.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
 import '../habit_log.dart';
+import '../habit_marks.dart';
 import 'habit_form_screen.dart';
 import '../habit_order.dart';
 
@@ -487,52 +488,6 @@ class _DayCell extends StatelessWidget {
       ),
     );
   }
-}
-
-/// A check mark with a thick, rounded stroke: Material's ✓ is thin and
-/// hard to see at a glance in a grid.
-class BoldCheck extends StatelessWidget {
-  /// Creates the mark.
-  const BoldCheck({super.key, required this.size, required this.color});
-
-  /// The width and height.
-  final double size;
-
-  /// The colour, such as the habit's own.
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: CustomPaint(painter: _CheckPainter(color)),
-    );
-  }
-}
-
-class _CheckPainter extends CustomPainter {
-  _CheckPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.16
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    // The short stroke down to the bottom, then the long one up.
-    final path = Path()
-      ..moveTo(size.width * 0.16, size.height * 0.54)
-      ..lineTo(size.width * 0.40, size.height * 0.76)
-      ..lineTo(size.width * 0.86, size.height * 0.26);
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_CheckPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// The top bar's button for the order of the habits: as added, or by
