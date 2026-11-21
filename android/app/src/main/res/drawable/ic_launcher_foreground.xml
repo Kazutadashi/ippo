@@ -1,66 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The front of Ippo's launcher icon, in the Home header's style and
-     colours: one bold snowy mountain, lit on the side toward the moon
-     and shaded on the other, a paler peak behind it, haze at their
-     foot, and a spruce forest in the valley. -->
+<!-- The front of Ippo's launcher icon: three ridges of steps climbing to
+     the right, one step at a time, each paler with the distance. The sky
+     and sun are ic_launcher_background.xml. The source drawing is
+     docs/artwork/launcher-icon.svg. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- A paler peak behind, faded by the distance. -->
+    <!-- The farthest steps. -->
     <path
-        android:fillColor="#FF3E4C66"
-        android:pathData="M80,44 L112,84 L46,84 Z" />
+        android:fillColor="#FFF0A48F"
+        android:pathData="M0,108 V58 H36 V53 H58 V49 H108 V108 Z" />
+    <!-- The middle steps. -->
     <path
-        android:fillColor="#FF8E9BB0"
-        android:pathData="M80,44 L88.5,53 L85,51.5 L82,55 L78.5,51.5 L75,54.5 L71.5,53 Z" />
-    <!-- The mountain: its face turned from the moon, in shadow. -->
+        android:fillColor="#FFC2697F"
+        android:pathData="M0,108 V68 H28 V63 H52 V58 H108 V108 Z" />
+    <!-- The nearest steps. -->
     <path
-        android:fillColor="#FF272F3E"
-        android:pathData="M50,26 L6,84 L55,84 Z" />
-    <!-- Its face toward the moon. -->
-    <path
-        android:fillColor="#FF384459"
-        android:pathData="M50,26 L55,84 L94,84 Z" />
-    <!-- Snow on the top only: in shadow, then lit. -->
-    <path
-        android:fillColor="#FF5F6D86"
-        android:pathData="M50,26 L51,43 L46.5,47 L42.5,43.5 L38,47.5 L34.5,44 Z" />
-    <path
-        android:fillColor="#FFB4C0CF"
-        android:pathData="M50,26 L64.5,44 L60,46.5 L56.5,42.5 L51,43 Z" />
-    <!-- Haze at the foot. -->
-    <path android:pathData="M0,60 L108,60 L108,84 L0,84 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="0"
-                android:startY="60"
-                android:endX="0"
-                android:endY="84">
-                <item android:offset="0" android:color="#0034435C" />
-                <item android:offset="1" android:color="#CC34435C" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- The valley floor. -->
-    <path
-        android:fillColor="#FF1B2330"
-        android:pathData="M0,85 Q20,82 40,84.5 Q60,87 80,83.5 Q96,81 108,84 L108,108 L0,108 Z" />
-    <!-- A line of spruce forest, and a few spruces close by. -->
-    <path
-        android:fillColor="#FF101922"
-        android:pathData="M0,108 L0,87 L1.2,84.41 L2.4,87 L3.6,83.64 L4.8,87 L6,84.08 L7.2,87 L8.4,83.49 L9.6,87 L10.8,83.44 L12,87 L13.2,84.84 L14.4,87 L15.6,84.97 L16.8,87 L18,82.91 L19.2,87 L20.4,84.35 L21.6,87 L22.8,84.41 L24,87 L25.2,82.51 L26.4,87 L27.6,83.82 L28.8,87 L30,82.91 L31.2,87 L32.4,83.81 L33.6,87 L34.8,83.4 L36,87 L37.2,84.62 L38.4,87 L39.6,83.41 L40.8,87 L42,82.83 L43.2,87 L44.4,83.69 L45.6,87 L46.8,83.15 L48,87 L49.2,83.32 L50.4,87 L51.6,84.84 L52.8,87 L54,83.1 L55.2,87 L56.4,83.52 L57.6,87 L58.8,84.25 L60,87 L61.2,84.92 L62.4,87 L63.6,82.84 L64.8,87 L66,83.82 L67.2,87 L68.4,83.2 L69.6,87 L70.8,82.8 L72,87 L73.2,83.21 L74.4,87 L75.6,82.7 L76.8,87 L78,84.01 L79.2,87 L80.4,83 L81.6,87 L82.8,83.89 L84,87 L85.2,82.66 L86.4,87 L87.6,82.8 L88.8,87 L90,84.76 L91.2,87 L92.4,84.66 L93.6,87 L94.8,84.46 L96,87 L97.2,82.59 L98.4,87 L99.6,83.91 L100.8,87 L102,83.43 L103.2,87 L104.4,84.25 L105.6,87 L106.8,83.73 L108,87 L108,87 L108,108 Z" />
-    <path
-        android:fillColor="#FF101922"
-        android:pathData="M28,59 L28.83,63.86 L28.37,63.18 L29.82,68.71 L28.82,68.03 L30.23,73.57 L29,72.89 L31.3,78.43 L29.49,77.75 L32.54,83.29 L30.04,82.61 L32.46,88.14 L30.01,87.46 L33.78,93 L30.6,92.32 L28.4,93 L27.6,93 L25.4,92.32 L22.22,93 L25.99,87.46 L23.54,88.14 L25.96,82.61 L23.46,83.29 L26.51,77.75 L24.7,78.43 L27,72.89 L25.77,73.57 L27.18,68.03 L26.18,68.71 L27.63,63.18 L27.17,63.86 Z" />
-    <path
-        android:fillColor="#FF101922"
-        android:pathData="M34.5,73 L34.99,75.86 L34.72,75.46 L35.57,78.71 L34.98,78.31 L35.81,81.57 L35.09,81.17 L36.44,84.43 L35.37,84.03 L37.17,87.29 L35.7,86.89 L37.12,90.14 L35.68,89.74 L37.9,93 L36.03,92.6 L34.9,93 L34.1,93 L32.97,92.6 L31.1,93 L33.32,89.74 L31.88,90.14 L33.3,86.89 L31.83,87.29 L33.63,84.03 L32.56,84.43 L33.91,81.17 L33.19,81.57 L34.02,78.31 L33.43,78.71 L34.28,75.46 L34.01,75.86 Z" />
-    <path
-        android:fillColor="#FF101922"
-        android:pathData="M80,65 L80.68,69 L80.31,68.44 L81.5,73 L80.67,72.44 L81.84,77 L80.83,76.44 L82.72,81 L81.22,80.44 L83.74,85 L81.68,84.44 L83.67,89 L81.65,88.44 L84.76,93 L82.14,92.44 L80.4,93 L79.6,93 L77.86,92.44 L75.24,93 L78.35,88.44 L76.33,89 L78.32,84.44 L76.26,85 L78.78,80.44 L77.28,81 L79.17,76.44 L78.16,77 L79.33,72.44 L78.5,73 L79.69,68.44 L79.32,69 Z" />
+        android:fillColor="#FF5A2C5C"
+        android:pathData="M0,108 V79 H22 V74 H44 V69 H70 V64 H108 V108 Z" />
 </vector>

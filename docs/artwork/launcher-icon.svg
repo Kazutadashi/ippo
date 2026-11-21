@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
+  <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+  <!-- Ippo's launcher icon, drawn for Ippo: steps climbing toward the
+       rising sun, in three ridges that fade into the distance. On the
+       108 x 108 grid of an Android adaptive icon; launchers show the
+       middle 72 x 72, cut to their own shape. The same shapes are the
+       vector layers in android/app/src/main/res/drawable/ic_launcher_*.xml;
+       the mipmap PNGs for older Android are rendered from this file (see
+       "Artwork" in docs/dependencies.md). -->
+  <rect width="108" height="108" fill="#FFC9A0"/>
+  <circle cx="64" cy="49" r="9.5" fill="#FFF8EA"/>
+  <path d="M0,108 V58 H36 V53 H58 V49 H108 V108 Z" fill="#F0A48F"/>
+  <path d="M0,108 V68 H28 V63 H52 V58 H108 V108 Z" fill="#C2697F"/>
+  <path d="M0,108 V79 H22 V74 H44 V69 H70 V64 H108 V108 Z" fill="#5A2C5C"/>
+</svg>

@@ -1,66 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The back of Ippo's launcher icon: the Home header's night sky, with its
-     stars and moon (glow, shade and craters). Generated in the header's
-     colours; the range, hills and trees are in ic_launcher_foreground.xml. -->
+<!-- The back of Ippo's launcher icon: a dawn sky and the rising sun. The
+     steps in front are ic_launcher_foreground.xml. Flat colours only.
+     The source drawing is docs/artwork/launcher-icon.svg. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- The night sky of the Home header, darkest at the top. -->
-    <path android:pathData="M0,0 L108,0 L108,108 L0,108 Z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="linear"
-                android:startX="0"
-                android:startY="0"
-                android:endX="0"
-                android:endY="108">
-                <item android:offset="0" android:color="#FF0B1424" />
-                <item android:offset="0.45" android:color="#FF17243B" />
-                <item android:offset="0.75" android:color="#FF2A3A57" />
-                <item android:offset="1" android:color="#FF2A3A57" />
-            </gradient>
-        </aapt:attr>
-    </path>
-    <!-- Stars. -->
+    <!-- The sky. -->
     <path
-        android:fillColor="#8CF2EEE2"
-        android:pathData="M23.45,30 a0.55,0.55 0 1,0 1.1,0 a0.55,0.55 0 1,0 -1.1,0 M30.55,21 a0.45,0.45 0 1,0 0.9,0 a0.45,0.45 0 1,0 -0.9,0 M39.65,33 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M26.7,44 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M45.7,23 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M35.75,27 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0 M83.5,22 a0.5,0.5 0 1,0 1,0 a0.5,0.5 0 1,0 -1,0 M89.65,34 a0.35,0.35 0 1,0 0.7,0 a0.35,0.35 0 1,0 -0.7,0 M79.75,30 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0 M51.7,31 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M18.7,38 a0.3,0.3 0 1,0 0.6,0 a0.3,0.3 0 1,0 -0.6,0 M87.75,46 a0.25,0.25 0 1,0 0.5,0 a0.25,0.25 0 1,0 -0.5,0" />
-    <!-- The moon, as on Home: glow, outer -->
+        android:fillColor="#FFFFC9A0"
+        android:pathData="M0,0 H108 V108 H0 Z" />
+    <!-- The sun, behind the farthest steps. -->
     <path
-        android:fillColor="#12E9E2CC"
-        android:pathData="M54,34 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0" />
-    <!-- The moon, as on Home: glow, inner -->
-    <path
-        android:fillColor="#1FE9E2CC"
-        android:pathData="M58.4,34 a11.6,11.6 0 1,0 23.2,0 a11.6,11.6 0 1,0 -23.2,0" />
-    <!-- The moon, as on Home: the moon -->
-    <path
-        android:fillColor="#FFE9E2CC"
-        android:pathData="M62,34 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0" />
-    <!-- The moon, as on Home: a faint shade, so it looks round -->
-    <path
-        android:fillColor="#33B9B29C"
-        android:pathData="M64.48,35.6 a7.52,7.52 0 1,0 15.04,0 a7.52,7.52 0 1,0 -15.04,0" />
-    <path
-        android:fillColor="#298F8A78"
-        android:pathData="M65.6,31.6 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0" />
-    <path
-        android:fillColor="#218F8A78"
-        android:pathData="M71.44,30.8 a0.96,0.96 0 1,0 1.92,0 a0.96,0.96 0 1,0 -1.92,0" />
-    <path
-        android:fillColor="#1F8F8A78"
-        android:pathData="M70.72,35.44 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
-    <path
-        android:fillColor="#248F8A78"
-        android:pathData="M67.44,36.88 a1.12,1.12 0 1,0 2.24,0 a1.12,1.12 0 1,0 -2.24,0" />
-    <path
-        android:fillColor="#1F8F8A78"
-        android:pathData="M64.88,34.8 a0.72,0.72 0 1,0 1.44,0 a0.72,0.72 0 1,0 -1.44,0" />
-    <path
-        android:fillColor="#1A8F8A78"
-        android:pathData="M69.84,33.6 a0.56,0.56 0 1,0 1.12,0 a0.56,0.56 0 1,0 -1.12,0" />
+        android:fillColor="#FFFFF8EA"
+        android:pathData="M54.5,49 A9.5,9.5 0 1,0 73.5,49 A9.5,9.5 0 1,0 54.5,49 Z" />
 </vector>

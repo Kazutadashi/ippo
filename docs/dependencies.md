@@ -47,9 +47,12 @@ need it.
 
 ## Artwork
 
-The launcher icon is the Home header's landscape at night (a snowy range
-shaded away from the moon, hills and spruces, in the header's colours),
-drawn for Ippo as vectors in `android/app/src/main/res/drawable/`. The
-header itself (`lib/core/widgets/sky_header.dart`) and the dumbbell and
+The launcher icon (steps climbing toward the rising sun, in three
+ridges that fade into the distance) was drawn for Ippo. Its source is
+`docs/artwork/launcher-icon.svg`; the same shapes are the vector layers
+in `android/app/src/main/res/drawable/ic_launcher_*.xml`. The PNGs for
+older Android (`mipmap-*/ic_launcher.png`) are the middle 72 × 72 of
+that drawing, rendered with `rsvg-convert` and cropped with ImageMagick
+(neither is needed to build the app). The header itself (`lib/core/widgets/sky_header.dart`) and the dumbbell and
 moon icons are drawn in code. None of it uses artwork or fonts from other
 projects.

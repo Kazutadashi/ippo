@@ -103,8 +103,8 @@ of bare rock with snow only on its tops (broad massifs with a few
 summits, each shaded on the face turned from the sun or moon), rising
 straight out of the valley with haze at its foot; a farther range
 behind it, paler with the distance; a long line of spruce forest on the
-valley floor; and a few tall spruces close by. The launcher icon is the
-same scene at night, simplified to one bold mountain. So Home looks a
+valley floor; and a few tall spruces close by. (The launcher icon
+is its own drawing: steps climbing toward the rising sun.) So Home looks a
 little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.
