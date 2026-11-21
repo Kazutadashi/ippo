@@ -16,6 +16,7 @@ import 'package:ippo/modules/sleep/sleep_actions.dart';
 import 'package:ippo/modules/sleep/sleep_log.dart';
 import 'package:ippo/modules/sleep/sleep_moment.dart';
 import 'package:ippo/modules/sleep/sleep_times.dart';
+import 'package:ippo/modules/sleep/time_span_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -173,5 +174,28 @@ void main() {
     await tester.pump();
 
     expect(find.text('30 min of sleep'), findsOneWidget);
+  });
+
+  testWidgets('naps: an Add nap button, and no Naps card without naps', (
+    tester,
+  ) async {
+    await openSleepScreen(tester);
+
+    expect(find.text('Add nap'), findsOneWidget);
+    expect(find.text('Naps'), findsNothing);
+  });
+
+  test('the bar\'s scale names hours plainly', () {
+    final before = showTimesIn24Hours;
+    addTearDown(() => showTimesIn24Hours = before);
+
+    showTimesIn24Hours = true;
+    expect(hourLabel(20), '20:00');
+
+    showTimesIn24Hours = false;
+    expect(hourLabel(20), '8 pm');
+    expect(hourLabel(4), '4 am');
+    expect(hourLabel(12), 'noon');
+    expect(hourLabel(0), 'midnight');
   });
 }

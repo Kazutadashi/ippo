@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/clock_time.dart';
+import '../../core/dates.dart';
 
 /// A stretch from [start] to [end] as the filled part of a bar that
 /// covers [trackHours] hours from [trackStartHour], with a label under
@@ -32,12 +33,6 @@ class TimeSpanBar extends StatelessWidget {
 
   /// How long that night bar is, in hours.
   static const int nightHours = 16;
-
-  /// The day that waking hours usually fall in: 05:00 to 01:00.
-  static const int dayStartHour = 5;
-
-  /// How long that day bar is, in hours.
-  static const int dayHours = 20;
 
   /// Where the filled part begins.
   final ClockTime start;
@@ -82,6 +77,9 @@ class TimeSpanBar extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // The times, above the two ends of the filled part.
+            _labels(style),
+            const SizedBox(height: 3),
             // The bar as three parts side by side, sized in proportion:
             // before the stretch, the stretch, and after it. (Flex parts
             // rather than measured widths, so the tile's height can be
@@ -94,8 +92,16 @@ class TimeSpanBar extends StatelessWidget {
               ),
               child: _stretch(color),
             ),
-            const SizedBox(height: 3),
-            _labels(style),
+            const SizedBox(height: 2),
+            // The scale under the bar, quiet like an axis: where the bar
+            // starts, its middle and where it ends, so it is clear the
+            // bar is one night (8 pm to noon), not a whole day.
+            _scale(
+              style?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: (style.fontSize ?? 11) - 1,
+              ),
+            ),
           ],
         ),
       ),
@@ -118,9 +124,9 @@ class TimeSpanBar extends StatelessWidget {
     return (before, filled, after);
   }
 
-  /// The two times under the two ends of the stretch, not under the
-  /// ends of the bar: the bar is a whole night and day, and the times
-  /// belong to the sleep in it. The space around them is shared out as
+  /// The two times over the two ends of the stretch, not over the ends
+  /// of the bar: the bar is a whole night, and the times belong to the
+  /// sleep in it. The space around them is shared out as
   /// the bar is, so they sit close to the stretch's ends, and never run
   /// off the edge.
   Widget _labels(TextStyle? style) {
@@ -132,6 +138,24 @@ class TimeSpanBar extends StatelessWidget {
         Spacer(flex: filled),
         Text(endLabel, style: style),
         if (after > 0) Spacer(flex: after),
+      ],
+    );
+  }
+
+  /// The hours at the bar's start, middle and end, such as "8 pm",
+  /// "4 am" and "noon".
+  Widget _scale(TextStyle? style) {
+    Widget hour(int offset, Alignment alignment) => Expanded(
+      child: Align(
+        alignment: alignment,
+        child: Text(hourLabel((trackStartHour + offset) % 24), style: style),
+      ),
+    );
+    return Row(
+      children: [
+        hour(0, Alignment.centerLeft),
+        hour(trackHours ~/ 2, Alignment.center),
+        hour(trackHours, Alignment.centerRight),
       ],
     );
   }
@@ -156,4 +180,19 @@ class TimeSpanBar extends StatelessWidget {
       ],
     );
   }
+}
+
+/// An hour on the clock, short, as a scale shows it: `8 pm`, `4 am`,
+/// `noon`, `midnight`; or `20:00` with the 24-hour clock.
+String hourLabel(int hour) {
+  if (showTimesIn24Hours) {
+    return '${hour.toString().padLeft(2, '0')}:00';
+  }
+  if (hour == 0) {
+    return 'midnight';
+  }
+  if (hour == 12) {
+    return 'noon';
+  }
+  return hour < 12 ? '$hour am' : '${hour - 12} pm';
 }

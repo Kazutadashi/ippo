@@ -123,24 +123,39 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
                     ),
                   ],
                 ),
-                SectionCard(
+                // A new nap: in the right half, where the other tabs have
+                // their add buttons.
+                const SizedBox(height: Spacing.small),
+                Row(
                   children: [
-                    CardHeader(
-                      icon: Icons.airline_seat_flat,
-                      title: 'Naps',
-                      action: HeaderAddButton(
+                    const Spacer(),
+                    const SizedBox(width: Spacing.small),
+                    Expanded(
+                      child: FilledButton.tonalIcon(
                         onPressed: () => _open(
                           NapFormScreen.addNap(
                             appState: widget.appState,
                             day: shownDay,
                           ),
                         ),
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add nap'),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    ..._buildNaps(log.napsOn(date)),
                   ],
                 ),
+                // The day's naps, only when there are any.
+                if (log.napsOn(date).isNotEmpty)
+                  SectionCard(
+                    children: [
+                      const CardHeader(
+                        icon: Icons.airline_seat_flat,
+                        title: 'Naps',
+                      ),
+                      const SizedBox(height: 4),
+                      ..._buildNaps(log.napsOn(date)),
+                    ],
+                  ),
               ],
             );
           },
@@ -150,9 +165,6 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
   }
 
   List<Widget> _buildNaps(List<Nap> naps) {
-    if (naps.isEmpty) {
-      return [const NoteText('No naps on this day.')];
-    }
     return [
       for (final nap in naps)
         ListTile(
@@ -451,34 +463,17 @@ class _LastNightCard extends StatelessWidget {
         if (slept == null)
           const NoteText('Log the bedtime and the wake-up below to see it.')
         else ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // A soft moon, so the card reads as "night" at a glance.
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(child: MoonIcon(size: 28, color: colors.primary)),
+          // The hours slept, large: the moon is in the card's header.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: ValueText(
+              formatDuration(slept),
+              style: textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(width: Spacing.medium),
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: ValueText(
-                    formatDuration(slept),
-                    style: textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                    unitStyle: textTheme.titleMedium?.copyWith(color: muted),
-                  ),
-                ),
-              ),
-            ],
+              unitStyle: textTheme.titleMedium?.copyWith(color: muted),
+            ),
           ),
           if (bedtime != null && wakeUp != null) ...[
             const SizedBox(height: Spacing.medium),
