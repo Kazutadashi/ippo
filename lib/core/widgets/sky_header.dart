@@ -387,7 +387,15 @@ class _SkyPainter extends CustomPainter {
     required double foot,
     required double distance,
   }) {
-    final ridge = _rangeRidge(random, w, ridgeBase, ridgeHeight);
+    final ridge = _rangeRidge(
+      random,
+      w,
+      ridgeBase,
+      ridgeHeight,
+      // Its own numbers for the small irregularities, different for the
+      // near and the far range.
+      roughen: Random(seed + (distance == 0 ? 31 : 37)),
+    );
     final horizon = palette.sky.last;
     Color faded(Color color) => Color.lerp(color, horizon, distance)!;
     final shape = _pathBelow(ridge, foot);
@@ -705,8 +713,9 @@ class _SkyPainter extends CustomPainter {
     Random random,
     double width,
     double base,
-    double height,
-  ) {
+    double height, {
+    Random? roughen,
+  }) {
     const count = 25;
     final detail = _ridge(random, width, 0, 1, 0.5, count: count);
     final massifs = [
@@ -718,6 +727,7 @@ class _SkyPainter extends CustomPainter {
         ),
     ];
     final heights = <double>[];
+    final shapes = <double>[];
     for (var index = 0; index < count; index++) {
       final x = index / (count - 1);
       // The massifs: smooth bumps, the tallest one wins. Between them the
@@ -730,15 +740,41 @@ class _SkyPainter extends CustomPainter {
       // The detail, from 0 (lowest) to 1 (highest), adds the summits.
       final jag = -detail[index].dy;
       heights.add(shape * 0.85 + jag * 0.15 * (0.4 + shape));
+      shapes.add(shape);
     }
     final high = heights.reduce(max);
-    return [
+    final step = width / (count - 1);
+    final points = [
       for (var index = 0; index < count; index++)
-        Offset(
-          width * index / (count - 1),
-          base - height * heights[index] / high,
-        ),
+        Offset(step * index, base - height * heights[index] / high),
     ];
+    if (roughen == null) {
+      return points;
+    }
+    // Evenly spaced points make the low stretches between the massifs
+    // rise and fall at one beat, like a wave. So, with numbers of their
+    // own (the massifs keep their shape): every point but the two ends
+    // moves sideways a little, and between each two a small notch is
+    // added, deeper where the range is low.
+    final rough = <Offset>[points.first];
+    for (var index = 1; index < count; index++) {
+      final previous = rough.last;
+      var point = points[index];
+      if (index < count - 1) {
+        point = point.translate((roughen.nextDouble() - 0.5) * step * 0.6, 0);
+      }
+      final lowness = 1 - (shapes[index - 1] + shapes[index]) / 2;
+      final notch = Offset(
+        (previous.dx + point.dx) / 2 +
+            (roughen.nextDouble() - 0.5) * step * 0.3,
+        (previous.dy + point.dy) / 2 +
+            (roughen.nextDouble() * 2 - 1) * height * 0.07 * lowness,
+      );
+      rough
+        ..add(notch)
+        ..add(point);
+    }
+    return rough;
   }
 
   /// The shape under [ridge], down to [bottom].
