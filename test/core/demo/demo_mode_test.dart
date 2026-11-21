@@ -52,7 +52,7 @@ void main() {
       expect(appState.isDemo, isTrue);
       expect(appState.dataFolder, isA<MemoryDataFolder>());
       var habits = HabitLog.fromEvents(appState.eventLog!.events);
-      expect(habits.habits, hasLength(5));
+      expect(habits.shownHabits, hasLength(12));
 
       // Things done during the demo stay in memory.
       await HabitActions(appState).createHabit('Stretch more');

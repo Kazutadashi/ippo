@@ -44,7 +44,14 @@ void main() {
   test('every module has data, ending today', () {
     final day = formatDate(now);
     final habits = HabitLog.fromEvents(events);
-    expect(habits.habits, hasLength(5));
+    // A dozen shown; one given up (archived) and one deleted are hidden;
+    // one was renamed and shows under its new name.
+    expect(habits.shownHabits, hasLength(12));
+    final names = [for (final habit in habits.shownHabits) habit.name];
+    expect(names, contains('Read 10 pages'));
+    expect(names, isNot(contains('Read')));
+    expect(names, isNot(contains('Cold shower')));
+    expect(names, isNot(contains('Strech')));
     expect(habits.entries.any((entry) => entry.date == day), isTrue);
 
     final food = FoodDiary.fromEvents(events);
@@ -55,7 +62,12 @@ void main() {
     expect(today.every((entry) => entry.time!.compareTo('15:30') < 0), isTrue);
 
     final exercise = ExerciseLog.fromEvents(events);
-    expect(exercise.exercises, hasLength(4));
+    expect(exercise.activeExercises, hasLength(12));
+    // Today is a long session: more exercises than the Home tile shows.
+    final doneToday = exercise.activeExercises
+        .where((item) => exercise.setsOn(day, item.id).isNotEmpty)
+        .length;
+    expect(doneToday, greaterThan(4));
     expect(exercise.sets, isNotEmpty);
     expect(exercise.steps.any((steps) => steps.date == day), isTrue);
 

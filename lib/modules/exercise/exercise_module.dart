@@ -208,8 +208,8 @@ String? _thousands(int? steps) =>
 /// the tile keeps its size.
 const int _chipLimit = 4;
 
-/// The day's exercises as small chips, "Push-up ×3": the exercise and
-/// how many sets were done. Each chip is one exercise.
+/// The day's exercises as small chips, "Push-up 3 sets": the exercise
+/// and, quieter, how many sets were done. Each chip is one exercise.
 class _ExerciseChips extends StatelessWidget {
   const _ExerciseChips({required this.done});
 
@@ -231,7 +231,11 @@ class _ExerciseChips extends StatelessWidget {
           runSpacing: 4,
           children: [
             for (final item in shown)
-              _chip(theme, '${item.name} ×${item.sets}'),
+              _chip(
+                theme,
+                item.name,
+                detail: '${item.sets} ${item.sets == 1 ? 'set' : 'sets'}',
+              ),
             if (more > 0) _chip(theme, '+$more more'),
           ],
         ),
@@ -239,7 +243,9 @@ class _ExerciseChips extends StatelessWidget {
     );
   }
 
-  Widget _chip(ThemeData theme, String text) {
+  /// One chip: [text], and after it [detail] in a quieter colour.
+  Widget _chip(ThemeData theme, String text, {String? detail}) {
+    final style = theme.textTheme.labelMedium;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -247,9 +253,20 @@ class _ExerciseChips extends StatelessWidget {
         color: theme.chipTheme.backgroundColor,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        text,
-        style: theme.textTheme.labelMedium,
+      child: Text.rich(
+        TextSpan(
+          text: text,
+          children: [
+            if (detail != null)
+              TextSpan(
+                text: '  $detail',
+                style: style?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
+        style: style,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
