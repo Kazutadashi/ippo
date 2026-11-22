@@ -1,3 +1,19 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+// The release key's settings (where the key file is, and its
+// passwords): a file named by the IPPO_KEY_PROPERTIES environment
+// variable, or else android/key.properties. Neither is ever committed
+// (android/.gitignore). Without one, release builds are signed with the
+// debug key, which is fine for testing but not for sharing: see
+// "Signing a release" in docs/development-setup.md.
+val keyPropertiesFile: File? =
+    (System.getenv("IPPO_KEY_PROPERTIES")?.let { file(it) } ?: rootProject.file("key.properties"))
+        .takeIf { it.exists() }
+val keyProperties = Properties().apply {
+    keyPropertiesFile?.let { FileInputStream(it).use { stream -> load(stream) } }
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -15,7 +31,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "org.ippo.ippo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -29,11 +44,26 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (keyPropertiesFile != null) {
+            create("release") {
+                storeFile = file(keyProperties.getProperty("storeFile"))
+                storePassword = keyProperties.getProperty("storePassword")
+                keyAlias = keyProperties.getProperty("keyAlias")
+                keyPassword = keyProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // The release key when its settings are there, else the debug
+            // key, so `flutter run --release` still works without one.
+            signingConfig = if (keyPropertiesFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

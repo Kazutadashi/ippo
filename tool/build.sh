@@ -32,6 +32,19 @@ fi
 commit_date="$(git log -1 --format=%cI)"
 author="$(git config --get ippo.author || git log --reverse --format=%an | head -n 1)"
 
+# Say which key signs an Android build, so a test build is never shared
+# by mistake. See "Signing a release" in docs/development-setup.md.
+if [ "$target" = "apk" ] || [ "$target" = "appbundle" ]; then
+  if [ -n "${IPPO_KEY_PROPERTIES:-}" ] && [ -f "$IPPO_KEY_PROPERTIES" ]; then
+    echo "Signing with the release key named in \$IPPO_KEY_PROPERTIES."
+  elif [ -f android/key.properties ]; then
+    echo "Signing with the release key named in android/key.properties."
+  else
+    echo "No release key found: signing with the debug key. Fine for testing;"
+    echo "do not share this build. See docs/development-setup.md."
+  fi
+fi
+
 flutter build "$target" \
   --dart-define=IPPO_COMMIT="$commit" \
   --dart-define=IPPO_COMMIT_DATE="$commit_date" \

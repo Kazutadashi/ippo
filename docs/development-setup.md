@@ -178,3 +178,41 @@ flutter run -d linux
 
 In VS Code, you can put the same two variables in the `env` section of
 a launch configuration in `.vscode/launch.json`.
+
+## Signing a release
+
+Every Android app is signed, and a phone only accepts an update signed
+with the same key as the version it has. Builds made without a release
+key are signed with Flutter's debug key: fine for testing, but never
+share them, because nobody can update them from a build signed on
+another computer.
+
+To sign releases with your own key:
+
+1. Make the key once, somewhere outside the repository:
+
+   ```
+   keytool -genkeypair -v -storetype PKCS12 -keystore ippo-release.jks \
+     -alias ippo -keyalg RSA -keysize 4096 -validity 36500
+   ```
+
+   The name and organisation it asks for go into a certificate anyone
+   can read from the APK, so a generic name ("Ippo") is enough.
+
+2. Next to it, make `key.properties`:
+
+   ```
+   storeFile=/path/to/ippo-release.jks
+   storePassword=...
+   keyAlias=ippo
+   keyPassword=...
+   ```
+
+3. Point the build at it: set the environment variable
+   `IPPO_KEY_PROPERTIES` to that file's path, or copy it to
+   `android/key.properties` (ignored by Git, as are `*.jks` files).
+   `tool/build.sh apk` then says "Signing with the release key".
+
+4. Back up the key file and its password in at least two safe places.
+   A lost key means installed copies can never be updated without
+   uninstalling; a leaked key lets others sign fake updates.
