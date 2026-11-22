@@ -92,8 +92,9 @@ Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
 modules; on Home, the Settings gear and the day bar can be tapped (the
 day bar looks back at earlier days: "Looking back" replaces the
-greeting, and times since become clock times), **Charts** in the week
-grid's header opens the charts, a tile opens its tab, and a day in the
+greeting, and times since become clock times), **CHARTS ›** in the
+week grid's header opens the charts (the header's twin: the same small
+capitals, in the accent colour, with a 48-high tap area), a tile opens its tab, and a day in the
 week grid shows that day.
 
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
@@ -116,7 +117,10 @@ The landscape is **scenery only**: the greeting ("Good afternoon") and
 the gear sit on its clear sky, and nothing else is drawn on it, so no
 button needs a dark backing to be read. Under it, on the page, the date
 ("Wednesday, 18 Nov") and the day bar sit in the same row as on every
-tab (`DayRow`). Then the **week grid**, and under it **one tile per module** in a grid,
+tab (`DayRow`; on a phone narrower than 400 the date is short: "Sat 21
+Nov"). On a tall phone the landscape grows (up to 160 more) to take
+the room the page would leave empty, so Home ends at the tab bar; it
+is measured after layout. Then the **week grid**, and under it **one tile per module** in a grid,
 two per row (one per row with large text, up to four on a wide
 window), each row as tall as its tallest tile. Everything fits on one
 phone screen, so Home is a glance, not a scroll. Two notes appear only

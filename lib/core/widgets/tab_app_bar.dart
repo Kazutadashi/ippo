@@ -8,6 +8,9 @@ import 'package:material_ui/material_ui.dart';
 import '../dates.dart';
 import 'day_bar.dart';
 
+/// Narrower than this (in logical pixels), the date is written short.
+const double _narrowWidth = 400;
+
 /// How tall the row with the date and the day bar is.
 const double _dayRowHeight = 48;
 
@@ -90,7 +93,11 @@ class DayRow extends StatelessWidget {
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                describeToday(day),
+                // On a narrow phone the short form, "Sat 21 Nov", so the
+                // date keeps its size beside the day bar.
+                MediaQuery.sizeOf(context).width < _narrowWidth
+                    ? formatShortDate(day)
+                    : describeToday(day),
                 maxLines: 1,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
