@@ -203,7 +203,7 @@ class _ChooseDataFolderFirst extends StatelessWidget {
               TextButton.icon(
                 onPressed: onTryDemo,
                 icon: const Icon(Icons.play_circle_outline),
-                label: const Text('Or try the demo first'),
+                label: const Text('Or look around with example data'),
               ),
             ],
           ),
@@ -238,7 +238,7 @@ class _DemoStrip extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'Demo data, not saved',
+                'Example data, not saved',
                 style: small?.copyWith(color: muted),
               ),
             ),

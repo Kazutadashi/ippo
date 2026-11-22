@@ -154,7 +154,7 @@ class AppState extends ChangeNotifier {
     _dataFolder = MemoryDataFolder({
       '$eventsFolderName/$demoDeviceId.jsonl': eventFileText,
     });
-    _dataFolderDescription = 'Demo data, kept only in memory';
+    _dataFolderDescription = 'Example data, kept only in memory';
     _eventLog = null;
     _createEventWriter();
     await reloadEvents();

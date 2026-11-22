@@ -84,7 +84,7 @@ abstract class IppoModule {
   /// all. Empty for none.
   List<ChartSpec> charts(AppState appState) => const [];
 
-  /// Made-up events for the demo (Settings › Try the demo): a few weeks
+  /// Made-up events for the demo (Settings › Show example data): a few weeks
   /// of everyday use of this module, made with [plan]. Empty for none.
   List<DemoEvent> demoEvents(DemoPlan plan) => const [];
 }

@@ -21,7 +21,7 @@ import '../events/uuid_v7.dart';
 const String demoDeviceId = '01900000-0000-7000-8000-00000000de30';
 
 /// The demo device's name, shown in Settings under Devices.
-const String demoDeviceName = 'Demo data';
+const String demoDeviceName = 'Example data';
 
 /// One made-up event, before it is written out.
 class DemoEvent {

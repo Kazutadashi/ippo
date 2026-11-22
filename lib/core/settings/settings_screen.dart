@@ -69,7 +69,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 const CardHeader(
                   icon: Icons.play_circle_outline,
-                  title: 'Demo',
+                  title: 'Example data',
                 ),
                 const SizedBox(height: 4),
                 _DemoSection(appState: appState),
@@ -383,17 +383,17 @@ class _DemoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const NoteText(
-            'The demo is on: Ippo shows four weeks of made-up data, kept '
-            'only in memory. Add, change and delete anything you like. '
-            'Your own data is set aside, untouched, and comes back when '
-            'you leave.',
+            'Ippo is showing example data: four weeks of made-up days, '
+            'kept only in memory. Add, change and delete anything you '
+            'like. Your own data is set aside, untouched, and comes back '
+            'when you go back to it.',
           ),
           const SizedBox(height: 12),
           // Tonal, like the main button of every other card.
           FilledButton.tonalIcon(
             onPressed: appState.endDemo,
             icon: const Icon(Icons.logout),
-            label: const Text('Leave the demo'),
+            label: const Text('Back to my data'),
           ),
         ],
       );
@@ -402,10 +402,10 @@ class _DemoSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const NoteText(
-          'See Ippo filled in: four weeks of made-up habits, meals, '
-          'workouts and sleep. It is kept only in memory and never '
-          'written to your data folder; leaving the demo (or closing the '
-          'app) throws it away.',
+          'See Ippo filled in with example data: four weeks of made-up '
+          'habits, meals, workouts and sleep. It is kept only in memory '
+          'and never written to your data folder; going back to your '
+          'data (or closing the app) throws it away.',
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
@@ -417,7 +417,7 @@ class _DemoSection extends StatelessWidget {
             }
           },
           icon: const Icon(Icons.play_circle_outline),
-          label: const Text('Try the demo'),
+          label: const Text('Show example data'),
         ),
       ],
     );

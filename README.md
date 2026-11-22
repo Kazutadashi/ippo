@@ -27,7 +27,7 @@ No account, no network, no ads.
   </tr>
 </table>
 
-<sub>Recorded from the app itself with its built-in demo data.</sub>
+<sub>Recorded from the app itself, with its built-in example data.</sub>
 
 </div>
 
@@ -79,9 +79,11 @@ your last week with the four weeks before.
 phone's accent colour or one you pick, metric or imperial units, a 24 or
 12-hour clock.
 
-**Try the demo** first, if you like: on the welcome screen or in
-Settings. It fills Ippo with four weeks of made-up days, kept only in
-memory and thrown away when you leave.
+**See it with example data** first, if you like: on the welcome screen
+or in Settings, **Show example data** fills Ippo with four weeks of
+made-up days. It is kept only in memory and thrown away when you go
+back to your own data. Ippo is free: everything it does is available
+to everyone.
 
 ## Your data stays yours
 
