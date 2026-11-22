@@ -92,9 +92,10 @@ Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
 modules; on Home, the Settings gear and the day bar can be tapped (the
 day bar looks back at earlier days: "Looking back" replaces the
-greeting, and times since become clock times), **CHARTS ›** in the
-week grid's header opens the charts (the header's twin: the same small
-capitals, in the accent colour, with a 48-high tap area), a tile opens its tab, and a day in the
+greeting, and times since become clock times), the **Charts** button in
+the week grid's header opens the charts (a small tonal button on the
+header's line: a real button, as the charts are too important to miss,
+sized so it does not stand apart from the header), a tile opens its tab, and a day in the
 week grid shows that day.
 
 At the top, a landscape (`SkyHeader`) under a sky that follows the time

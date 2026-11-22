@@ -8,7 +8,6 @@ import 'package:material_ui/material_ui.dart';
 import '../dates.dart';
 import '../module.dart';
 import 'info_tile.dart';
-import 'section_card.dart';
 
 /// One labelled row of the grid.
 typedef WeekGridRow = ({String title, IconData icon, WeekRow row});
@@ -91,35 +90,19 @@ class WeekGrid extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // The header's twin on the right, in the same small
-                // capitals, in the accent colour: part of the header, not
-                // a button stuck onto it. Its tap area is still 48 high.
+                // A real button, so the charts are hard to miss, but sized
+                // to the header: a small tonal pill on the header's line.
+                // Its tap area is still 48 high.
                 if (onOpenCharts != null)
-                  TextButton(
+                  FilledButton.tonalIcon(
                     onPressed: onOpenCharts,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.only(left: Spacing.medium),
-                      minimumSize: const Size(48, 48),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      textStyle: theme.textTheme.labelLarge,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'CHARTS',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: colors.primary,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 16,
-                          color: colors.primary,
-                        ),
-                      ],
-                    ),
+                    icon: const Icon(Icons.bar_chart, size: 18),
+                    label: const Text('Charts'),
                   ),
               ],
             ),
