@@ -31,69 +31,110 @@ No account, no network, no ads.
 
 </div>
 
-**Ippo** (一歩, "one step") is a free, open-source personal health app
-for Android and the Linux desktop. The name comes from the saying
-千里の道も一歩から: "a journey of a thousand miles begins with a single
-step."
+**Ippo** (一歩, "one step") takes its name from the saying 千里の道も一歩から:
+"a journey of a thousand miles begins with a single step." It is a
+personal health tracker for the small daily steps: what you did, ate,
+lifted and slept, logged in a tap or two, and kept so you can see how
+it adds up over months and years.
 
-> **Status:** early development. Not ready for daily use yet.
+> **Status:** early development. Ippo works, but it is not on an app
+> store yet, and things will still change.
 
-## What it will do
+## What you can do
 
-Ippo is built from modules:
+**Home** sums up your day at a glance: the last seven days side by
+side, and a tile for each part of the app. Tap a day to look back at
+it.
 
-- **Habits:** daily check-offs, history, and a habit strength score.
-- **Exercise:** log the sets and reps of each exercise, quickly.
-- **Food diary:** a simple calorie tracker.
-- **Time tracking:** tap what you are doing now; see how each day was
-  spent.
-- **Sleep:** when you went to bed and woke up, plus naps.
-- **Charts:** every measure over time (weight, energy, steps, best sets,
-  sleep, habits), with a running mean, the standard deviation and the
-  change per week, for the last month, three months, year, or all.
+**Habits.** Tick off each habit every day (✓ done, ✗ not done) in a grid
+of the last few weeks. A habit can be daily, a few times a week, or
+every few days, so a rest day never counts as missed. Give each one a
+colour and a short description, and see your best streak.
 
-You can add more modules without changing the existing ones.
+**Food.** Keep a list of your foods with their label values, then log
+what you eat by picking a food and an amount (in grams, or in pieces
+such as "2 slices"). For a restaurant meal, a quick entry takes just a
+name and the calories. Fill a food in from its nutrition label by
+pasting the label's text, or a photo read by an AI assistant
+([how](docs/food-labels.md)). See the day's energy, protein, carbs and
+fat against your daily limit, every vitamin and mineral the labels give,
+and set your own daily goals. Log your weight on the same screen.
 
-**Try the demo** (on the welcome screen, or in Settings) to see Ippo
-filled in with four weeks of made-up habits, meals, workouts and sleep.
-The demo data is made up on the phone when you start it, kept only in
-memory, and thrown away when you leave; your own data folder is never
-touched. Each module makes its own demo data (`demoEvents` in
-`lib/core/module.dart`).
+**Exercise.** Add your exercises, counted in reps or in seconds, and log
+each set with one tap, next to what you did last time. Steps for the
+day go here too.
+
+**Sleep.** When you woke up and went to bed each day ("Going to bed now"
+fills in the time), and naps. Last night is shown as a bar on the
+clock.
+
+**Charts.** Every measure over time: weight, energy, protein, steps,
+your best set of each exercise, hours slept and sleep times, habits
+done. Each chart shows the daily values, a running average, how much
+they vary, and the change per week, for a week, a month, three months,
+a year, all time, or any dates you pick. A summary at the top compares
+your last week with the four weeks before.
+
+**Make it yours.** Light or dark, true black for OLED screens, your
+phone's accent colour or one you pick, metric or imperial units, a 24 or
+12-hour clock.
+
+**Try the demo** first, if you like: on the welcome screen or in
+Settings. It fills Ippo with four weeks of made-up days, kept only in
+memory and thrown away when you leave.
 
 ## Your data stays yours
 
-- **No network.** The Android app does not request the `INTERNET`
-  permission, so the system itself blocks it from going online.
-  No accounts, ads, telemetry, or analytics.
-- **Plain files in a folder you choose.** Your data is stored as
-  human-readable JSON Lines files. Open them in any text editor, load
-  them into pandas with the small package in [`python/`](python/README.md),
-  or export them as CSV for a spreadsheet. The format is described in
-  full in [`docs/data-format.md`](docs/data-format.md).
-- **Sync with your own tools.** To use Ippo on several devices, sync the
-  data folder with a tool such as Syncthing. Each device writes only its
-  own file, so syncing does not cause conflicts.
-- **Easy to audit.** The code is written to be read. See
-  [`docs/permissions.md`](docs/permissions.md) and
-  [`docs/dependencies.md`](docs/dependencies.md) for every permission and
+- **Nothing goes online.** The Android app does not even ask for
+  internet access, so the phone itself stops it from connecting. There
+  are no accounts, no ads, and no tracking.
+- **Your data is plain files in a folder you choose.** You can open them
+  in a text editor, copy them anywhere, and keep them for as long as you
+  like. Ippo also backs up its own file once a month, and whenever you
+  tap **Back up now**.
+- **Use it on more than one device.** Point each device at the same
+  folder and keep the folder in sync with a tool such as
+  [Syncthing](https://syncthing.net). Each device writes only its own
+  file, so syncing never causes conflicts, and Settings shows when each
+  device was last heard from.
+- **Analyse it yourself.** Your history is made to be studied: a small
+  Python package turns the folder into tables, or exports them as CSV
+  (and Parquet) with a description of every column, ready for a
+  spreadsheet, pandas, R, or a statistics course. See
+  [`python/README.md`](python/README.md).
+
+## Getting Ippo
+
+Ippo runs on **Android** and on the **Linux desktop**. There are no
+ready-made downloads yet; it is planned for
+[F-Droid](https://f-droid.org). Until then, it can be built from the
+source code: [`docs/development-setup.md`](docs/development-setup.md)
+explains how, step by step.
+
+## For developers and contributors
+
+Ippo is written in Flutter and meant to be easy to read, change and
+trust. Contributions are welcome, especially from beginners.
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): how the code is written, and
+  what to check before a pull request.
+- [`docs/data-principles.md`](docs/data-principles.md) and
+  [`docs/data-format.md`](docs/data-format.md): how the data is
+  recorded and stored, in full.
+- [`docs/design.md`](docs/design.md): how every screen looks and
+  behaves.
+- [`docs/permissions.md`](docs/permissions.md) and
+  [`docs/dependencies.md`](docs/dependencies.md): every permission and
   package the app uses, and why.
 
-## Building
-
-See [`docs/development-setup.md`](docs/development-setup.md) to install
-the tools, then:
+The app is built from modules (habits, food, exercise, sleep), and a new
+module can be added to the code without changing the others.
 
 ```bash
 flutter run -d linux      # run on the Linux desktop
 flutter run               # run on a connected Android phone
 flutter test              # run the tests
 ```
-
-## Contributing
-
-Contributions are welcome, especially from beginners. Please read
-[`CONTRIBUTING.md`](CONTRIBUTING.md) first.
 
 ## License
 
