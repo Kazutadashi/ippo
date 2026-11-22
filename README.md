@@ -114,10 +114,42 @@ Ippo is completely free. There's nothing to buy and nothing locked away.
 
 ## Getting Ippo
 
-Ippo runs on Android and on Linux. There's no download yet, but it's
-on its way to [F-Droid](https://f-droid.org). Until then you can build
-it yourself, and [`docs/development-setup.md`](docs/development-setup.md)
+Ippo isn't in any app store yet, so for now you install it yourself.
+It only takes a minute.
+
+### On Android
+
+1. On your phone, open this project's
+   [Releases page](../../releases/latest) and download the newest file
+   ending in `.apk`.
+2. Open the downloaded file. Android will ask whether your browser (or
+   file manager) may install apps. Allow it for this one time, then go
+   back.
+3. Tap **Install**, then **Open**.
+
+The first time Ippo opens, it asks where to keep your data: pick or
+create a folder, such as `Documents/Ippo`. Or tap **Show example data**
+to look around first.
+
+To update, download the newer `.apk` and install it the same way. Your
+data stays where it is.
+
+> **Please read before installing.** An `.apk` from outside an app
+> store skips the store's checks, so only download Ippo from this
+> project's Releases page, never from a copy somewhere else. Ippo is
+> early software and comes with no warranty of any kind (see the
+> [license](LICENSE)). It could have bugs that lose or mix up data, so
+> keep a backup of your data folder. You install and use it at your own
+> risk.
+
+### On Linux
+
+There's no ready-made download for Linux yet. You can build Ippo
+yourself: [`docs/development-setup.md`](docs/development-setup.md)
 walks you through it step by step.
+
+It's also on its way to [F-Droid](https://f-droid.org), which will make
+installing and updating as easy as any other app.
 
 ## For developers
 
