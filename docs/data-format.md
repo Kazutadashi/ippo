@@ -788,7 +788,8 @@ One nap.
 | `ended_at` | timestamp | When it ended. Always after `started_at`. |
 
 To change the times, `nap_changed` gives new `started_at` and
-`ended_at`.
+`ended_at`. To move a nap logged on the wrong day, it also gives a new
+`date`.
 
 ### Time zones
 

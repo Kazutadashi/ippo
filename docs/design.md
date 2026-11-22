@@ -333,6 +333,16 @@ shared by every entry of it. There is one way to change each
 thing, and its name says which. A quick entry has no food behind it, so
 its form changes everything.
 
+### The nap form
+
+Two cards: **When** (the **Day**, which can be changed to move a nap
+logged on the wrong day, then **Start** and **End** side by side) and
+**Length** (the length large, the nap as a bar on the waking day's clock,
+06:00 to midnight, and six usual lengths as an even grid of buttons,
+all in minutes so each fits one line: the chosen one filled). A length
+keeps the end and moves the start, as the card says: a nap is usually
+logged just after waking.
+
 ### The habits key
 
 Habit names in the grid's narrow column are often short. A habit can
@@ -512,6 +522,7 @@ by themselves unless the user picked another day.
 | Exercise | `DumbbellIcon`, drawn: a level dumbbell with thick plates (`IppoModule.buildIcon`) |
 | Sleep, a night | `MoonIcon`, drawn: a full, even crescent with a small star (`IppoModule.buildIcon`) |
 | A nap | `airline_seat_flat` |
+| A length of time (nap form) | `timelapse` |
 | Settings | `settings_outlined` (the gear on Home) |
 | Add, new | `add` |
 | Change one thing | `edit_outlined` |

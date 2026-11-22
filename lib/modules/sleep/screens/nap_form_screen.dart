@@ -15,6 +15,8 @@ import '../sleep_actions.dart';
 import '../nap.dart';
 import '../sleep_times.dart';
 import '../../../core/widgets/time_fields.dart';
+import '../../../core/widgets/value_text.dart';
+import '../time_span_bar.dart';
 
 /// The form for one nap: its start and end times.
 class NapFormScreen extends StatefulWidget {
@@ -45,10 +47,22 @@ class NapFormScreen extends StatefulWidget {
   State<NapFormScreen> createState() => _NapFormScreenState();
 }
 
-/// The nap lengths offered as one-tap choices, in minutes.
+/// The nap lengths offered as one-tap choices, in minutes: two rows of
+/// three.
 const List<int> _napLengths = [15, 20, 30, 45, 60, 90];
 
+/// The track a nap is drawn on: the waking day, 06:00 to midnight.
+const int _dayTrackStartHour = 6;
+
+/// How many hours that track spans.
+const int _dayTrackHours = 18;
+
 class _NapFormScreenState extends State<NapFormScreen> {
+  /// The nap's day: the day shown when adding, the nap's own when
+  /// changing it. It can be changed, to move a nap logged on the wrong
+  /// day.
+  late DateTime _day = widget.day ?? parseDate(widget.nap!.date)!;
+
   late ClockTime _start = widget.nap?.startClock ?? _napStartGuess();
   late ClockTime _end = widget.nap?.endClock ?? _napEndGuess();
 
@@ -71,9 +85,6 @@ class _NapFormScreenState extends State<NapFormScreen> {
     setState(() => _start = ClockTime(start.hour, start.minute));
   }
 
-  /// The nap's day.
-  DateTime get _day => widget.day ?? parseDate(widget.nap!.date)!;
-
   SleepPeriod _period() {
     return napPeriod(_day, _start, _end);
   }
@@ -89,7 +100,11 @@ class _NapFormScreenState extends State<NapFormScreen> {
       if (nap == null) {
         return actions.recordNap(day: _day, period: period);
       }
-      return actions.changeNap(nap.id, period);
+      return actions.changeNap(
+        nap.id,
+        period,
+        date: formatDate(_day) == nap.date ? null : _day,
+      );
     });
     if (saved && mounted) {
       Navigator.of(context).pop();
@@ -116,7 +131,7 @@ class _NapFormScreenState extends State<NapFormScreen> {
   }
 
   /// Everything the user can change here, for the discard guard.
-  String _snapshot() => '$_start $_end';
+  String _snapshot() => '$_day $_start $_end';
 
   @override
   Widget build(BuildContext context) {
@@ -138,54 +153,133 @@ class _NapFormScreenState extends State<NapFormScreen> {
           ],
         ),
         body: ListView(
-          padding: belowNavigationBar(context, const EdgeInsets.all(16)),
+          padding: belowNavigationBar(
+            context,
+            const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          ),
           children: [
-            Row(
+            // When: the day, then the start and the end side by side.
+            SectionCard(
               children: [
-                Expanded(
-                  child: TimeField(
-                    label: 'Start',
-                    time: _start,
-                    onChanged: (time) => setState(() => _start = time),
-                  ),
+                const CardHeader(icon: Icons.airline_seat_flat, title: 'When'),
+                DateField(
+                  label: 'Day',
+                  day: _day,
+                  onChanged: (day) => setState(() => _day = day),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TimeField(
-                    label: 'End',
-                    time: _end,
-                    onChanged: (time) => setState(() => _end = time),
-                  ),
+                const SizedBox(height: Spacing.medium),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TimeField(
+                        label: 'Start',
+                        time: _start,
+                        onChanged: (time) => setState(() => _start = time),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.medium),
+                    Expanded(
+                      child: TimeField(
+                        label: 'End',
+                        time: _end,
+                        onChanged: (time) => setState(() => _end = time),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Common lengths, ending at the end time: one tap instead of
-            // picking a start time.
-            const FieldLabel('Length'),
-            Wrap(
-              spacing: Spacing.tight,
-              runSpacing: Spacing.tight,
+            // How long: the length large, the nap on the day's clock, and
+            // the usual lengths as one-tap choices.
+            SectionCard(
               children: [
-                for (final minutes in _napLengths)
-                  ChoiceChip(
-                    label: Text(formatDuration(Duration(minutes: minutes))),
-                    selected:
-                        problem == null && period.duration.inMinutes == minutes,
-                    onSelected: (_) => _setLength(minutes),
+                const CardHeader(icon: Icons.timelapse, title: 'Length'),
+                if (problem == null) ...[
+                  ValueText(
+                    formatDuration(period.duration),
+                    style: Theme.of(context).textTheme.headlineMedium,
+                    unitStyle: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                   ),
+                  const SizedBox(height: Spacing.small),
+                  TimeSpanBar(
+                    start: _start,
+                    end: _end,
+                    trackStartHour: _dayTrackStartHour,
+                    trackHours: _dayTrackHours,
+                    startLabel: _start.shown,
+                    endLabel: _end.shown,
+                    description: 'Nap from ${_start.shown} to ${_end.shown}',
+                  ),
+                ] else
+                  ProblemText(problem),
+                const SizedBox(height: Spacing.medium),
+                _LengthChoices(
+                  selectedMinutes: problem == null
+                      ? period.duration.inMinutes
+                      : null,
+                  onSelected: _setLength,
+                ),
+                const SizedBox(height: Spacing.small),
+                const NoteText('A length keeps the end and moves the start.'),
               ],
             ),
-            const SizedBox(height: 12),
-            if (problem == null)
-              NoteText('${formatDuration(period.duration)} of sleep')
-            else
-              ProblemText(problem),
             if (widget.nap != null)
               DeleteButton(label: 'Delete this nap', onPressed: _delete),
           ],
         ),
       ),
     );
+  }
+}
+
+/// The usual nap lengths as a grid of equal buttons, three to a row, so
+/// they line up however long their labels are. The chosen one is filled
+/// in the accent tint; [selectedMinutes] is null when none is.
+class _LengthChoices extends StatelessWidget {
+  const _LengthChoices({
+    required this.selectedMinutes,
+    required this.onSelected,
+  });
+
+  final int? selectedMinutes;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    const perRow = 3;
+    return Column(
+      children: [
+        for (var start = 0; start < _napLengths.length; start += perRow) ...[
+          if (start > 0) const SizedBox(height: Spacing.small),
+          Row(
+            children: [
+              for (var index = start; index < start + perRow; index++) ...[
+                if (index > start) const SizedBox(width: Spacing.small),
+                Expanded(child: _choice(context, _napLengths[index])),
+              ],
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _choice(BuildContext context, int minutes) {
+    // All in minutes ("90 min", not "1 h 30 min"): one short line each,
+    // and easy to compare at a glance.
+    final label = Text('$minutes min', maxLines: 1);
+    if (minutes == selectedMinutes) {
+      return Semantics(
+        selected: true,
+        child: FilledButton.tonal(
+          onPressed: () => onSelected(minutes),
+          child: label,
+        ),
+      );
+    }
+    return OutlinedButton(onPressed: () => onSelected(minutes), child: label);
   }
 }

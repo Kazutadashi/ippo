@@ -173,7 +173,8 @@ void main() {
     await tester.tap(find.text('30 min'));
     await tester.pump();
 
-    expect(find.text('30 min of sleep'), findsOneWidget);
+    // The length, shown large, and its button.
+    expect(find.text('30 min'), findsNWidgets(2));
   });
 
   testWidgets('naps: an Add nap button, and no Naps card without naps', (

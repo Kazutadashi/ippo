@@ -70,11 +70,13 @@ class SleepActions {
     });
   }
 
-  /// Changes the start and end of the nap [napId].
-  Future<Event> changeNap(String napId, SleepPeriod period) {
+  /// Changes the start and end of the nap [napId], and its day when
+  /// [date] is given (to move a nap logged on the wrong day).
+  Future<Event> changeNap(String napId, SleepPeriod period, {DateTime? date}) {
     return _write('nap_changed', {
       'target_id': napId,
       'changes': {
+        if (date != null) 'date': formatDate(date),
         'started_at': formatTimestamp(period.start),
         'ended_at': formatTimestamp(period.end),
       },
