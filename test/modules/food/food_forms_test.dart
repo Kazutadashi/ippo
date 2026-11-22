@@ -214,9 +214,10 @@ void main() {
         home: FoodEntryFormScreen.edit(appState: appState, entry: entry),
       ),
     );
-    // The food can be changed from the meal, at the top and below.
-    expect(find.byTooltip('Edit this food'), findsOneWidget);
-    expect(find.text('Edit this food'), findsOneWidget);
+    // The entry form changes this entry; the food's own details are
+    // changed from one plainly named button, and only there.
+    expect(find.text('Edit food details'), findsOneWidget);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
 
     // A fixed label value reaches this meal only when asked.
     await tester.runAsync(() async {

@@ -11,7 +11,6 @@ import 'package:ippo/core/app_state.dart';
 import 'package:ippo/core/dates.dart';
 import 'package:ippo/core/storage/settings_file.dart';
 import 'package:ippo/modules/food/food_actions.dart';
-import 'package:ippo/modules/food/food_diary.dart';
 import 'package:ippo/modules/food/food_entry.dart';
 import 'package:ippo/modules/food/nutrients.dart';
 import 'package:ippo/modules/food/screens/food_diary_screen.dart';
@@ -166,41 +165,5 @@ void main() {
       [for (final item in order) item.name],
       ['Dinner', 'Lunch', 'Breakfast', 'Late snack, no time', 'Snack, no time'],
     );
-  });
-
-  testWidgets('"Day complete" marks the day, and can be undone', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(800, 2000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final appState = AppState(
-      settingsFile: SettingsFile(settingsFolder.path),
-      isAndroid: false,
-      defaultDeviceName: 'my-desktop',
-    );
-    await tester.runAsync(() async {
-      await appState.load();
-      await appState.chooseLinuxDataFolder(dataFolder.path);
-    });
-    await tester.pumpWidget(
-      MaterialApp(home: FoodDiaryScreen(appState: appState)),
-    );
-    final todayText = formatDate(today());
-    expect(FoodDiary.of(appState).markOn(todayText), isNull);
-
-    await tester.runAsync(() async {
-      await tester.tap(find.text('Day complete'));
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
-    await tester.pump();
-    expect(FoodDiary.of(appState).markOn(todayText), isTrue);
-
-    await tester.runAsync(() async {
-      await tester.tap(find.text('Day complete'));
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-    });
-    await tester.pump();
-    expect(FoodDiary.of(appState).markOn(todayText), isFalse);
   });
 }

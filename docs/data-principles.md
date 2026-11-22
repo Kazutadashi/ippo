@@ -29,9 +29,7 @@ Wherever "not logged" and "none" could be confused, the data keeps them
 apart:
 
 - a habit's `false` ("I did not") versus no entry ("I did not say");
-- a nutrient a label did not give versus 0 g;
-- a food diary day marked complete versus one never marked
-  (`diary_day_marked`).
+- a nutrient a label did not give versus 0 g.
 
 A table that adds things up says whether its total is complete
 (`<nutrient>_complete`).

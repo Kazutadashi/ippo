@@ -652,6 +652,9 @@ not worth it.
 ### `diary_day_marked`
 
 The user's own word on whether everything eaten on a day is logged.
+The app does not currently write it (a day's list is simply what was
+logged, corrected later if needed), but readers keep reading it: data
+written earlier keeps its meaning.
 
 | Field | Type | Meaning |
 | --- | --- | --- |

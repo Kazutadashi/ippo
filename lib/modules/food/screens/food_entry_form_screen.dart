@@ -366,16 +366,9 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: Text(_name),
-          actions: [
-            // The food itself (its name or label values), right here.
-            if (_food != null)
-              IconButton(
-                tooltip: 'Edit this food',
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: _editFood,
-              ),
-            AppBarSaveButton(onPressed: _save),
-          ],
+          // This form changes this entry only: its amount, day and time.
+          // The food itself is changed from its own card below.
+          actions: [AppBarSaveButton(onPressed: _save)],
         ),
         body: ListView(
           padding: belowNavigationBar(context, const EdgeInsets.all(16)),
@@ -446,21 +439,35 @@ class _FoodEntryFormScreenState extends State<FoodEntryFormScreen> {
               const SizedBox(height: 8),
               _IngredientsBox(ingredients: _ingredients!),
             ],
+            // The food itself (its name and label values) is a separate
+            // thing, shared by every entry of it: changed on its own
+            // screen, said plainly, so it is never mistaken for this entry.
+            if (_food != null) _EditFoodButton(onEdit: _editFood),
             if (widget.entry != null)
               DeleteButton(label: 'Delete this entry', onPressed: _delete),
-            // Changing the food itself (its name or label values) starts
-            // here, where the food is already open.
-            if (_food != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: _editFood,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Edit this food'),
-                ),
-              ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The button that opens the food an entry was made from, to change the
+/// food's own details (its name and label values), which every entry of
+/// it shares. Plain and full width, apart from this entry's fields.
+class _EditFoodButton extends StatelessWidget {
+  const _EditFoodButton({required this.onEdit});
+
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: Spacing.small),
+      child: OutlinedButton.icon(
+        onPressed: onEdit,
+        icon: const Icon(Icons.edit_outlined),
+        label: const Text('Edit food details'),
       ),
     );
   }
