@@ -13,7 +13,7 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
-import '../../../core/widgets/sky_band.dart';
+import '../../../core/widgets/tab_app_bar.dart';
 import '../food_actions.dart';
 import '../food_diary.dart';
 import '../food_entry.dart';
@@ -158,7 +158,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SkyAppBar(
+      appBar: TabAppBar(
         title: const Text('Food'),
         actions: [
           // Every saved food, to look over and change.

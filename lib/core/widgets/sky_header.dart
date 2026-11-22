@@ -152,7 +152,6 @@ class SkyHeader extends StatelessWidget {
     required this.height,
     required this.clearTop,
     required this.seed,
-    this.skyOnly = false,
   });
 
   /// Which sky to draw.
@@ -168,11 +167,6 @@ class SkyHeader extends StatelessWidget {
   /// The seed for the made-up land: the same seed always gives the same
   /// landscape. Home uses the date, so it changes once a day.
   final int seed;
-
-  /// Only the sky, with its birds by day or its stars and shooting star
-  /// by night: no sun or moon, and no land. The tabs' top bars use this
-  /// (`sky_band.dart`), so only Home has the full landscape.
-  final bool skyOnly;
 
   /// A seed for [day]: different for every date.
   static int seedFor(DateTime day) =>
@@ -199,7 +193,6 @@ class SkyHeader extends StatelessWidget {
               background: Theme.of(context).scaffoldBackgroundColor,
               clearTop: clearTop,
               seed: seed,
-              skyOnly: skyOnly,
             ),
           ),
         ),
@@ -219,7 +212,6 @@ class _SkyPainter extends CustomPainter {
     required this.background,
     required this.clearTop,
     required this.seed,
-    required this.skyOnly,
   });
 
   final _Palette palette;
@@ -227,7 +219,6 @@ class _SkyPainter extends CustomPainter {
   final Color background;
   final double clearTop;
   final int seed;
-  final bool skyOnly;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -271,14 +262,9 @@ class _SkyPainter extends CustomPainter {
       // so the mountains made from the numbers after it keep their shape.
       random.nextInt(3);
     }
-    if (!skyOnly) {
-      _sunOrMoon(canvas, lightCentre, radius);
-    }
+    _sunOrMoon(canvas, lightCentre, radius);
     if (phase == SkyPhase.day || phase == SkyPhase.dawn) {
       _birds(canvas, size, Random(seed + 3), clearTop * 0.8);
-    }
-    if (skyOnly) {
-      return;
     }
 
     // A farther range behind, drawn like the near one but faded toward
@@ -950,8 +936,7 @@ class _SkyPainter extends CustomPainter {
       old.phase != phase ||
       old.background != background ||
       old.clearTop != clearTop ||
-      old.seed != seed ||
-      old.skyOnly != skyOnly;
+      old.seed != seed;
 }
 
 /// A smooth line across the view, such as the top of a hill, and the

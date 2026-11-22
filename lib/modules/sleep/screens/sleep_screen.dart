@@ -22,7 +22,7 @@ import '../sleep_times.dart';
 import 'nap_form_screen.dart';
 import '../../../core/widgets/time_fields.dart';
 import '../../../core/widgets/value_text.dart';
-import '../../../core/widgets/sky_band.dart';
+import '../../../core/widgets/tab_app_bar.dart';
 import '../time_span_bar.dart';
 
 /// The wake-up time suggested until the first wake-up is logged.
@@ -59,7 +59,7 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SkyAppBar(
+      appBar: TabAppBar(
         title: const Text('Sleep'),
         day: shownDay,
         onDayChanged: showDay,

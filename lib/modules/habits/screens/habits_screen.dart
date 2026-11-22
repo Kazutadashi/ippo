@@ -12,7 +12,7 @@ import '../../../core/dates.dart';
 import '../../../core/save_or_show_error.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
-import '../../../core/widgets/sky_band.dart';
+import '../../../core/widgets/tab_app_bar.dart';
 import '../habit.dart';
 import '../habit_actions.dart';
 import '../habit_log.dart';
@@ -73,7 +73,7 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SkyAppBar(
+      appBar: TabAppBar(
         title: const Text('Habits'),
         actions: [_OrderButton(appState: appState)],
       ),

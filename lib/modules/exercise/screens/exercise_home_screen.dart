@@ -12,7 +12,7 @@ import '../../../core/save_or_show_error.dart';
 import '../../../core/undo_message.dart';
 import '../../../core/widgets/follows_today.dart';
 import '../../../core/widgets/section_card.dart';
-import '../../../core/widgets/sky_band.dart';
+import '../../../core/widgets/tab_app_bar.dart';
 import '../exercise.dart';
 import '../exercise_actions.dart';
 import '../exercise_log.dart';
@@ -85,7 +85,7 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SkyAppBar(
+      appBar: TabAppBar(
         title: const Text('Exercise'),
         day: shownDay,
         onDayChanged: showDay,
