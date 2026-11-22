@@ -4,11 +4,11 @@
 
 # Ippo
 
-**Habits, food, exercise and sleep, in one calm app,<br>
-on plain files you own, ready to analyse.**
+**Keep track of your habits, food, exercise and sleep<br>
+in one calm, private app.**
 
-Free and open source, for Android and the Linux desktop.
-No account, no network, no ads.
+Free and open source, for Android and Linux.
+No account, no ads, and it never goes online.
 
 <table>
   <tr>
@@ -40,100 +40,104 @@ Ippo (一歩) means "one step" in Japanese, from the saying "a journey of
 a thousand miles begins with a single step." Small steps, taken every
 day, add up.
 
-> **Status:** early development. Ippo works, but it is not on an app
-> store yet, and things will still change.
+> **Still early.** Ippo works, but it isn't in any app store yet, and it
+> will keep changing as it grows.
 
-## What you can do
+## What it does
 
-**Home** sums up your day at a glance: the last seven days side by
-side, and a tile for each part of the app. Tap a day to look back at
-it.
+**Home** shows your day in one place. A small table lays out the past
+week, and below it each part of the app has its own tile. Tap any day
+to see how it went.
 
-**Habits.** Tick off each habit every day (✓ done, ✗ not done) in a grid
-of the last few weeks. A habit can be daily, a few times a week, or
-every few days, so a rest day never counts as missed. Give each one a
-colour and a short description, and see your best streak.
+**Habits.** Tick off your habits each day in a grid of the last few
+weeks. Not every habit has to be daily: set one to a few times a week,
+or every few days, and the days in between won't count against you.
+Give each habit its own colour, and a note if its name is short. Home
+shows your best streak.
 
-**Food.** Keep a list of your foods with their label values, then log
-what you eat by picking a food and an amount (in grams, or in pieces
-such as "2 slices"). For a restaurant meal, a quick entry takes just a
-name and the calories. Fill a food in from its nutrition label by
-pasting the label's text, or a photo read by an AI assistant
-([how](docs/food-labels.md)). See the day's energy, protein, carbs and
-fat against your daily limit, every vitamin and mineral the labels give,
-and set your own daily goals. Log your weight on the same screen.
+**Food.** Save the foods you eat often, with the numbers from their
+labels. Logging a meal is then just a matter of picking the food and
+the amount, in grams or in pieces like "2 slices". Eating out? A quick
+entry only needs a name and the calories.
 
-**Exercise.** Add your exercises, counted in reps or in seconds, and log
-each set with one tap, next to what you did last time. Steps for the
-day go here too.
+Adding a new food is quicker if you paste in its nutrition label. Take
+a photo, let an AI assistant read it, and paste the answer
+([here's how](docs/food-labels.md)). The Food tab then shows the day's
+calories, protein, carbs and fat against your limit, along with any
+vitamins and minerals your labels list. You can set your own daily
+goals, and log your weight there too.
 
-**Sleep.** When you woke up and went to bed each day ("Going to bed now"
-fills in the time), and naps. Last night is shown as a bar on the
-clock.
+**Exercise.** Add the exercises you do, counted in reps or in seconds.
+Each set takes one tap, and your last session sits right next to today,
+so you can see whether you're getting stronger. Your daily steps go
+here as well.
 
-**Charts.** Every measure over time: weight, energy, protein, steps,
-your best set of each exercise, hours slept and sleep times, habits
-done. Each chart shows the daily values, a running average, how much
-they vary, and the change per week, for a week, a month, three months,
-a year, all time, or any dates you pick. A summary at the top compares
-your last week with the four weeks before.
+**Sleep.** Note when you woke up and when you went to bed. "Going to bed
+now" fills in the time for you. Naps go here too, and last night shows
+up as a bar across the clock.
 
-**Make it yours.** Light or dark, true black for OLED screens, your
-phone's accent colour or one you pick, metric or imperial units, a 24 or
-12-hour clock.
+**Charts** show how things change over time: your weight, calories,
+protein, steps, best set for each exercise, sleep, and habits. Each
+chart plots your daily numbers with a running average, and tells you how
+much they vary and which way they're heading. Look at the last week,
+month or year, or pick any dates you like. At the top, a short summary
+compares your last week with the four weeks before it.
 
-**See it with example data** first, if you like: on the welcome screen
-or in Settings, **Show example data** fills Ippo with four weeks of
-made-up days. It is kept only in memory and thrown away when you go
-back to your own data. Ippo is free: everything it does is available
-to everyone.
+**Make it look the way you like.** Pick light or dark, with true black
+for OLED screens. Use your phone's accent colour or choose your own,
+and switch between metric and imperial, or 24- and 12-hour time.
+
+Want to look around first? Tap **Show example data** on the welcome
+screen or in Settings, and Ippo fills up with four weeks of made-up
+days. None of it is saved, and your own data comes back as soon as
+you're done.
+
+Ippo is completely free. There's nothing to buy and nothing locked away.
 
 ## Your data stays yours
 
-- **Nothing goes online.** The Android app does not even ask for
-  internet access, so the phone itself stops it from connecting. There
-  are no accounts, no ads, and no tracking.
-- **Your data is plain files in a folder you choose.** You can open them
-  in a text editor, copy them anywhere, and keep them for as long as you
-  like. Ippo also backs up its own file once a month, and whenever you
-  tap **Back up now**.
-- **Use it on more than one device.** Point each device at the same
-  folder and keep the folder in sync with a tool such as
-  [Syncthing](https://syncthing.net). Each device writes only its own
-  file, so syncing never causes conflicts, and Settings shows when each
-  device was last heard from.
-- **Analyse it yourself.** Your history is made to be studied: a small
-  Python package turns the folder into tables, or exports them as CSV
-  (and Parquet) with a description of every column, ready for a
-  spreadsheet, pandas, R, or a statistics course. See
-  [`python/README.md`](python/README.md).
+- **It never goes online.** The Android app doesn't even ask for
+  internet access, so your phone won't let it connect. There are no
+  accounts, no ads and no tracking.
+- **It's kept in plain files.** Your data lives in a folder you choose,
+  as text files you can open, copy and keep for as long as you like.
+  Ippo backs them up once a month, and whenever you tap **Back up now**.
+- **It works across devices.** Point your phone and computer at the same
+  folder and keep it in sync with something like
+  [Syncthing](https://syncthing.net). Each device writes to its own
+  file, so syncing never causes conflicts, and Settings tells you when
+  each device was last seen.
+- **It's ready for analysis.** If you like digging into numbers, a small
+  Python package turns your folder into tidy tables. It can also export
+  them as CSV or Parquet, with every column explained, for a
+  spreadsheet, pandas or R. See [`python/README.md`](python/README.md).
 
 ## Getting Ippo
 
-Ippo runs on **Android** and on the **Linux desktop**. There are no
-ready-made downloads yet; it is planned for
-[F-Droid](https://f-droid.org). Until then, it can be built from the
-source code: [`docs/development-setup.md`](docs/development-setup.md)
-explains how, step by step.
+Ippo runs on Android and on Linux. There's no download yet, but it's
+on its way to [F-Droid](https://f-droid.org). Until then you can build
+it yourself, and [`docs/development-setup.md`](docs/development-setup.md)
+walks you through it step by step.
 
-## For developers and contributors
+## For developers
 
-Ippo is written in Flutter and meant to be easy to read, change and
-trust. Contributions are welcome, especially from beginners.
+Ippo is built with Flutter. The code is written to be easy to read,
+easy to change and easy to trust, and contributions are welcome,
+especially from people just starting out.
 
-- [`CONTRIBUTING.md`](CONTRIBUTING.md): how the code is written, and
-  what to check before a pull request.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) explains how the code is written
+  and what to check before opening a pull request.
 - [`docs/data-principles.md`](docs/data-principles.md) and
-  [`docs/data-format.md`](docs/data-format.md): how the data is
-  recorded and stored, in full.
-- [`docs/design.md`](docs/design.md): how every screen looks and
+  [`docs/data-format.md`](docs/data-format.md) describe how the data is
+  recorded and stored.
+- [`docs/design.md`](docs/design.md) covers how each screen looks and
   behaves.
 - [`docs/permissions.md`](docs/permissions.md) and
-  [`docs/dependencies.md`](docs/dependencies.md): every permission and
-  package the app uses, and why.
+  [`docs/dependencies.md`](docs/dependencies.md) list every permission
+  and package the app uses, and why.
 
-The app is built from modules (habits, food, exercise, sleep), and a new
-module can be added to the code without changing the others.
+Each part of the app (habits, food, exercise, sleep) is its own module,
+so new ones can be added to the code without touching the rest.
 
 ```bash
 flutter run -d linux      # run on the Linux desktop
@@ -143,5 +147,5 @@ flutter test              # run the tests
 
 ## License
 
-Ippo is free software, released under the GNU General Public License,
-version 3 or later. See [`LICENSE`](LICENSE).
+Ippo is free software under the GNU General Public License, version 3
+or later. See [`LICENSE`](LICENSE).
