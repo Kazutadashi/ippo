@@ -58,18 +58,25 @@ Contents:
   welcome with a button leading to Settings.
 - Each tab keeps its state (the day shown, typed numbers) while another
   tab is open.
-- On a wide window (840 dp or more: the Linux desktop, a tablet on its
-  side), the tabs go down the left side (`NavigationRail`) and screens
-  keep a readable width of at most 720.
+- On a wide window (840 dp or more: a phone or tablet on its side, the
+  Linux desktop), the tabs go down the left side (`NavigationRail`), on
+  a panel of its own (`surfaceContainer`), so the page starts at a clear
+  edge beside it. Screens use the whole width up to 1080, so on a phone
+  on its side Home's landscape runs edge to edge; past that (a desktop)
+  they stay centred at a readable width.
+- On a short screen (under 500 high, a phone on its side), Home's
+  landscape is lower (76), so the tiles come into view.
 - The app draws behind a see-through system navigation bar, so its own
   colours reach the bottom edge.
 
 ### A module screen, top to bottom
 
-1. **Top bar** (`TabAppBar`): a plain bar in the theme's colours, with
+1. **Top bar** (`tabAppBar`): a plain bar in the theme's colours, with
    the module's name ("Sleep") on the left and its one button, if any,
    on the right; if the screen shows one day, a row under it has the
-   date and the day picker (`DayBar`: ‹ 📅 Today › »). Only Home has the
+   date and the day picker (`DayBar`: ‹ 📅 Today › »); on a window 600
+   or wider they share the title's row instead, leaving more of a short
+   screen to the page. Only Home has the
    landscape: the tabs stay plain, so their content leads. The day is
    the same on every tab (kept in `AppState`). On any day but today, the
    day is shown in a tinted pill, because logging to the wrong day is

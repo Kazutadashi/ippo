@@ -149,7 +149,8 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TabAppBar(
+      appBar: tabAppBar(
+        context,
         title: const Text('Food'),
         actions: [
           // Every saved food, to look over and change.

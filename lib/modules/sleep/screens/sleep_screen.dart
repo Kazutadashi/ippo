@@ -59,7 +59,8 @@ class _SleepScreenState extends State<SleepScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TabAppBar(
+      appBar: tabAppBar(
+        context,
         title: const Text('Sleep'),
         day: shownDay,
         onDayChanged: showDay,

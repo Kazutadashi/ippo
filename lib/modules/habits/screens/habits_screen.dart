@@ -73,7 +73,8 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TabAppBar(
+      appBar: tabAppBar(
+        context,
         title: const Text('Habits'),
         actions: [_OrderButton(appState: appState)],
       ),

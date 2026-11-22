@@ -85,7 +85,8 @@ class _ExerciseHomeScreenState extends State<ExerciseHomeScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TabAppBar(
+      appBar: tabAppBar(
+        context,
         title: const Text('Exercise'),
         day: shownDay,
         onDayChanged: showDay,

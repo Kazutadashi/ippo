@@ -101,7 +101,12 @@ class _HomeScreenState extends State<HomeScreen> {
             bottomNavigationBar: demoStrip,
             body: Row(
               children: [
+                // On a panel of its own, so the page (and Home's
+                // landscape) starts at a clear edge beside it.
                 NavigationRail(
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainer,
                   selectedIndex: _selectedTab,
                   onDestinationSelected: (index) =>
                       setState(() => _selectedTab = index),
@@ -158,8 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
 /// It is Material's "expanded" window size.
 const double _wideWindow = 840;
 
-/// The widest a screen gets on a wide window, so lines stay readable.
-const double _maxWidth = 720;
+/// The widest a screen gets on a wide window, so lines stay readable on
+/// a desktop. A phone or small tablet on its side uses its whole width,
+/// so Home's landscape is never cut off short of the edge.
+const double _maxWidth = 1080;
 
 /// Shown while no data folder is chosen, leading to Settings.
 class _ChooseDataFolderFirst extends StatelessWidget {

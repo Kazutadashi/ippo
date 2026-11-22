@@ -72,12 +72,12 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
   /// After a layout: makes the landscape fill what the page leaves empty
   /// of the [viewport] height. The page's height does not depend on the
   /// landscape's, so this settles after one more frame.
-  void _fitLandscape(double viewport, double topInset) {
+  void _fitLandscape(double viewport, double topInset, double landscapeHeight) {
     final below = _belowLandscape.currentContext?.findRenderObject();
     if (!mounted || below is! RenderBox || !below.hasSize) {
       return;
     }
-    final free = viewport - topInset - _landscapeHeight - below.size.height;
+    final free = viewport - topInset - landscapeHeight - below.size.height;
     final growth = free.clamp(0.0, _mostGrowth);
     if ((growth - _landscapeGrowth).abs() > 0.5) {
       setState(() => _landscapeGrowth = growth);
@@ -117,12 +117,16 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
     final topInset = MediaQuery.paddingOf(context).top;
+    // On a short screen (a phone on its side) a lower landscape, so the
+    // tiles come into view.
+    final landscapeHeight = _landscapeHeightFor(MediaQuery.sizeOf(context));
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
           // Measured after this frame, to fit the landscape to the screen.
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _fitLandscape(constraints.maxHeight, topInset),
+            (_) =>
+                _fitLandscape(constraints.maxHeight, topInset, landscapeHeight),
           );
           return RefreshIndicator(
             // Pull down to read the data folder again, for example after a
@@ -140,7 +144,7 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                   children: [
                     SkyHeader(
                       phase: SkyPhase.of(now),
-                      height: topInset + _landscapeHeight + _landscapeGrowth,
+                      height: topInset + landscapeHeight + _landscapeGrowth,
                       clearTop: topInset + 44,
                       // New mountains each day, the same all day long.
                       seed: SkyHeader.seedFor(today()),
@@ -238,6 +242,17 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
 /// How tall the landscape is under the status bar: room for the greeting
 /// on its sky, and the mountains below it.
 const double _landscapeHeight = 112;
+
+/// A screen shorter than this (a phone on its side) gets
+/// [_shortLandscapeHeight].
+const double _shortScreen = 500;
+
+/// The landscape on a short screen: the greeting's sky and a low ridge.
+const double _shortLandscapeHeight = 76;
+
+/// The landscape's height on a screen of [size].
+double _landscapeHeightFor(Size size) =>
+    size.height < _shortScreen ? _shortLandscapeHeight : _landscapeHeight;
 
 /// The most the landscape grows on a tall phone; past this, a page that
 /// is still short leaves the rest empty rather than show a sky too big.
