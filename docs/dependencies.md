@@ -57,3 +57,13 @@ that drawing, rendered with `rsvg-convert` and cropped with ImageMagick
 (neither is needed to build the app). The header itself (`lib/core/widgets/sky_header.dart`) and the dumbbell and
 moon icons are drawn in code. None of it uses artwork or fonts from other
 projects.
+
+The images at the top of the README (`docs/images/`) are made from
+Ippo itself: `icon.png` is the launcher icon's SVG rendered with
+`rsvg-convert` and rounded with ImageMagick; the three GIFs were
+recorded from the app running in Flutter's test environment with its
+built-in demo data (taps drawn as circles), and encoded with ffmpeg.
+The ✓ and ✗ in them come from Noto Sans Symbols 2 (SIL Open Font
+License), added to the recording's copy of Roboto because the test
+environment has no system font to supply them; the app itself uses
+neither file.

@@ -1,4 +1,35 @@
+<div align="center">
+
+<img src="docs/images/icon.png" width="96" alt="">
+
 # Ippo
+
+**Habits, food, exercise and sleep, in one calm app,<br>
+on plain files you own, ready to analyse.**
+
+Free and open source, for Android and the Linux desktop.
+No account, no network, no ads.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/images/tour.gif" width="250" alt="A tour of Ippo: Home, then the Habits, Food, Exercise and Sleep tabs."><br>
+      <b>A quick tour</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/logging.gif" width="250" alt="Logging in Ippo: ticking a habit, adding a food, adding an exercise set and a nap, then Home with the new totals."><br>
+      <b>Logging a day</b>
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/images/details.gif" width="250" alt="Ippo in detail: the charts, a weight chart over a week and a month, every nutrient of the day, and the accent colour in Settings."><br>
+      <b>Charts and details</b>
+    </td>
+  </tr>
+</table>
+
+<sub>Recorded from the app itself with its built-in demo data.</sub>
+
+</div>
 
 **Ippo** (一歩, "one step") is a free, open-source personal health app
 for Android and the Linux desktop. The name comes from the saying
