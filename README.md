@@ -31,11 +31,13 @@ No account, no network, no ads.
 
 </div>
 
-**Ippo** (一歩, "one step") takes its name from the saying 千里の道も一歩から:
-"a journey of a thousand miles begins with a single step." It is a
-personal health tracker for the small daily steps: what you did, ate,
-lifted and slept, logged in a tap or two, and kept so you can see how
-it adds up over months and years.
+**Ippo** is a personal health tracker. Log what you did, ate, lifted
+and slept in a tap or two. Then see how it all adds up over months and
+years.
+
+The name means "one step" (一歩). It comes from the Japanese saying
+千里の道も一歩から: "a journey of a thousand miles begins with a single
+step."
 
 > **Status:** early development. Ippo works, but it is not on an app
 > store yet, and things will still change.
