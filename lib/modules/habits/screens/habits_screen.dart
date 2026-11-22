@@ -157,9 +157,6 @@ class _HabitsScreenState extends State<HabitsScreen> with FollowsToday {
                       'Tap a name to change the habit.',
                     ),
                   ),
-                // What each short name means, for habits that say.
-                if (habits.any((habit) => habit.description != null))
-                  _HabitKey(habits: habits),
               ],
             );
           },
@@ -322,47 +319,6 @@ class _HabitName extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// The key to the grid: each habit with a description, its name in its
-/// colour and what it means beside it, so short names in the narrow name
-/// column stay understandable.
-class _HabitKey extends StatelessWidget {
-  const _HabitKey({required this.habits});
-
-  final List<Habit> habits;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final described = [
-      for (final habit in habits)
-        if (habit.description != null) habit,
-    ];
-    return SectionCard(
-      children: [
-        const CardHeader(icon: Icons.info_outline, title: 'What they mean'),
-        for (final habit in described)
-          Padding(
-            padding: const EdgeInsets.only(bottom: Spacing.small),
-            child: MergeSemantics(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    habit.name,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: habit.textColor(theme),
-                    ),
-                  ),
-                  Text(habit.description!, style: theme.textTheme.bodyMedium),
-                ],
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

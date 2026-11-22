@@ -69,7 +69,8 @@ class Habit {
 
   /// What the habit means, in the user's words, such as "Review the
   /// day's flashcards" for a habit named "Anki"; null if none. Shown in
-  /// the key under the grid, so short names stay understandable.
+  /// the habit's form (tap its name), so short names stay
+  /// understandable.
   final String? description;
 
   /// What is recorded each day: `yes_no`, `number`, ...

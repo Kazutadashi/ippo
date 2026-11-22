@@ -343,12 +343,11 @@ all in minutes so each fits one line: the chosen one filled). A length
 keeps the end and moves the start, as the card says: a nap is usually
 logged just after waking.
 
-### The habits key
+### Habit descriptions
 
 Habit names in the grid's narrow column are often short. A habit can
-have a description ("What it means" in its form); habits that have one
-are listed under the grid in a **What they mean** card, each name in its
-colour above its description.
+have a description ("What it means" in its form), read by tapping its
+name; the Habits tab stays the grid alone.
 
 ## 3. Fields, information and buttons
 

@@ -25,7 +25,7 @@ typedef _DemoHabit = ({
 });
 
 /// What a few of the demo habits mean, as a user would write it, so the
-/// key under the grid has something to show.
+/// habit form shows one.
 const Map<String, String> _descriptions = {
   'Walk outside': 'At least 20 minutes, whatever the weather.',
   'Drink water': 'Eight glasses over the day.',

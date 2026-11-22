@@ -377,7 +377,7 @@ record a value for it.
 | `unit` | string, optional | Only for `"number"`: a label such as `"pages"` or `"cards"`. |
 | `target` | object, optional | The goal. See below. If missing, any recorded value counts as done. |
 | `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week; `{"times": 1, "per_days": 3}` means every 3 days. Whole numbers, `times` at least 1 and at most `per_days`, `per_days` at most 365; anything else is read as every day. Changed later with `habit_changed`. |
-| `description` | string, optional | What the habit means, in the user's words, such as what a short name stands for. The app shows it in a key under the habit grid. Changed with `habit_changed` (`null` clears it). |
+| `description` | string, optional | What the habit means, in the user's words, such as what a short name stands for. The app shows it in the habit's form. Changed with `habit_changed` (`null` clears it). |
 | `color` | string, optional | A display colour, `"#RRGGBB"`. Missing or `null` means the app's accent colour. |
 | `archived` | boolean, optional | `true` hides the habit without deleting it. Usually set later with `habit_changed`. |
 

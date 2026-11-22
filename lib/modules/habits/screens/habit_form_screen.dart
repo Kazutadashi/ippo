@@ -230,7 +230,8 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: Spacing.medium),
-            // What a short name means, shown in the key under the grid.
+            // What a short name means, for when the name alone is not
+            // enough.
             TextField(
               controller: _descriptionField,
               textCapitalization: TextCapitalization.sentences,
