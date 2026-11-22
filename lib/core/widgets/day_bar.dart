@@ -21,23 +21,13 @@ const double _dayWidth = 124;
 /// back to today. Every part keeps its place whatever the day.
 class DayBar extends StatelessWidget {
   /// Creates the bar showing [day], reporting a new day to [onChanged].
-  const DayBar({
-    super.key,
-    required this.day,
-    required this.onChanged,
-    this.todayBackground,
-  });
+  const DayBar({super.key, required this.day, required this.onChanged});
 
   /// The day shown, at local midnight.
   final DateTime day;
 
   /// Called with the newly chosen day.
   final ValueChanged<DateTime> onChanged;
-
-  /// A backing for the day when it is today, or null for none: on a busy
-  /// picture (Home's landscape), a faint dark one keeps the white text
-  /// readable (4.5:1).
-  final Color? todayBackground;
 
   Future<void> _pickDay(BuildContext context) async {
     final picked = await showDatePicker(
@@ -77,9 +67,7 @@ class DayBar extends StatelessWidget {
           child: TextButton.icon(
             onPressed: () => _pickDay(context),
             style: TextButton.styleFrom(
-              backgroundColor: isToday
-                  ? todayBackground
-                  : colors.secondaryContainer,
+              backgroundColor: isToday ? null : colors.secondaryContainer,
               foregroundColor: isToday
                   ? foreground
                   : colors.onSecondaryContainer,

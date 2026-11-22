@@ -66,16 +66,16 @@ Contents:
 
 ### A module screen, top to bottom
 
-1. **Top bar** (`SkyAppBar`) on a band of the Home sky (its birds by
-   day, its stars and shooting star by night; no sun, moon or land),
-   fading into the page, with the module's name ("Sleep") on the left
-   and, if the screen shows one day, the day picker (`DayBar`:
-   ‹ 📅 Today › ») on the right, in `AppBar.actions`. The day is the
-   same on every tab (kept in `AppState`). On any day but today, the day
-   is shown in a tinted pill, because logging to the wrong day is easy
-   to miss; » goes straight back to today. › and » are greyed out on
-   today, and nothing in the bar moves as the day changes: the day has
-   a fixed width. There is no day after today: no data can be there.
+1. **Top bar** (`TabAppBar`): a plain bar in the theme's colours, with
+   the module's name ("Sleep") on the left and its one button, if any,
+   on the right; if the screen shows one day, a row under it has the
+   date and the day picker (`DayBar`: ‹ 📅 Today › »). Only Home has the
+   landscape: the tabs stay plain, so their content leads. The day is
+   the same on every tab (kept in `AppState`). On any day but today, the
+   day is shown in a tinted pill, because logging to the wrong day is
+   easy to miss; » goes straight back to today. › and » are greyed out
+   on today, and nothing in the bar moves as the day changes: the day
+   has a fixed width. There is no day after today: no data can be there.
 2. **Cards** (`SectionCard`), one per section, each starting with a
    `CardHeader`.
 3. **Create buttons** in the page, just above the list they add to, in
@@ -90,11 +90,11 @@ Nothing sits outside a card except short notes or problems at the top.
 
 Home is **information**, like a weather app: a quick glance at what
 matters about the day so far. The bar at the bottom leads to the
-modules; on Home, the chart button (Charts), the Settings gear and
-the day bar can be tapped (the
+modules; on Home, the Settings gear and the day bar can be tapped (the
 day bar looks back at earlier days: "Looking back" replaces the
-greeting, and times since become clock times), a tile opens its tab, a day in the week grid shows that day, and the
-Lately card opens Charts.
+greeting, and times since become clock times), **Charts** in the week
+grid's header opens the charts, a tile opens its tab, and a day in the
+week grid shows that day.
 
 At the top, a landscape (`SkyHeader`) under a sky that follows the time
 of day (dawn with a low sun and mist, a blue day with a few birds, dusk
@@ -112,9 +112,11 @@ little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
 mountains. It is decoration: screen readers skip it.
 
-The greeting ("Good afternoon") and the gear sit on its sky; the date
-("Wednesday, 18 Nov") and the day bar sit on the ground at its foot.
-Then the **week grid**, and under it **one tile per module** in a grid,
+The landscape is **scenery only**: the greeting ("Good afternoon") and
+the gear sit on its clear sky, and nothing else is drawn on it, so no
+button needs a dark backing to be read. Under it, on the page, the date
+("Wednesday, 18 Nov") and the day bar sit in the same row as on every
+tab (`DayRow`). Then the **week grid**, and under it **one tile per module** in a grid,
 two per row (one per row with large text, up to four on a wide
 window), each row as tall as its tallest tile. Everything fits on one
 phone screen, so Home is a glance, not a scroll. Two notes appear only
@@ -130,8 +132,8 @@ never left for the reader to guess.
 
 **Anyone must understand it without asking.** Imagine someone who has
 never opened the app: every label says plainly what its number is,
-every picture is explained on the spot (Lately says in a sentence
-what its two columns are), and nothing is shown just because it can
+every picture is explained on the spot (the week grid names each
+row with its unit), and nothing is shown just because it can
 be. A number that needs explaining, or that does not help decide
 anything today, does not belong on Home.
 
@@ -143,17 +145,6 @@ anything today, does not belong on Home.
   table (`IppoModule.weekRows`). A day without data shows a quiet dash.
   A module without any data yet has no row. Tapping a day shows it;
   the seven days stay put while the day shown is one of them.
-- **Lately** (`LatelyCard`), at the bottom: one row per measure
-  (`IppoModule.trendMeasures`): the average of the 7 days before the
-  day shown (not the day itself, which is not over: half a day would
-  pull every average down; so these match the tiles' "Avg (7 days)"),
-  your usual (the 28 days before those), and an arrow for which way it
-  moved, never coloured, since up or down is not good or bad in itself.
-  Only days with something logged count, so a gap never looks like a
-  zero; the usual waits for 7 days of data, and a change within 5 % (1 %
-  for weight, which moves slowly) is shown as steady. A last line says on how many of those 35 days anything was
-  logged, since gaps make a week say less. It replaced a "days logged"
-  calendar, which looked the same every day for anyone logging daily.
 - **One tile per module** (`IppoModule.homeTile`, drawn by
   `HomeTileCard`). Every tile has the same four parts, in the same
   places, so tiles side by side line up:
@@ -180,9 +171,10 @@ anything today, does not belong on Home.
 - Every tile must earn its place: something a person wants to know at
   a glance and can act on. Totals that mix unlike things (all reps of
   all exercises) do not; steps, a streak, calories left do. A mark
-  must work with any number of things, and fill the tile's width like
-  the others: the habits bar has one segment per habit, which get
-  narrower as habits are added.
+  must work with any number of things: the habits tile has one dot per
+  habit (filled when done, a ring when not marked yet, a faint ring
+  when marked not done, a tiny dot when not due that day), on more rows
+  and smaller as habits are added, so the tile never grows.
 - Facts are **never joined into one line** with "·" or commas.
 - Durations ago are rounded for a glance: "25 min ago", then whole
   hours, "8 h ago". Home redraws every minute so they stay current.
@@ -190,9 +182,27 @@ anything today, does not belong on Home.
 
 ### Charts
 
-Every measure over time, on one screen opened from Home (the chart
-button beside the gear, or tapping Lately). It is not a tab: Android
-recommends at most five, and Home and the modules already use them.
+Every measure over time, on one screen opened from **Charts** in the
+header of Home's week grid: the week is a small chart of the days, the
+charts show every day. It is not a tab: Android recommends at most
+five, and Home and the modules already use them.
+
+At its top is **Lately**, the summary before the charts themselves. It
+was on Home, but made Home longer than a screen; it belongs with the
+measures over time.
+
+**Lately** (`LatelyCard`): one row per measure
+(`IppoModule.trendMeasures`): the average of the 7 days before the
+day shown (not the day itself, which is not over: half a day would
+pull every average down; so these match the tiles' "Avg (7 days)"),
+your usual (the 28 days before those), and an arrow for which way it
+moved, never coloured, since up or down is not good or bad in itself.
+Only days with something logged count, so a gap never looks like a
+zero; the usual waits for 7 days of data, and a change within 5 % (1 %
+for weight, which moves slowly) is shown as steady. A last line says on how many of those 35 days anything was
+logged, since gaps make a week say less. It replaced a "days logged"
+calendar, which looked the same every day for anyone logging daily.
+
 
 The charts are meant to be read like figures in a paper, on a phone:
 
@@ -302,15 +312,14 @@ The food forms have **Day** and **Eaten at** side by side
 a meal logged on the wrong day, and the clock time, "Not set" if not
 known.
 
-### The food diary's "Day complete"
+### Changing a meal
 
-The Eaten card ends with a **Day complete** switch ("Everything eaten is
-logged."). It writes the user's word that the day is fully logged, so
-an analysis can leave out partly logged days, which would otherwise look
-like days of eating little (see `docs/data-principles.md`). Off means
-"not said" until it is first switched; switching it off again records
-"not complete".
-
+Tapping a meal opens its entry: the amount, the **Day** and the time,
+which change this meal only. A meal made from a food also has one button,
+**Edit food details**, which opens the food: its name and label values,
+shared by every entry of it. There is one way to change each
+thing, and its name says which. A quick entry has no food behind it, so
+its form changes everything.
 
 ### The habits key
 

@@ -117,8 +117,8 @@ void main() {
     expect(find.text('–'), findsNWidgets(3));
     expect(find.text('No steps yet'), findsOneWidget);
     expect(find.byType(WeekGrid), findsNothing);
-    // Everything tappable is the gear, the day bar, or a tile (which
-    // opens its tab).
+    // Everything tappable is the gear, the Charts button, the day bar,
+    // or a tile (which opens its tab).
     bool isTappable(Widget widget) =>
         widget is ButtonStyleButton || widget is InkWell;
     final tappable = find.descendant(
@@ -132,7 +132,16 @@ void main() {
       ),
       matching: find.byWidgetPredicate(isTappable),
     );
-    expect(tappable.evaluate().length, expected.evaluate().length);
+    // The Charts button: the button itself and what it is made of.
+    final charts = find.descendant(
+      of: find.widgetWithText(TextButton, 'Charts'),
+      matching: find.byWidgetPredicate(isTappable),
+      matchRoot: true,
+    );
+    expect(
+      tappable.evaluate().length,
+      expected.evaluate().length + charts.evaluate().length,
+    );
   });
 
   testWidgets('Home shows what was logged today', (tester) async {

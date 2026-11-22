@@ -11,6 +11,8 @@ import '../../modules/all_modules.dart';
 import '../app_state.dart';
 import '../dates.dart';
 import '../module.dart';
+import '../trends.dart';
+import '../widgets/lately_card.dart';
 import '../widgets/section_card.dart';
 import 'chart_card.dart';
 import 'chart_math.dart';
@@ -37,6 +39,7 @@ class ChartsScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: appState,
         builder: (context, _) {
+          final lately = _lately(appState);
           // Modules without any chart yet are left out.
           final groups = [
             for (final module in allModules) (module, module.charts(appState)),
@@ -49,6 +52,9 @@ class ChartsScreen extends StatelessWidget {
               24,
             ),
             children: [
+              // Lately first: the last week against the weeks before, a
+              // summary before the charts themselves.
+              if (lately != null) lately,
               if (groups.isEmpty)
                 const NoteText('Charts show here once something is logged.'),
               for (final (module, charts) in groups) ...[
@@ -71,6 +77,36 @@ class ChartsScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  /// The Lately card for today with the space under it, or null when no
+  /// measure has anything to compare yet.
+  Widget? _lately(AppState appState) {
+    final day = today();
+    // Measures with nothing in either column are left out: a row of
+    // dashes says nothing.
+    final trends = [
+      for (final module in allModules)
+        for (final measure in module.trendMeasures(appState))
+          trendOf(measure, day),
+    ].where((trend) => trend.recent != null || trend.usual != null).toList();
+    if (trends.isEmpty) {
+      return null;
+    }
+    // On how many of the days compared anything at all was logged.
+    final loggedDates = {
+      for (final module in allModules) ...module.datesLogged(appState),
+    };
+    var daysLogged = 0;
+    for (var back = 1; back <= trendRecentDays + trendUsualDays; back++) {
+      if (loggedDates.contains(formatDate(addDays(day, -back)))) {
+        daysLogged++;
+      }
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Spacing.small),
+      child: LatelyCard(trends: trends, daysLogged: daysLogged, isToday: true),
     );
   }
 

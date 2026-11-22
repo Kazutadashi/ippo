@@ -14,11 +14,9 @@ import 'app_state.dart';
 import 'dates.dart';
 import 'events/event_log.dart';
 import 'module.dart';
-import 'trends.dart';
-import 'widgets/day_bar.dart';
+import 'widgets/tab_app_bar.dart';
 import 'widgets/follows_today.dart';
 import 'widgets/info_tile.dart';
-import 'widgets/lately_card.dart';
 import 'widgets/section_card.dart';
 import 'widgets/sky_header.dart';
 import 'widgets/week_grid.dart';
@@ -77,7 +75,6 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
     final appState = widget.appState;
     final now = DateTime.now();
     final day = shownDay;
@@ -93,25 +90,6 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
         for (final row in module.weekRows(appState, gridEnd))
           (title: module.title, icon: module.icon, row: row),
     ];
-    // Lately: each module's measures, this week against the usual.
-    // Measures with nothing in either column are left out: a row of
-    // dashes says nothing. With none left, there is no card.
-    final trends = [
-      for (final module in allModules)
-        for (final measure in module.trendMeasures(appState))
-          trendOf(measure, day),
-    ].where((trend) => trend.recent != null || trend.usual != null).toList();
-    // On how many of those days anything at all was logged.
-    final loggedDates = {
-      for (final module in allModules) ...module.datesLogged(appState),
-    };
-    var daysLogged = 0;
-    // The same days Lately compares: before the day shown, not on it.
-    for (var back = 1; back <= trendRecentDays + trendUsualDays; back++) {
-      if (loggedDates.contains(formatDate(addDays(day, -back)))) {
-        daysLogged++;
-      }
-    }
     final eventLog = appState.eventLog;
     final staleDevice = _staleDeviceNote(appState, now);
     final topInset = MediaQuery.paddingOf(context).top;
@@ -125,14 +103,14 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
           children: [
-            // The landscape runs up behind the status bar, with the
-            // greeting and the gear on its sky, and the date with the day
-            // bar on the ground at its foot.
+            // The landscape runs up behind the status bar, as scenery:
+            // only the greeting and the gear sit on its sky. Everything
+            // else is on the page, as on the tabs.
             Stack(
               children: [
                 SkyHeader(
                   phase: SkyPhase.of(now),
-                  height: topInset + 156,
+                  height: topInset + _landscapeHeight,
                   clearTop: topInset + 44,
                   // New mountains each day, the same all day long.
                   seed: SkyHeader.seedFor(today()),
@@ -155,12 +133,6 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                         ),
                       ),
                       IconButton(
-                        tooltip: 'Charts',
-                        color: Colors.white,
-                        icon: const Icon(Icons.show_chart),
-                        onPressed: widget.onOpenCharts,
-                      ),
-                      IconButton(
                         tooltip: 'Settings',
                         color: Colors.white,
                         icon: const Icon(Icons.settings_outlined),
@@ -169,58 +141,18 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                     ],
                   ),
                 ),
-                Positioned(
-                  left: Spacing.screen,
-                  right: 0,
-                  bottom: 0,
-                  child: Row(
-                    children: [
-                      // Always one line: a long day name shrinks a little
-                      // rather than wrapping.
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            describeToday(day),
-                            maxLines: 1,
-                            style: textTheme.titleSmall?.copyWith(
-                              color: Colors.white,
-                              shadows: _onLandscape,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // White on the landscape, like the greeting, in
-                      // light mode too: the ground there is always dark
-                      // enough. A day other than today gets a see-through
-                      // white pill.
-                      Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: colors.copyWith(
-                            onSurface: Colors.white,
-                            onSurfaceVariant: Colors.white,
-                            secondaryContainer: Colors.white24,
-                          ),
-                        ),
-                        // The bar takes its colour from the icon theme,
-                        // which in light mode is dark: white here too.
-                        child: IconTheme.merge(
-                          data: const IconThemeData(color: Colors.white),
-                          child: DayBar(
-                            day: day,
-                            onChanged: showDay,
-                            todayBackground: Colors.black38,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
+            // The date and the day bar, on the page as on every tab.
+            SizedBox(
+              height: 48,
+              child: Padding(
+                padding: const EdgeInsets.only(right: Spacing.tight),
+                child: DayRow(day: day, onChanged: showDay),
+              ),
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -251,20 +183,11 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
                       day: day,
                       rows: weekRows,
                       onDaySelected: showDay,
+                      onOpenCharts: widget.onOpenCharts,
                     ),
                     const SizedBox(height: tileGap),
                   ],
                   _TileGrid(tiles: tiles),
-                  // Lately: the last week against the weeks before.
-                  if (trends.isNotEmpty) ...[
-                    const SizedBox(height: tileGap),
-                    LatelyCard(
-                      trends: trends,
-                      daysLogged: daysLogged,
-                      isToday: day == today(),
-                      onTap: widget.onOpenCharts,
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -274,6 +197,10 @@ class _TodayScreenState extends State<TodayScreen> with FollowsToday {
     );
   }
 }
+
+/// How tall the landscape is under the status bar: room for the greeting
+/// on its sky, and the mountains below it.
+const double _landscapeHeight = 112;
 
 /// A soft shadow under white text on the landscape, so it stays
 /// readable on light snow or a pale sky.

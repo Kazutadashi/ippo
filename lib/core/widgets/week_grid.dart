@@ -32,6 +32,7 @@ class WeekGrid extends StatelessWidget {
     required this.day,
     required this.rows,
     required this.onDaySelected,
+    this.onOpenCharts,
   });
 
   /// The last of the seven days, in the right-hand column.
@@ -45,6 +46,10 @@ class WeekGrid extends StatelessWidget {
 
   /// Called with a day when its column is tapped, to show that day.
   final ValueChanged<DateTime> onDaySelected;
+
+  /// Opens the charts, from a button in the card's header: the week is a
+  /// small chart of the days, the charts show every day. Null for none.
+  final VoidCallback? onOpenCharts;
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +88,15 @@ class WeekGrid extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                if (onOpenCharts != null)
+                  TextButton.icon(
+                    onPressed: onOpenCharts,
+                    icon: const Icon(Icons.bar_chart, size: 18),
+                    label: const Text('Charts'),
+                  ),
               ],
             ),
-            const SizedBox(height: 6),
+            if (onOpenCharts == null) const SizedBox(height: 6),
             // The day shown has a soft column behind it, top to bottom,
             // as on the Habits grid, so it is easy to find.
             LayoutBuilder(
