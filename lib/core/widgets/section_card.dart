@@ -108,8 +108,13 @@ class CardHeader extends StatelessWidget {
             ),
           ),
           // With very large text, a wide button gets at most half the
-          // row, its label wrapping, rather than running off the card.
-          if (action != null) Flexible(child: action),
+          // row, its label wrapping, rather than running off the card. It
+          // always sits at the card's right edge, so the header buttons
+          // of all cards line up.
+          if (action != null)
+            Flexible(
+              child: Align(alignment: Alignment.centerRight, child: action),
+            ),
         ],
       ),
     );
