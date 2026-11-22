@@ -59,7 +59,7 @@ moon icons are drawn in code. None of it uses artwork or fonts from other
 projects.
 
 The images at the top of the README (`docs/images/`) are made from
-Ippo itself: `icon.png` is the middle 72 × 72 of the launcher icon's
+Ippo itself: `app-icon.png` is the middle 72 × 72 of the launcher icon's
 SVG (the part a launcher shows), rendered with `rsvg-convert`, cropped
 and rounded with ImageMagick; the three GIFs were
 recorded from the app running in Flutter's test environment with its
