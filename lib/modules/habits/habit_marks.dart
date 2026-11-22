@@ -4,18 +4,20 @@
 /// read than numbers: a mark, not a chart.
 library;
 
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 import 'habit.dart';
 import 'habit_frequency.dart';
 import 'habit_log.dart';
 
-/// A bar across the tile with one segment per habit, in the habit's own
-/// colour: filled when done, an outline when not marked yet, a faint
-/// outline when marked not done, and a thin line on a day it is not due
-/// (a habit not meant for every day, waiting for its next turn).
+/// One dot per habit, in the habit's own colour: filled when done, a ring
+/// when not marked yet, a faint ring when marked not done, and a tiny dot
+/// on a day it is not due (a habit not meant for every day, waiting for
+/// its next turn).
 class HabitBar extends StatelessWidget {
-  /// Creates the bar for [habits] on [date] (`YYYY-MM-DD`).
+  /// Creates the dots for [habits] on [date] (`YYYY-MM-DD`).
   const HabitBar({
     super.key,
     required this.habits,
@@ -41,31 +43,32 @@ class HabitBar extends StatelessWidget {
     ];
     return Semantics(
       label: done.isEmpty ? 'None done yet' : 'Done: ${done.join(', ')}',
-      child: ExcludeSemantics(
-        // A bar across the tile, a segment per habit, like the bars of
-        // the other tiles. Many habits go on more rows, so a segment is
-        // never too thin to see.
-        child: _rows(theme),
-      ),
+      child: ExcludeSemantics(child: _rows(theme)),
     );
   }
 
-  /// The habits in rows of about equal length: one row for up to
-  /// [_perRowLimit] habits, then two, three, up to [_rowLimit]. A short
-  /// last row keeps the same segment width as the others. Rows are a
-  /// little thinner the more there are, so the tile keeps its height.
+  /// The dots in rows, left to right, top to bottom: one row for up to
+  /// [_perRowLimit] habits, then two, three, up to [_rowLimit]; smaller
+  /// dots the more rows there are, so the tile keeps its height.
+  ///
+  /// Each row is split into equal places (at least [_fewestPlaces], so a
+  /// few habits keep the spacing of more), and each dot is as wide as its
+  /// place allows, up to the row's biggest dot. Flexible places rather
+  /// than measured widths, so Home can work out a tile's height before
+  /// laying it out.
   Widget _rows(ThemeData theme) {
     final rowCount = ((habits.length / _perRowLimit).ceil()).clamp(
       1,
       _rowLimit,
     );
     final perRow = (habits.length / rowCount).ceil();
-    final height = switch (rowCount) {
-      1 => 10.0,
-      2 => 8.0,
-      _ => 6.0,
+    final places = math.max(perRow, _fewestPlaces);
+    final biggest = switch (rowCount) {
+      1 || 2 => 16.0,
+      3 => 12.0,
+      _ => 9.0,
     };
-    final gap = perRow > 10 ? 2.0 : 4.0;
+    final gap = rowCount <= 2 ? 6.0 : 3.0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -73,27 +76,16 @@ class HabitBar extends StatelessWidget {
           if (row > 0) SizedBox(height: gap),
           Row(
             children: [
-              for (var column = 0; column < perRow; column++) ...[
-                if (column > 0) SizedBox(width: gap),
+              for (var place = 0; place < places; place++) ...[
+                if (place > 0) SizedBox(width: gap),
                 Expanded(
-                  child: row * perRow + column < habits.length
-                      ? _Segment(
-                          color: habits[row * perRow + column].displayColor(
-                            theme,
-                          ),
-                          mark: log.markOn(
-                            habits[row * perRow + column].id,
-                            date,
-                          ),
-                          isDue: log.isDueOn(
-                            habits[row * perRow + column],
-                            date,
-                          ),
-                          height: height,
-                        )
-                      // An empty place, so the last row's segments are as
-                      // wide as the others.
-                      : const SizedBox.shrink(),
+                  child: _place(
+                    theme,
+                    row * perRow + place,
+                    place,
+                    perRow,
+                    biggest,
+                  ),
                 ),
               ],
             ],
@@ -102,59 +94,84 @@ class HabitBar extends StatelessWidget {
       ],
     );
   }
+
+  /// The dot of the habit at [index] in a place of a row, or nothing for
+  /// a place past the row's habits.
+  Widget _place(
+    ThemeData theme,
+    int index,
+    int place,
+    int perRow,
+    double biggest,
+  ) {
+    if (place >= perRow || index >= habits.length) {
+      return const SizedBox.shrink();
+    }
+    final habit = habits[index];
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: biggest),
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: _Dot(
+            color: habit.displayColor(theme),
+            mark: log.markOn(habit.id, date),
+            isDue: log.isDueOn(habit, date),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-/// The most segments on one row of the bar: more habits than this go
-/// on more rows.
+/// The most dots on one row: more habits than this go on more rows.
 const int _perRowLimit = 8;
 
-/// The most rows: past this, rows take more segments instead, so the
-/// tile does not grow.
+/// The most rows: past this, rows take more dots instead, so the tile
+/// does not grow.
 const int _rowLimit = 4;
 
-/// One habit's part of the bar: filled in its colour when done, an
-/// outline of it when not marked yet, a faint outline when marked not
-/// done, and a thin line when it is not due that day.
-class _Segment extends StatelessWidget {
-  const _Segment({
-    required this.color,
-    required this.mark,
-    required this.isDue,
-    required this.height,
-  });
+/// The fewest places on a row, so two or three habits keep about the
+/// spacing of six instead of spreading across the whole tile.
+const int _fewestPlaces = 6;
+
+/// One habit's dot: filled in its colour when done, a ring of it when not
+/// marked yet, a faint ring when marked not done, and a tiny dot when it
+/// is not due that day.
+class _Dot extends StatelessWidget {
+  const _Dot({required this.color, required this.mark, required this.isDue});
 
   final Color color;
   final DayMark mark;
 
   /// Whether the habit is due that day; a habit waiting for its next
-  /// turn (not every day) is only a thin line: nothing needed.
+  /// turn (not every day) is only a tiny dot: nothing needed.
   final bool isDue;
-  final double height;
 
   @override
   Widget build(BuildContext context) {
-    // Waiting for its next turn and not done: a thin line, centred.
+    // Waiting for its next turn and not done: a tiny dot, centred.
     if (!isDue && mark != DayMark.done) {
-      return SizedBox(
-        height: height,
-        child: Center(
+      return Center(
+        child: FractionallySizedBox(
+          widthFactor: 0.3,
+          heightFactor: 0.3,
           child: Container(
-            height: 2,
             decoration: BoxDecoration(
+              shape: BoxShape.circle,
               color: color.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(1),
             ),
           ),
         ),
       );
     }
-    // Done is filled; the others are only an outline, so done and not
-    // done differ in shape, not only in how pale they are: easy to tell
-    // apart at a glance, also with weak eyesight or colour blindness.
+    // Done is filled; the others are only a ring, so done and not done
+    // differ in shape, not only in how pale they are: easy to tell apart
+    // at a glance, also with weak eyesight or colour blindness.
     return Container(
-      height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(height / 2),
+        shape: BoxShape.circle,
         color: mark == DayMark.done ? color : null,
         border: mark == DayMark.done
             ? null
