@@ -18,7 +18,6 @@ import '../food_diary.dart';
 import '../food_entry.dart';
 import '../nutrients.dart';
 import '../../body/body_log.dart';
-import '../../body/screens/body_screen.dart';
 import '../../body/screens/weight_card.dart';
 import '../daily_references.dart';
 import 'nutrient_bars.dart';
@@ -107,14 +106,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
     );
   }
 
-  void _openBody() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => BodyScreen(appState: widget.appState),
-      ),
-    );
-  }
-
   /// One meal's row: tap it to change it, or swipe it left to remove
   /// it. The food's name stands out; its time and amount are smaller and
   /// grey under it; its energy sits on the right, in one column, so it is
@@ -197,15 +188,11 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                     CardHeader(
                       icon: Icons.local_fire_department,
                       title: 'Total',
-                      // Body details and the daily limit.
+                      // Every daily goal, the calorie limit included.
                       action: TextButton.icon(
-                        onPressed: _openBody,
+                        onPressed: _openGoals,
                         icon: const Icon(Icons.tune),
-                        label: Text(
-                          energyTarget == null
-                              ? 'Set daily limit'
-                              : 'Daily limit',
-                        ),
+                        label: const Text('Daily goals'),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -213,17 +200,6 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
                       nutrients: diary.totalOn(date),
                       references: references,
                       energyTarget: energyTarget,
-                    ),
-                    // Your own amounts a day, in place of the references.
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        // No inset: lined up with the card's text.
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                        onPressed: _openGoals,
-                        icon: const Icon(Icons.flag_outlined),
-                        label: const Text('Daily goals'),
-                      ),
                     ),
                     // With a limit: how much is left, or how far over.
                     if (energyTarget != null) ...[

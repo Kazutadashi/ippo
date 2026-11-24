@@ -126,7 +126,9 @@ class AllNutrientsList extends StatelessWidget {
     final nutrients = this.nutrients.withSaltAndSodium();
     final kinds = [
       for (final key in orderedNutrientKeys(nutrients.values.keys))
-        if (!shownAbove.contains(key)) nutrientKindOf(key)!,
+        // Salt and sodium are one measurement: one row, for salt, with
+        // the sodium written under it.
+        if (!shownAbove.contains(key) && key != sodiumKey) nutrientKindOf(key)!,
     ];
     if (kinds.isEmpty) {
       return const NoteText('No other nutrients are known for this day.');
@@ -174,6 +176,12 @@ class AllNutrientsList extends StatelessWidget {
               ],
             ],
           ),
+          // The same amount as sodium, for labels and advice that use it.
+          if (kind.key == saltKey && nutrients.values[sodiumKey] != null)
+            Text(
+              'Sodium ${formatNutrientAmount(nutrients.values[sodiumKey]!, 'mg')}',
+              style: textTheme.bodySmall?.copyWith(color: muted),
+            ),
           if (reference != null) ...[
             const SizedBox(height: 3),
             ShareBar(

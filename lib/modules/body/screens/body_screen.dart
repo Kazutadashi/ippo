@@ -46,7 +46,7 @@ class BodyScreen extends StatelessWidget {
             children: [
               _ProfileCard(appState: appState, log: log),
               WeightCard(appState: appState, log: log, date: date),
-              _CaloriesCard(appState: appState, log: log, date: date),
+              _CaloriesCard(log: log, date: date),
             ],
           );
         },
@@ -236,78 +236,25 @@ class _ProfileCardState extends State<_ProfileCard> {
   }
 }
 
-/// The BMR, the energy used in a day at each activity level, and the
-/// daily limit.
-class _CaloriesCard extends StatefulWidget {
-  const _CaloriesCard({
-    required this.appState,
-    required this.log,
-    required this.date,
-  });
+/// The BMR and the energy used in a day at each activity level: the
+/// numbers that help choose a daily calorie limit. The limit itself is
+/// set with the other daily goals, on the Food tab.
+class _CaloriesCard extends StatelessWidget {
+  const _CaloriesCard({required this.log, required this.date});
 
-  final AppState appState;
   final BodyLog log;
   final String date;
 
   @override
-  State<_CaloriesCard> createState() => _CaloriesCardState();
-}
-
-class _CaloriesCardState extends State<_CaloriesCard> {
-  late final TextEditingController _limit = TextEditingController(
-    text: _currentText,
-  );
-  String? _problem;
-
-  String get _currentText {
-    final target = widget.log.energyTargetOn(widget.date);
-    return target == null ? '' : '${target.round()}';
-  }
-
-  @override
-  void didUpdateWidget(_CaloriesCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.log.energyTargetOn(widget.date) !=
-        widget.log.energyTargetOn(widget.date)) {
-      _limit.text = _currentText;
-    }
-  }
-
-  @override
-  void dispose() {
-    _limit.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save({bool remove = false}) async {
-    final limit = remove ? null : parsePositive(_limit.text);
-    if (!remove && (limit == null || limit > 10000)) {
-      setState(() => _problem = 'Enter a limit in kcal.');
-      return;
-    }
-    setState(() => _problem = null);
-    HapticFeedback.selectionClick();
-    await saveOrShowError(
-      context,
-      () =>
-          BodyActions(widget.appState)
-              .setEnergyTarget(date: widget.date, energyKcal: limit),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final log = widget.log;
     final textTheme = Theme.of(context).textTheme;
     final birthYear = log.birthYear;
     final bmr = basalMetabolicRate(
       sex: log.sex,
-      weightKg: log.weightAsOf(widget.date),
+      weightKg: log.weightAsOf(date),
       heightCm: log.heightCm,
       ageYears: birthYear == null ? null : DateTime.now().year - birthYear,
     );
-    final hasLimit = _currentText.isNotEmpty;
-    final isSaved = _limit.text.trim() == _currentText;
     return SectionCard(
       children: [
         CardHeader(
@@ -351,42 +298,11 @@ class _CaloriesCardState extends State<_CaloriesCard> {
             'you use.',
           ),
         ],
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _limit,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Daily limit',
-                  suffixText: 'kcal',
-                  errorText: _problem,
-                ),
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) => _save(),
-              ),
-            ),
-            const SizedBox(width: Spacing.small),
-            FilledButton.tonal(
-              onPressed: isSaved ? null : _save,
-              child: Text(isSaved && hasLimit ? 'Saved' : 'Save'),
-            ),
-          ],
-        ),
         const SizedBox(height: Spacing.small),
         const NoteText(
-          'A new limit counts from today; past days keep theirs. It also '
-          'sets the daily amounts of fat, carbs and sugars.',
+          'Set your daily calorie limit with your other daily goals: '
+          'Food › Total › Daily goals.',
         ),
-        if (hasLimit)
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: () => _save(remove: true),
-              child: const Text('Remove the limit'),
-            ),
-          ),
       ],
     );
   }

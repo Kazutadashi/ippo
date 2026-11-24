@@ -267,7 +267,7 @@ The amounts are the EU's reference intakes for an adult (scaled to the
 user's calorie limit, with protein by body weight when known); see
 `lib/modules/food/daily_references.dart` for every source. They are
 averages for adults, never presented as targets, until the user sets
-a goal of their own: **Daily goals** (under the Total card's bars) has a
+a goal of their own: **Daily goals** (the Total card's header button) has a
 field per nutrient (protein, carbs, sugars, added sugars, fibre, fat,
 saturated fat, salt), empty for the reference amount, shown as the
 hint. A new goal counts from today. The Food page's **All nutrients**
@@ -279,11 +279,20 @@ fibre, vitamins, minerals) they stay in the accent colour, since more is
 fine. Salt and sodium are the same thing in two units (salt is 2.5 ×
 sodium), always shown in step, whichever one a label gave.
 
-The calorie limit is set on the **Body and calories** screen, reached
-from the Food page's Total card and from Settings: sex, year of birth
-and height, weight logged over time, and from them the BMR
-(Mifflin-St Jeor) with the energy used at each activity level, which
-help choose a limit. A new limit counts from the day it is set.
+Every daily goal is set in one place: **Daily goals**, from the Total
+card's header. Its first card is **Calories**: the daily limit (empty for
+none), with a line on the energy the body uses at rest and with everyday
+activity to help choose it. Then the nutrients. A new limit or goal
+counts from the day it is set.
+
+The **Body and calories** screen (from Settings, and from Daily goals'
+**Body details**) holds sex, year of birth, height and the weight logged
+over time, and from them the BMR (Mifflin-St Jeor) with the energy used
+at each activity level. It shows these as information only; the limit
+itself is set in Daily goals.
+
+In **All nutrients**, salt and sodium are one row: **Salt**, against its
+daily amount, with the same amount as sodium written under it.
 
 **Every formula is open.** An ⓘ on the Body screen opens "How these are
 worked out" (`SourcesScreen`): each number Ippo works out, its formula
