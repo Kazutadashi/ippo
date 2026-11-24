@@ -90,6 +90,18 @@ class FoodDiary {
   /// valid. Shown to the user, so nothing is hidden.
   final int invalidCount;
 
+  /// The food in the list called [name], ignoring case and spaces at the
+  /// ends, or null if there is none. Deleted foods do not count.
+  Food? foodNamed(String name) {
+    final wanted = name.trim().toLowerCase();
+    for (final food in foods.values) {
+      if (!food.isDeleted && food.name.trim().toLowerCase() == wanted) {
+        return food;
+      }
+    }
+    return null;
+  }
+
   /// The entries on [date] (`YYYY-MM-DD`) that are not deleted, in the
   /// order they were made.
   List<FoodEntry> entriesOn(String date) => _entriesByDay[date] ?? const [];

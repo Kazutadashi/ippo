@@ -14,6 +14,7 @@ import 'food.dart';
 import 'food_diary.dart';
 import 'food_entry.dart';
 import 'food_serving.dart';
+import 'meal_json.dart';
 import 'nutrients.dart';
 
 /// Writes the food module's events through [appState].
@@ -198,6 +199,40 @@ class FoodActions {
         if (time != entry.time) 'time': time,
       },
     });
+  }
+
+  /// Logs a pasted meal on [date] at [time] (`HH:MM`, or null if not
+  /// known): for each of [items], the amount eaten. A food already in the
+  /// list under the same name (ignoring case) is used as it is; any other
+  /// is added to the list first, with the pasted label values. Returns
+  /// how many foods were added to the list.
+  Future<int> logMeal({
+    required String date,
+    required String? time,
+    required List<MealItem> items,
+  }) async {
+    var added = 0;
+    for (final item in items) {
+      var food = FoodDiary.of(appState).foodNamed(item.name);
+      if (food == null) {
+        final event = await createFood(
+          name: item.name,
+          measuredIn: item.measuredIn,
+          nutrientsPer100: item.nutrientsPer100,
+          serving: item.serving,
+          ingredients: item.label.ingredients,
+        );
+        food = FoodDiary.of(appState).foods[event.id]!;
+        added++;
+      }
+      await recordFoodEntry(
+        date: date,
+        time: time,
+        food: food,
+        amount: item.amount,
+      );
+    }
+    return added;
   }
 
   /// Deletes an entry.

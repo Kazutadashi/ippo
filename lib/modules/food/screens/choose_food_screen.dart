@@ -18,6 +18,7 @@ import '../food_serving.dart';
 import '../nutrients.dart';
 import 'food_entry_form_screen.dart';
 import 'food_form_screen.dart';
+import 'meal_paste_screen.dart';
 
 /// Lists the user's foods, most recently used first, with a search box.
 class ChooseFoodScreen extends StatefulWidget {
@@ -144,9 +145,23 @@ class _ChooseFoodScreenState extends State<ChooseFoodScreen> {
             children: [
               // A new food: in the right half, where the tabs have their
               // add buttons.
+              // A whole meal at once, pasted as JSON: in the left half, the
+              // quieter of the two, as Quick food is on the Food tab.
               Row(
                 children: [
-                  const Spacer(),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openAndCloseIfSaved(
+                        MealPasteScreen(
+                          appState: widget.appState,
+                          date: widget.date,
+                          isToday: widget.isToday,
+                        ),
+                      ),
+                      icon: const Icon(Icons.content_paste),
+                      label: const Text('Paste a meal'),
+                    ),
+                  ),
                   const SizedBox(width: Spacing.small),
                   Expanded(
                     child: FilledButton.tonalIcon(

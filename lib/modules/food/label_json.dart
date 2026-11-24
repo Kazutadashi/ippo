@@ -65,10 +65,20 @@ LabelReading? readLabelJson(String text) {
   if (!_knownNames.any(json.containsKey)) {
     return null;
   }
+  return labelFromJson(json);
+}
 
+/// Reads one food's label from an already decoded JSON object, in the
+/// shape described above. [alsoKnown] are further top-level names the
+/// caller reads itself (a meal's `amount`), so they are not listed as
+/// unused.
+LabelReading labelFromJson(
+  Map<String, Object?> json, {
+  Set<String> alsoKnown = const {},
+}) {
   final unused = [
     for (final name in json.keys)
-      if (!_knownNames.contains(name)) name,
+      if (!_knownNames.contains(name) && !alsoKnown.contains(name)) name,
   ];
   final measuredIn = json['measured_in'] == 'ml' ? 'ml' : 'g';
 
@@ -133,12 +143,12 @@ Map<String, double> _readNutrients(Object? values, List<String> unused) {
       unused.add(entry.key);
       continue;
     }
-    final number = _number(entry.value);
+    final number = labelNumber(entry.value);
     if (number != null) {
       nutrients[entry.key] = number;
     }
   }
-  final kilojoules = _number(values['energy_kj']);
+  final kilojoules = labelNumber(values['energy_kj']);
   if (!nutrients.containsKey(energyKey) && kilojoules != null) {
     // 1 kcal is 4.184 kJ.
     nutrients[energyKey] = roundToTenth(kilojoules / 4.184);
@@ -153,7 +163,7 @@ Map<String, double> _readNutrients(Object? values, List<String> unused) {
 
 /// [value] as a number, if it is one that is not negative. Numbers
 /// written as text ("9", "1,5") are read too; null means "not given".
-double? _number(Object? value) {
+double? labelNumber(Object? value) {
   final double? number;
   if (value is num) {
     number = value.toDouble();

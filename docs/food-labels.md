@@ -72,6 +72,52 @@ Details:
   (below).
 
 
+## Pasting a whole meal
+
+To log several foods at once, with new foods added to your list as you
+go, use **Food › + Add food › Paste a meal**:
+
+1. Take a photo of each food's nutrition label.
+2. Tap **Copy the format** and send it to an AI assistant with the
+   photos and how much you ate of each, such as "39 g ham, 76 g cheese,
+   46 g crackers, 86 g cherries".
+3. Copy the answer and tap **Paste**. The screen lists each food with
+   the amount and its energy, marked **New in your foods** or **Already
+   in your foods**, and anything it could not read, with the reason.
+4. Check the day and time, and tap **Log**.
+
+The JSON is a list of foods, each written as above plus `amount`: how
+much was eaten, in its `measured_in` units. `time` (`"HH:MM"`) is
+optional. A plain list of foods, without the object around it, also
+works.
+
+```json
+{
+  "time": "12:30",
+  "foods": [
+    {
+      "name": "Potato chips",
+      "measured_in": "g",
+      "per": "serving",
+      "serving": {"unit": "chips", "count": 9, "amount": 28},
+      "nutrients": {"energy_kcal": 150, "fat_g": 9, "sodium_mg": 170},
+      "amount": 46
+    }
+  ]
+}
+```
+
+- A food whose name matches one already in your foods (ignoring
+  capitals) is not added again: the entry uses that food and its own
+  values, so a pasted label never silently changes a food you have.
+- Each new food is saved as a normal food (`food_created`), and each
+  amount as a normal entry (`food_entry_recorded`): the data looks
+  exactly as if you had added them one by one.
+- A food without a name, an amount, or energy, or with values per
+  serving but no serving size, is not logged; the screen says which and
+  why, and the others are still logged.
+
+
 ## Label text
 
 Ippo reads the text line by line and ignores anything it does not

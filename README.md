@@ -62,7 +62,10 @@ entry only needs a name and the calories.
 
 Adding a new food is quicker if you paste in its nutrition label. Take
 a photo, let an AI assistant read it, and paste the answer
-([here's how](docs/food-labels.md)). The Food tab then shows the day's
+([here's how](docs/food-labels.md)). You can even log a whole meal at
+once: send the assistant photos of the labels and how much you ate of
+each, paste its reply, and Ippo adds any new foods to your list and
+logs everything. The Food tab then shows the day's
 calories, protein, carbs and fat against your limit, along with any
 vitamins and minerals your labels list. You can set your own daily
 goals, and log your weight there too.

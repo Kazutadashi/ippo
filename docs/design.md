@@ -518,6 +518,7 @@ by themselves unless the user picked another day.
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |
 | Quick food | `bolt` |
+| Paste a meal | `content_paste` |
 | Exercise | `DumbbellIcon`, drawn: a level dumbbell with thick plates (`IppoModule.buildIcon`) |
 | Sleep, a night | `MoonIcon`, drawn: a full, even crescent with a small star (`IppoModule.buildIcon`) |
 | A nap | `airline_seat_flat` |

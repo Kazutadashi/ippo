@@ -28,6 +28,7 @@ import 'package:ippo/modules/exercise/screens/exercise_form_screen.dart';
 import 'package:ippo/modules/exercise/screens/exercise_home_screen.dart';
 import 'package:ippo/modules/food/screens/food_diary_screen.dart';
 import 'package:ippo/modules/food/screens/foods_screen.dart';
+import 'package:ippo/modules/food/screens/meal_paste_screen.dart';
 import 'package:ippo/modules/food/screens/nutrient_goals_screen.dart';
 import 'package:ippo/modules/habits/screens/habit_form_screen.dart';
 import 'package:ippo/modules/habits/screens/habits_screen.dart';
@@ -64,6 +65,8 @@ void main() {
     'settings': () => SettingsScreen(appState: appState),
     'charts': () => ChartsScreen(appState: appState),
     'daily goals': () => NutrientGoalsScreen(appState: appState),
+    'paste a meal': () =>
+        MealPasteScreen(appState: appState, date: '2026-11-20', isToday: false),
     'weight chart': () => ChartScreen(
       appState: appState,
       module: allModules.firstWhere((module) => module.moduleName == 'food'),
