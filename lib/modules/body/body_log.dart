@@ -136,7 +136,7 @@ class BodyLog {
   /// The current state for [appState], worked out once per change of
   /// the data and shared by every screen.
   static BodyLog of(AppState appState) =>
-      appState.derived('body_log', BodyLog.fromEvents);
+      appState.derived('body_log', BodyLog.fromEvents, module: bodyModuleName);
 
   /// Builds the log from the event log's events (oldest first).
   factory BodyLog.fromEvents(List<Event> events) {

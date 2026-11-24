@@ -25,8 +25,11 @@ class ExerciseLog {
 
   /// The current state for [appState], worked out once per change of
   /// the data and shared by every screen (see `AppState.derived`).
-  static ExerciseLog of(AppState appState) =>
-      appState.derived('exercise_log', ExerciseLog.fromEvents);
+  static ExerciseLog of(AppState appState) => appState.derived(
+    'exercise_log',
+    ExerciseLog.fromEvents,
+    module: exerciseModuleName,
+  );
 
   /// Builds the log from the event log's events (oldest first).
   factory ExerciseLog.fromEvents(List<Event> events) {

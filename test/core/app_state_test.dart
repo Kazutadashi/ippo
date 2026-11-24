@@ -232,4 +232,34 @@ void main() {
       expect(secondRun.folderProblem, isNull);
     },
   );
+
+  test('saving an event rebuilds only its own module\'s values', () async {
+    final appState = makeAppState();
+    await appState.load();
+    await appState.chooseLinuxDataFolder(dataFolder.path);
+    var habitBuilds = 0;
+    var foodBuilds = 0;
+    int habits() => appState.derived('test_habits', (events) {
+      habitBuilds++;
+      return events.where((event) => event.module == 'habits').length;
+    }, module: 'habits');
+    int food() => appState.derived('test_food', (events) {
+      foodBuilds++;
+      return events.where((event) => event.module == 'food').length;
+    }, module: 'food');
+    expect((habits(), food()), (0, 0));
+
+    await appState.writeEvent(
+      module: 'habits',
+      type: 'habit_created',
+      data: {'name': 'Read 10 pages'},
+    );
+    expect((habits(), food()), (1, 0));
+    expect((habitBuilds, foodBuilds), (2, 1));
+
+    // Reading the folder again rebuilds everything.
+    await appState.reloadEvents();
+    expect((habits(), food()), (1, 0));
+    expect((habitBuilds, foodBuilds), (3, 2));
+  });
 }

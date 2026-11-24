@@ -35,8 +35,11 @@ class HabitLog {
 
   /// The current state for [appState], worked out once per change of
   /// the data and shared by every screen (see `AppState.derived`).
-  static HabitLog of(AppState appState) =>
-      appState.derived('habit_log', HabitLog.fromEvents);
+  static HabitLog of(AppState appState) => appState.derived(
+    'habit_log',
+    HabitLog.fromEvents,
+    module: habitsModuleName,
+  );
 
   /// Builds the log from the event log's events (oldest first).
   factory HabitLog.fromEvents(List<Event> events) {

@@ -56,6 +56,8 @@ class AppState extends ChangeNotifier {
   // Values worked out from the event log, kept until the log changes.
   // See [derived].
   final Map<String, Object> _derivedValues = {};
+  // The module each derived value was built from, by key.
+  final Map<String, String> _derivedModules = {};
   EventLog? _derivedFrom;
 
   AppSettings? _settings;
@@ -120,10 +122,15 @@ class AppState extends ChangeNotifier {
   /// Working them out once and sharing them keeps the app fast as the
   /// data grows over the years. [key] names the value, for example
   /// `food_diary`; each key must always be built the same way.
+  ///
+  /// [module] is the one module whose events the value is built from.
+  /// When this device saves an event, only that module's values are
+  /// built again: a habit ticked does not rebuild the food diary.
   T derived<T extends Object>(
     String key,
-    T Function(List<Event> events) build,
-  ) {
+    T Function(List<Event> events) build, {
+    required String module,
+  }) {
     final eventLog = _eventLog;
     // The event log is replaced (never changed in place) whenever events
     // are read or written, so a different object means new data.
@@ -137,6 +144,7 @@ class AppState extends ChangeNotifier {
     }
     final value = build(eventLog?.events ?? const []);
     _derivedValues[key] = value;
+    _derivedModules[key] = module;
     return value;
   }
 
@@ -343,7 +351,15 @@ class AppState extends ChangeNotifier {
     if (eventLog == null) {
       await reloadEvents();
     } else {
-      _eventLog = eventLog.withEvent(event);
+      final withEvent = eventLog.withEvent(event);
+      _eventLog = withEvent;
+      // Only the saving module's values change; the others are kept.
+      if (identical(eventLog, _derivedFrom)) {
+        _derivedFrom = withEvent;
+        _derivedValues.removeWhere(
+          (key, _) => _derivedModules[key] == event.module,
+        );
+      }
       notifyListeners();
     }
     return event;

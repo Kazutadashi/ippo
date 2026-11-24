@@ -27,8 +27,11 @@ class SleepLog {
 
   /// The current state for [appState], worked out once per change of
   /// the data and shared by every screen (see `AppState.derived`).
-  static SleepLog of(AppState appState) =>
-      appState.derived('sleep_log', SleepLog.fromEvents);
+  static SleepLog of(AppState appState) => appState.derived(
+    'sleep_log',
+    SleepLog.fromEvents,
+    module: sleepModuleName,
+  );
 
   /// Builds the log from the event log's events (oldest first).
   factory SleepLog.fromEvents(List<Event> events) {

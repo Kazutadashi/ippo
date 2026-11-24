@@ -26,8 +26,11 @@ class FoodDiary {
 
   /// The current state for [appState], worked out once per change of
   /// the data and shared by every screen (see `AppState.derived`).
-  static FoodDiary of(AppState appState) =>
-      appState.derived('food_diary', FoodDiary.fromEvents);
+  static FoodDiary of(AppState appState) => appState.derived(
+    'food_diary',
+    FoodDiary.fromEvents,
+    module: foodModuleName,
+  );
 
   /// Builds the diary from the event log's events (oldest first).
   factory FoodDiary.fromEvents(List<Event> events) {
