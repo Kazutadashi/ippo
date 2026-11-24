@@ -6,13 +6,24 @@ Ippo asks for as few permissions as possible.
 
 ## Android (release build)
 
-Ippo's release build currently requests **no permissions**.
+Ippo's release build requests **no permissions** that reach your data,
+your device or the network. The one permission an installed APK lists
+is Ippo's own, explained below.
 
 In particular, the app **never** requests `android.permission.INTERNET`.
 Without it, Android blocks all network access for the app, so you do
 not have to trust our word that it never goes online. A test
 (`test/no_internet_permission_test.dart`) fails if anyone adds this
 permission to the release manifest.
+
+### The one permission listed: Ippo's own
+
+| Permission | Why |
+| --- | --- |
+| `<app id>.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | Not a permission to anything on your phone. AndroidX Core (`androidx.core`, used by Flutter) defines it for every app, named after the app's id, so that a system message the app listens for can come only from the app itself. Its protection level is `signature`: only apps signed with Ippo's own key could hold it. It gives no access to your data, your device or the network. |
+
+To list an APK's permissions yourself, with the Android SDK's build
+tools: `aapt2 dump badging <file>.apk | grep permission`.
 
 ### No backups or transfers of the app's own files
 
