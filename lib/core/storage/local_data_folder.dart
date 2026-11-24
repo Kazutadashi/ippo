@@ -23,6 +23,7 @@ class LocalDataFolder implements DataFolder {
   @override
   Future<List<String>> listFileNames(String folderPath) async {
     checkRelativePath(folderPath);
+    _checkRootExists();
     final folder = Directory(_fullPath(folderPath));
     if (!folder.existsSync()) {
       return [];
@@ -46,6 +47,7 @@ class LocalDataFolder implements DataFolder {
   @override
   Future<List<String>> listFolderNames(String folderPath) async {
     checkRelativePath(folderPath);
+    _checkRootExists();
     final folder = Directory(_fullPath(folderPath));
     if (!folder.existsSync()) {
       return [];
@@ -82,6 +84,9 @@ class LocalDataFolder implements DataFolder {
   @override
   Future<void> appendToTextFile(String filePath, String text) async {
     checkRelativePath(filePath);
+    // Folders inside the data folder are made as needed, but never the
+    // data folder itself (see _checkRootExists).
+    _checkRootExists();
     final file = File(_fullPath(filePath));
     try {
       await file.parent.create(recursive: true);
@@ -121,6 +126,7 @@ class LocalDataFolder implements DataFolder {
   @override
   Future<int> sizeInBytes(String path) async {
     checkRelativePath(path);
+    _checkRootExists();
     final fullPath = _fullPath(path);
     try {
       switch (FileSystemEntity.typeSync(fullPath, followLinks: false)) {
@@ -163,6 +169,18 @@ class LocalDataFolder implements DataFolder {
       return 'There is no folder at $path.';
     }
     return null;
+  }
+
+  /// Throws [DataFolderException] if the data folder itself is gone.
+  ///
+  /// A missing folder inside it (no `events` yet) is normal, but a missing
+  /// data folder is not: its drive may be unplugged. Reading it as empty
+  /// would make all data look gone, and making it again would put new
+  /// events on the wrong disk, hidden once the drive is back.
+  void _checkRootExists() {
+    if (!Directory(rootPath).existsSync()) {
+      throw DataFolderException('The data folder $rootPath cannot be found.');
+    }
   }
 
   /// Joins the data folder path and a relative path checked beforehand.

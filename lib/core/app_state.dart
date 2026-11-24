@@ -103,6 +103,16 @@ class AppState extends ChangeNotifier {
   /// The latest error to show the user, or null if all is well.
   String? get errorMessage => _errorMessage;
 
+  // Why the data folder cannot be read right now, or null if it can.
+  String? _folderProblem;
+
+  /// Why the data folder cannot be reached right now (missing, on a
+  /// drive that is not connected, or no longer allowed), or null when
+  /// the last read worked. Screens show it on every tab, so a folder
+  /// that went missing never looks like data that is gone. It clears by
+  /// itself once a read works again.
+  String? get folderProblem => _folderProblem;
+
   /// Returns a value worked out from the events by [build], such as a
   /// module's diary, building it only once per change of the event log.
   ///
@@ -236,8 +246,9 @@ class AppState extends ChangeNotifier {
     }
     try {
       _eventLog = await readEventLog(dataFolder);
+      _clearFolderProblem();
     } on DataFolderException catch (error) {
-      _errorMessage = 'Could not read the data folder: ${error.message}';
+      _setFolderProblem('Could not read the data folder: ${error.message}');
     }
     notifyListeners();
     await _makeMonthlyBackup(dataFolder);
@@ -480,15 +491,54 @@ class AppState extends ChangeNotifier {
     }
     if (LocalDataFolder.checkFolderPath(path) != null) {
       // The folder may be on a drive that is not connected right now.
-      _errorMessage = 'The data folder $path cannot be found.';
+      _setFolderProblem('The data folder $path cannot be found.');
       return;
     }
     _useLinuxFolder(path);
   }
 
+  /// Tries the saved data folder again, after a folder problem: for a
+  /// drive that is connected again, say. Errors appear in
+  /// [folderProblem].
+  Future<void> retryDataFolder() async {
+    if (_dataFolder == null) {
+      try {
+        await _openSavedDataFolder();
+      } on DataFolderException catch (error) {
+        _setFolderProblem(error.message);
+      }
+    }
+    if (_dataFolder == null) {
+      notifyListeners();
+      return;
+    }
+    await reloadEvents();
+  }
+
+  /// Records [problem] as the folder problem, and as the error Settings
+  /// shows.
+  void _setFolderProblem(String problem) {
+    _folderProblem = problem;
+    _errorMessage = problem;
+  }
+
+  /// Forgets the folder problem once the folder can be read again, and
+  /// the error it set, but no other error.
+  void _clearFolderProblem() {
+    final problem = _folderProblem;
+    if (problem == null) {
+      return;
+    }
+    if (_errorMessage == problem) {
+      _errorMessage = null;
+    }
+    _folderProblem = null;
+  }
+
   void _useAndroidFolder(String folderUri) {
     // Choosing a real folder ends the demo, if it is running.
     _beforeDemo = null;
+    _folderProblem = null;
     _dataFolder = AndroidDataFolder(folderUri);
     _dataFolderDescription = describeAndroidFolder(folderUri);
     _eventLog = null;
@@ -498,6 +548,7 @@ class AppState extends ChangeNotifier {
   void _useLinuxFolder(String path) {
     // Choosing a real folder ends the demo, if it is running.
     _beforeDemo = null;
+    _folderProblem = null;
     _dataFolder = LocalDataFolder(path);
     _dataFolderDescription = path;
     _eventLog = null;

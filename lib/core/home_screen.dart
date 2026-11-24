@@ -60,10 +60,19 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
         final hasDataFolder = widget.appState.dataFolder != null;
-        final chooseFolderFirst = _ChooseDataFolderFirst(
-          onOpenSettings: _openSettings,
-          onTryDemo: () => startDemo(widget.appState),
-        );
+        final folderProblem = widget.appState.folderProblem;
+        // Without a folder: the welcome, or, if the saved folder could not
+        // be found, what went wrong, so missing data never looks gone.
+        final Widget chooseFolderFirst = folderProblem == null
+            ? _ChooseDataFolderFirst(
+                onOpenSettings: _openSettings,
+                onTryDemo: () => startDemo(widget.appState),
+              )
+            : _FolderMissing(
+                problem: folderProblem,
+                onTryAgain: widget.appState.retryDataFolder,
+                onOpenSettings: _openSettings,
+              );
         // IndexedStack keeps every tab alive, so each keeps its state.
         final tabs = IndexedStack(
           index: _selectedTab,
@@ -88,6 +97,10 @@ class _HomeScreenState extends State<HomeScreen> {
         // screen, with the way out.
         final demoStrip = widget.appState.isDemo
             ? _DemoStrip(onLeave: widget.appState.endDemo)
+            : (hasDataFolder && folderProblem != null)
+            // A folder that cannot be read right now (a drive taken out,
+            // access taken back): said on every tab, until it can be.
+            ? _FolderProblemStrip(onOpenSettings: _openSettings)
             : null;
         final destinations = [
           (const Icon(Icons.home_outlined), 'Home'),
@@ -207,6 +220,99 @@ class _ChooseDataFolderFirst extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown instead of the welcome when the saved data folder cannot be
+/// found: what went wrong, a way to try again (after connecting a
+/// drive), and Settings to choose another folder. Nothing is lost.
+class _FolderMissing extends StatelessWidget {
+  const _FolderMissing({
+    required this.problem,
+    required this.onTryAgain,
+    required this.onOpenSettings,
+  });
+
+  final String problem;
+  final VoidCallback onTryAgain;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Ippo cannot reach your data folder.',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(problem, textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              const Text(
+                'Your data is not lost. If the folder is on a drive or card '
+                'that is not connected, connect it and try again.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: onTryAgain,
+                child: const Text('Try again'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: onOpenSettings,
+                child: const Text('Choose the folder in Settings'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The strip shown above the tabs while the data folder cannot be read:
+/// in the theme's colors for problems, saying what is shown, with
+/// Settings for the details.
+class _FolderProblemStrip extends StatelessWidget {
+  const _FolderProblemStrip({required this.onOpenSettings});
+
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final small = Theme.of(context).textTheme.labelMedium;
+    return Material(
+      color: colors.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 8, 0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                'The data folder cannot be read. Shown as last read.',
+                style: small?.copyWith(color: colors.onErrorContainer),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.onErrorContainer,
+                textStyle: small,
+              ),
+              onPressed: onOpenSettings,
+              child: const Text('Details'),
+            ),
+          ],
         ),
       ),
     );

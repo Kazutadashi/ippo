@@ -56,6 +56,25 @@ void main() {
     expect(names, ['a-device.jsonl', 'b-device.jsonl']);
   });
 
+  test(
+    'a data folder that is gone is an error, and never made again',
+    () async {
+      final gone = LocalDataFolder('${temporaryFolder.path}/unplugged');
+      await expectLater(
+        gone.listFileNames('events'),
+        throwsA(isA<DataFolderException>()),
+      );
+      await expectLater(
+        gone.appendToTextFile('events/my-device.jsonl', 'x\n'),
+        throwsA(isA<DataFolderException>()),
+      );
+      expect(
+        Directory('${temporaryFolder.path}/unplugged').existsSync(),
+        isFalse,
+      );
+    },
+  );
+
   test('listing a folder that does not exist returns nothing', () async {
     expect(await dataFolder.listFileNames('events'), isEmpty);
   });

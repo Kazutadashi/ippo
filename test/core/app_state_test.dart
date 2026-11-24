@@ -187,4 +187,49 @@ void main() {
       expect(describeAndroidFolder('content://other/x'), 'content://other/x');
     });
   });
+
+  test(
+    'a data folder that goes away is a folder problem until it is back',
+    () async {
+      final appState = makeAppState();
+      await appState.load();
+      await appState.chooseLinuxDataFolder(dataFolder.path);
+      expect(appState.folderProblem, isNull);
+
+      dataFolder.deleteSync(recursive: true);
+      await appState.reloadEvents();
+      expect(appState.folderProblem, isNotNull);
+      expect(appState.errorMessage, appState.folderProblem);
+      // What was read before is still shown.
+      expect(appState.dataFolder, isNotNull);
+
+      dataFolder.createSync();
+      await appState.retryDataFolder();
+      expect(appState.folderProblem, isNull);
+      expect(appState.errorMessage, isNull);
+    },
+  );
+
+  test(
+    'a saved data folder missing at start is said, and tried again',
+    () async {
+      final firstRun = makeAppState();
+      await firstRun.load();
+      await firstRun.chooseLinuxDataFolder(dataFolder.path);
+      dataFolder.deleteSync(recursive: true);
+
+      final secondRun = makeAppState();
+      await secondRun.load();
+      expect(secondRun.dataFolder, isNull);
+      expect(secondRun.folderProblem, contains(dataFolder.path));
+
+      await secondRun.retryDataFolder();
+      expect(secondRun.folderProblem, isNotNull);
+
+      dataFolder.createSync();
+      await secondRun.retryDataFolder();
+      expect(secondRun.dataFolder, isNotNull);
+      expect(secondRun.folderProblem, isNull);
+    },
+  );
 }

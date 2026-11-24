@@ -20,6 +20,10 @@ library;
 /// Every path given to these methods is relative to that folder and uses
 /// `/` between folder names, for example `events/my-device.jsonl`. Paths
 /// that could reach outside the folder are refused; see [checkRelativePath].
+///
+/// If the data folder itself is gone (on a drive that is not connected,
+/// say), every method throws [DataFolderException]: a missing folder is
+/// never read as an empty one, nor made again.
 abstract class DataFolder {
   /// Returns the names of the files directly inside [folderPath], sorted.
   ///

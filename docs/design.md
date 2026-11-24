@@ -656,6 +656,8 @@ Fixed sizes:
 | Nothing exists yet (no exercises) | A note explaining the first step: "Tap \"New exercise\" to start." |
 | Loading | A centered progress circle, only while the app starts |
 | No data folder | A short explanation and a button leading to Settings |
+| Saved data folder missing at start (a drive not connected) | Instead of the welcome: "Ippo cannot reach your data folder.", where it looked, that nothing is lost, **Try again** and a way to Settings |
+| Data folder unreadable while open | A strip above the tabs, in the theme's `errorContainer`, on every tab: "The data folder cannot be read. Shown as last read." with **Details** (Settings). It goes once a reload succeeds |
 | Unreadable data | A red line under the day bar: "2 entries in the data could not be read and are not shown." |
 
 
