@@ -202,9 +202,19 @@ class _ChooseDataFolderFirst extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'Welcome to Ippo',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              // What a data folder is, since nothing works without one:
+              // a new user picks an empty folder, a second device picks
+              // the synced folder that already has the data.
               const Text(
-                'Welcome to Ippo. To start, choose the folder where your '
-                'data will be kept.',
+                'Ippo keeps everything you log as plain files in a folder '
+                'you choose. Pick an empty folder to start fresh, or the '
+                'folder your other device uses to carry on from there.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
