@@ -216,3 +216,23 @@ To sign releases with your own key:
 4. Back up the key file and its password in at least two safe places.
    A lost key means installed copies can never be updated without
    uninstalling; a leaked key lets others sign fake updates.
+
+## Making a release
+
+1. **Set the version** in two places, the same in both:
+   - `pubspec.yaml`: `version: 0.2.0+2`. The part before `+` is the
+     version people see; the number after it must be **higher than in
+     every earlier release**, or Android refuses to install the update.
+   - `lib/core/build_info.dart`: `appVersion = '0.2.0'` (a test checks
+     the two match).
+2. **Write down what changed** for people, in
+   `fastlane/metadata/android/en-US/changelogs/<number after +>.txt`
+   (for `0.2.0+2`, `2.txt`), in a few short lines.
+3. **Commit**, and run the tests (`flutter test`, and the Python tests).
+4. **Build:** `tool/release.sh`. It refuses to run with uncommitted
+   changes, and says which key signs the files (see "Signing a release"
+   above; never publish files signed with the debug key).
+5. **Publish:** push, then on GitHub open **Releases › Draft a new
+   release**, create the tag `v0.2.0` on the commit you built, paste the
+   changelog as the description, and attach the files from
+   `build/release/` (the four `.apk` files and `SHA256SUMS`).
