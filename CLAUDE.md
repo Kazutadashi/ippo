@@ -101,6 +101,10 @@ real person: no names, emails, usernames, file paths, home directories,
 environment variables, device names, habits, foods, workouts, schedules,
 or details of their hardware, OS, or sync setup. Paths are always chosen
 by the user at runtime or built from platform APIs, never written out.
-(Git commit author info is fine and not covered by this rule.)
+(Git commit author info is fine and not covered by this rule. The one
+other exception is the app id, `io.github.kazutadashi.ippo` in
+`android/app/build.gradle.kts` and `linux/CMakeLists.txt`: based on the
+project's public GitHub address, by the owner's choice, because an app
+id can never change once released. Use it nowhere else.)
 Examples, defaults, tests, and sample data use generic placeholders (`my-phone`, `/path/to/data`, "Read 10 pages"). The owner's
 own configuration lives only in their data folder, never in the code.

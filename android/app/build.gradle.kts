@@ -31,7 +31,13 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.ippo.ippo"
+        // The id Android, F-Droid and app stores know Ippo by. It can never
+        // change once people have installed the app: a new id is a new app,
+        // which cannot update the old one. Based on the project's GitHub
+        // address, the usual choice without a domain of one's own. The
+        // code's own package name (namespace, above) stays org.ippo.ippo:
+        // the two need not match, and only this one is ever shown.
+        applicationId = "io.github.kazutadashi.ippo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
