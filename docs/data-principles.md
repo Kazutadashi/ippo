@@ -32,7 +32,10 @@ apart:
 - a nutrient a label did not give versus 0 g.
 
 A table that adds things up says whether its total is complete
-(`<nutrient>_complete`).
+(`<nutrient>_complete`). Whether a logged day is *complete* (every
+meal, every set) cannot be known, so the data never claims it: it
+records what was logged and when (`logging_activity` in the Python
+package), and leaves the judgement to the analysis.
 
 ## 3. Raw values, fixed units, standard codes
 

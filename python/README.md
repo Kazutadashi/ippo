@@ -45,7 +45,7 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 
 | Method | One row per | Notes |
 | --- | --- | --- |
-| `daily()` | day | Habits done, food totals, sleep times, sets, steps, weight, the energy limit. Every calendar day is present, so gaps show. |
+| `daily()` | day | Whether anything was logged (`any_logged`, `habits_logged`, `food_logged`, `exercise_logged`, `sleep_logged`), habits done, food totals, sleep times, sets, steps, weight, the energy limit. Every calendar day is present, so gaps show; see "Missing data" below. |
 | `habits()` | habit | Including deleted ones (`deleted`). |
 | `habit_entries()` | habit and day | The latest value counts. `True` done, `False` said no; no row means nothing recorded. |
 | `habit_days()` | day | The habit grid: one column per habit. |
@@ -62,9 +62,41 @@ daily["sleep_before_h"].rolling(28).mean().plot()
 | `nutrient_targets()` | goal set | The user's own amount a day of a nutrient (`nutrient`, `amount`, `kind`: `at_most` or `at_least`), from its `date` on, in place of the reference amount. |
 | `sleep_days()` | day | Wake-up and bedtime (exact, local, and as hours), sleep before the day, time zone changes, naps. |
 | `naps()` | nap | |
+| `logging_activity()` | day and module | How many events were written about the day, when the first and last were written, and how many days later the first came (`first_logged_days_after`). For studying how the data was logged. |
 | `devices()` | device | When each device's data was last seen. |
 | `events` | event | Everything, unprocessed, for anything the tables do not cover; with the `app_version` and `time_zone` (IANA name) each event was written with, when known. |
 | `tables()` | | Every table above by name, as the export writes them. |
+
+## Missing data
+
+Ippo records what people logged, and people do not log everything. The
+tables never fill a gap in for you:
+
+- **Empty means not logged.** On a day nothing was logged in a module,
+  its measurements (nutrients, sleep, steps, weight) and its counts
+  (`food_entries`, `exercise_sets`, `habits_done`, `habits_marked`) are
+  empty, never 0. The `*_logged` columns of `daily()` say plainly which
+  modules have anything for each day.
+- **`False` is a real answer.** A habit marked not done is `False`; a
+  habit nobody marked has no row.
+- **Logged is not the same as complete.** A day with one meal logged may
+  be a day of one meal, or a day the rest was never written down, and
+  the data cannot tell which. The same goes for workouts: a rest day and
+  a day nobody logged look alike. Ippo does not guess; deciding which
+  days to trust is part of the analysis.
+- **Gaps are probably not random.** People tend to skip logging on
+  busy, ill or off-plan days, so averages over logged days only can be
+  too kind. `logging_activity()` shows how and when each day was logged
+  (including days filled in from memory, days later), which helps to
+  model this or to check how results change when unreliable days are
+  left out.
+- **Partial totals are marked.** Each day's nutrient total comes with
+  `<nutrient>_complete`: whether every entry that day gave that
+  nutrient.
+
+Some common ways to handle it: analyse only days where the module was
+logged; compare results with and without days logged late; and say in
+the results how many days were used out of how many in the period.
 
 Times come in two forms. `..._utc` columns are exact moments, right for
 durations and ordering. `..._local` columns are the clock time where you

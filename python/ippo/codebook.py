@@ -327,6 +327,15 @@ TABLES = {
         ),
         _RECORDED,
     ),
+    "logging_activity": _columns(
+        Column("module", "string", "The module the events belong to: habits, food, exercise, sleep, body."),
+        Column("events", "integer", "How many events were written about this day in this module "
+               "(entries, and changes or deletions of them)."),
+        Column("first_recorded_utc", "datetime", "When the first of them was written, in UTC."),
+        Column("last_recorded_utc", "datetime", "When the last of them was written, in UTC."),
+        Column("first_logged_days_after", "integer", "How many days after the day the first event was "
+               "written, by the day as lived (0: the same day). Logging from memory is less reliable."),
+    ),
     "nutrient_targets": _columns(
         Column("date", "date", "The first day this goal applies to."),
         Column("nutrient", "string", "The nutrient's field name, such as fat_g (see the nutrient columns)."),
@@ -340,15 +349,23 @@ TABLES = {
         _RECORDED,
     ),
     "daily": _columns(
-        Column("habits_done", "integer", "Yes/no habits marked done."),
-        Column("habits_logged", "integer", "Habits with any value recorded."),
+        Column("any_logged", "boolean", "Whether anything at all was logged about this day."),
+        Column("habits_logged", "boolean", "Whether any habit was marked (done or not) on this day."),
+        Column("food_logged", "boolean", "Whether any food was logged on this day. Whether all of it was "
+               "cannot be known."),
+        Column("exercise_logged", "boolean", "Whether any exercise set was logged on this day (steps are "
+               "counted in steps)."),
+        Column("sleep_logged", "boolean", "Whether a wake-up, bedtime or nap was logged for this day."),
+        Column("habits_done", "integer", "Yes/no habits marked done; empty if no habit was marked."),
+        Column("habits_marked", "integer", "Habits with any value recorded; empty if none."),
         Column("woke_up_h", "number", "See sleep_days.", "h"),
         Column("went_to_bed_h", "number", "See sleep_days.", "h"),
         Column("sleep_before_h", "number", "See sleep_days.", "h"),
         Column("time_zone_changed", "boolean", "See sleep_days."),
         Column("awake_h", "number", "See sleep_days.", "h"),
         Column("nap_h", "number", "See sleep_days.", "h"),
-        Column("exercise_sets", "integer", "How many exercise sets were logged."),
+        Column("exercise_sets", "integer", "How many exercise sets were logged; empty if none (a rest "
+               "day and a day not logged look the same)."),
         Column("steps", "integer", "Steps walked.", "{steps}/d", _STEPS_CODES),
         Column("weight_kg", "number", "Body weight logged that day.", "kg", _WEIGHT_CODES),
         Column("energy_target_kcal", "number", "The daily energy limit that applied.", "kcal"),

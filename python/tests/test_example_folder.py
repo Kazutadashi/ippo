@@ -222,11 +222,14 @@ class DailyTest(unittest.TestCase):
         daily = self.data.daily()
         self.assertEqual(list(daily.index.strftime("%Y-%m-%d")), ["2026-03-01", "2026-03-02", "2026-03-03"])
         first = daily.loc["2026-03-01"]
-        self.assertEqual((first["habits_done"], first["habits_logged"]), (1, 2))
+        self.assertEqual((first["habits_done"], first["habits_marked"]), (1, 2))
+        self.assertTrue(first["habits_logged"] and first["food_logged"] and first["any_logged"])
         self.assertEqual(first["exercise_sets"], 4)
         self.assertEqual(first["energy_kcal"], 1040)
-        # No food on 3 March: zero entries, but an unknown total.
-        self.assertEqual(daily.loc["2026-03-03", "food_entries"], 0)
+        # No food on 3 March: not logged, so the count and the total are
+        # unknown (empty), never 0.
+        self.assertFalse(daily.loc["2026-03-03", "food_logged"])
+        self.assertTrue(pd.isna(daily.loc["2026-03-03", "food_entries"]))
         self.assertTrue(pd.isna(daily.loc["2026-03-03", "energy_kcal"]))
 
     def test_export_needs_nothing_to_read_back(self):
@@ -317,6 +320,21 @@ class DiaryAndProvenanceTest(unittest.TestCase):
         marked = events.loc["019c0040-0000-7000-8000-000000000040"]
         self.assertEqual((marked["app_version"], marked["time_zone"]), ("0.1.0", "America/New_York"))
         self.assertTrue(pd.isna(events.iloc[0]["time_zone"]))
+
+
+class LoggingActivityTest(unittest.TestCase):
+    def test_each_day_and_module_says_when_it_was_logged(self):
+        activity = ippo.load(EXAMPLE, now=NOW).logging_activity().set_index(["date", "module"])
+        modules = set(activity.index.get_level_values("module"))
+        self.assertEqual(modules, {"body", "exercise", "food", "habits", "sleep"})
+        # Habits on 1 March were marked the same day; those of 3 March the
+        # day after; the weight of 1 March was typed in three days later.
+        self.assertEqual(activity.loc[(day("2026-03-01"), "habits"), "first_logged_days_after"], 0)
+        self.assertEqual(activity.loc[(day("2026-03-03"), "habits"), "first_logged_days_after"], 1)
+        self.assertEqual(activity.loc[(day("2026-03-01"), "body"), "first_logged_days_after"], 3)
+        food = activity.loc[(day("2026-03-01"), "food")]
+        self.assertGreaterEqual(food["events"], 2)
+        self.assertLessEqual(food["first_recorded_utc"], food["last_recorded_utc"])
 
 
 class CodebookTest(unittest.TestCase):

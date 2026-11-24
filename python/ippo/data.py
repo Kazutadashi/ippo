@@ -5,7 +5,7 @@ import json
 
 import pandas as pd
 
-from . import body, codebook, daily, exercise, food, habits, sleep
+from . import activity, body, codebook, daily, exercise, food, habits, sleep
 from .export import export as export_tables
 from .reading import read_events
 
@@ -117,6 +117,10 @@ class IppoData:
         """See :func:`ippo.daily.daily`."""
         return self._table(daily.daily)
 
+    def logging_activity(self):
+        """See :func:`ippo.activity.logging_activity`."""
+        return self._table(activity.logging_activity)
+
     def devices(self):
         """One row per device: its latest name, how many events it wrote,
         and when its first and last events were recorded. If a device's
@@ -186,5 +190,5 @@ TABLE_NAMES = [
     "exercises", "sets", "exercise_days", "steps",
     "sleep_days", "naps",
     "weights", "profile", "energy_targets", "nutrient_targets",
-    "daily", "devices",
+    "daily", "logging_activity", "devices",
 ]

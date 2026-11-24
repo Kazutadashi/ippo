@@ -106,7 +106,7 @@ figure.savefig(out / "3_habit_calendar.png", dpi=110)
 # 4. Does a short night change the next day? ---------------------------------
 night = daily["sleep_before_h"].where(daily["time_zone_changed"] == False)  # noqa: E712
 short = night < 7
-habit_rate = daily["habits_done"] / daily["habits_logged"]
+habit_rate = daily["habits_done"] / daily["habits_marked"]
 figure, axes = plt.subplots(1, 3, figsize=(12, 3.6))
 for axis, values, title in [
     (axes[0], habit_rate * 100, "Habits done (%)"),
