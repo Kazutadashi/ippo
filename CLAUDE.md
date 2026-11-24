@@ -20,16 +20,25 @@ section of `CONTRIBUTING.md`.
 **Ippo** (一歩, "one step", from 千里の道も一歩から: "a journey of a
 thousand miles begins with a single step"). A personal health app meant
 to become a generic, open-source app that
-other people can use and extend. It is a Loop-Habit-Tracker-style app
-plus more, built from modules:
+other people can use and extend. It is built from modules:
 
-1. Habits: daily check-offs, history, Loop-style habit strength score.
-2. Calisthenics progression: exercise ladders (Hybrid Calisthenics
-   style), log sets/reps, prompt to move up a step at a rep target.
-3. Meal diary / calorie tracker.
-4. Time tracker: tap to start an activity; starting the next one ends
-   the last. Shows how each day was spent (for example a pie chart).
-5. Sleep: bedtime and wake-up for each night, plus naps.
+1. Habits: yes/no check-offs in a grid, each with a colour, a
+   frequency (daily, some times a week, every few days) and a
+   description; streaks on Home.
+2. Food: a food list with label values (filled in from pasted label
+   JSON or text), a diary of what was eaten (also whole meals pasted as
+   JSON), quick entries, daily goals with the calorie limit, and the
+   body details (sex, birth year, height, weight) behind them.
+3. Exercise: exercises in reps or seconds, sets logged with one tap
+   next to the last session, and daily steps. (Exercise ladders and
+   progressions were removed at the owner's request.)
+4. Sleep: wake-up and bedtime for each day, plus naps.
+5. Charts (in the core): every measure over time, from each module's
+   `charts`.
+
+Ideas not built yet: a time tracker (tap to start an activity; starting
+the next one ends the last; how each day was spent), habits with numbers
+or durations, and a Loop-style habit strength score.
 
 The main purpose of every module is longitudinal tracking: data must
 be easy to chart and to use for time series and machine learning.
