@@ -436,7 +436,7 @@ class _FoodFormScreenState extends State<FoodFormScreen> {
                   expandedInsets: EdgeInsets.zero,
                   segments: const [
                     ButtonSegment(value: 'g', label: Text('Grams')),
-                    ButtonSegment(value: 'ml', label: Text('Millilitres')),
+                    ButtonSegment(value: 'ml', label: Text('Milliliters')),
                   ],
                   selected: {_unit},
                   showSelectedIcon: false,

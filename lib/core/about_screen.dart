@@ -15,7 +15,7 @@ import 'widgets/section_card.dart';
 const String _unknownBuild = 'Unknown (not built with tool/build.sh)';
 
 /// Shows why the app is called Ippo, who made it, the version and
-/// commit it was built from, the data format, and the licence.
+/// commit it was built from, the data format, and the license.
 class AboutScreen extends StatelessWidget {
   /// Creates the screen.
   const AboutScreen({super.key});
@@ -97,7 +97,7 @@ class AboutScreen extends StatelessWidget {
           ),
           SectionCard(
             children: [
-              const CardHeader(icon: Icons.gavel, title: 'Licence'),
+              const CardHeader(icon: Icons.gavel, title: 'License'),
               const SizedBox(height: 4),
               const NoteText(
                 'Ippo is free software under the GNU General Public '
@@ -114,7 +114,7 @@ class AboutScreen extends StatelessWidget {
                     applicationVersion: appVersion,
                   ),
                   icon: const Icon(Icons.description_outlined),
-                  label: const Text('Licences of the parts Ippo uses'),
+                  label: const Text('Licenses of the parts Ippo uses'),
                 ),
               ),
             ],

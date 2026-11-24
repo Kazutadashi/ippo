@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Rows of round colour buttons, for picking a colour: the accent colour
-/// in Settings, or a habit's colour.
+/// Rows of round color buttons, for picking a color: the accent color
+/// in Settings, or a habit's color.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
 import '../theme.dart';
 
-/// The most colour circles in one row; fewer on a narrow screen.
+/// The most color circles in one row; fewer on a narrow screen.
 const int _mostPerRow = 7;
 
-/// The area of one colour circle that can be tapped: 48, the smallest
+/// The area of one color circle that can be tapped: 48, the smallest
 /// tap target Android's accessibility guidance asks for.
 const double colorCircleSize = 48;
 
-/// The colour itself, inside the tap area: smaller, so a page of colours
+/// The color itself, inside the tap area: smaller, so a page of colors
 /// is calm, with room around it for the ring that marks the chosen one.
 const double colorSwatchSize = 34;
 
@@ -59,9 +59,9 @@ class ColorCircleGrid extends StatelessWidget {
   }
 }
 
-/// One colour in a [ColorCircleGrid]: a [colorSwatchSize] circle of
+/// One color in a [ColorCircleGrid]: a [colorSwatchSize] circle of
 /// [color] with [mark] on it, in a [colorCircleSize] tap area, ringed in
-/// the text colour when [isSelected].
+/// the text color when [isSelected].
 class ColorSwatchButton extends StatelessWidget {
   /// Creates the button.
   const ColorSwatchButton({
@@ -72,13 +72,13 @@ class ColorSwatchButton extends StatelessWidget {
     this.mark,
   });
 
-  /// Whether this is the chosen colour.
+  /// Whether this is the chosen color.
   final bool isSelected;
 
   /// Called when tapped.
   final VoidCallback onTap;
 
-  /// How the swatch is filled: a colour or a gradient.
+  /// How the swatch is filled: a color or a gradient.
   final BoxDecoration swatch;
 
   /// What is drawn on the swatch, such as a tick.
@@ -114,7 +114,7 @@ class ColorSwatchButton extends StatelessWidget {
   }
 }
 
-/// A round button filled with one colour; a tick marks the chosen one.
+/// A round button filled with one color; a tick marks the chosen one.
 class ColorCircle extends StatelessWidget {
   /// Creates a circle for [choice].
   const ColorCircle({
@@ -126,26 +126,26 @@ class ColorCircle extends StatelessWidget {
     this.icon,
   });
 
-  /// The colour, and its name.
+  /// The color, and its name.
   final AccentChoice choice;
 
-  /// Whether this colour is the chosen one.
+  /// Whether this color is the chosen one.
   final bool isSelected;
 
   /// Called when the circle is tapped.
   final VoidCallback onTap;
 
-  /// What the colour is for, read out after its name by screen readers:
-  /// "accent colour" gives "Orange accent colour".
+  /// What the color is for, read out after its name by screen readers:
+  /// "accent color" gives "Orange accent color".
   final String purpose;
 
   /// Shown on the circle when it is not selected, for example a phone
-  /// icon on the system colour.
+  /// icon on the system color.
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    // White or black marks, whichever is easier to see on this colour.
+    // White or black marks, whichever is easier to see on this color.
     final markColor =
         ThemeData.estimateBrightnessForColor(choice.color) == Brightness.dark
         ? Colors.white

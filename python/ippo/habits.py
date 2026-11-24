@@ -11,7 +11,7 @@ def habits(events):
 
     Columns: ``habit_id``, ``name``, ``value_type`` (``"yes_no"``,
     ``"number"``, ...), ``unit``, ``description``, ``color``
-    (``"#RRGGBB"``, or empty for the app's accent colour), ``times`` and
+    (``"#RRGGBB"``, or empty for the app's accent color), ``times`` and
     ``per_days`` (how often: ``times`` in every ``per_days`` days; 1 and
     1 for every day), ``archived``, ``deleted``, ``recorded_utc`` (when it
     was created).

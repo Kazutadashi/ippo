@@ -214,7 +214,7 @@ class _ChooseDataFolderFirst extends StatelessWidget {
 }
 
 /// The strip shown above the tabs during the demo: a quiet line saying
-/// what it is, and a small button to leave. It uses the bar's own colours
+/// what it is, and a small button to leave. It uses the bar's own colors
 /// and small text, so it does not pull the eye (screen recordings of the
 /// demo stay about the app, not the strip).
 class _DemoStrip extends StatelessWidget {
@@ -228,7 +228,7 @@ class _DemoStrip extends StatelessWidget {
     final muted = theme.colorScheme.onSurfaceVariant;
     final small = theme.textTheme.labelMedium;
     return Material(
-      // The navigation bar's colour, so the two read as one.
+      // The navigation bar's color, so the two read as one.
       color:
           theme.navigationBarTheme.backgroundColor ??
           theme.colorScheme.surfaceContainer,

@@ -195,7 +195,7 @@ class DayAndTimeFields extends StatelessWidget {
 /// date itself, for the rare case where that is wrong.
 ///
 /// [value] null shows "Not set". With [isSuggestion], the value is only
-/// a suggestion that is not saved yet: it is shown in grey, marked
+/// a suggestion that is not saved yet: it is shown in gray, marked
 /// "Suggested", so it is never mistaken for a saved time.
 class DateTimeField extends StatelessWidget {
   /// Creates the field.
@@ -266,7 +266,7 @@ class DateTimeField extends StatelessWidget {
     final value = this.value;
     final textTheme = Theme.of(context).textTheme;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    final greyed = value == null || isSuggestion;
+    final grayed = value == null || isSuggestion;
     return InkWell(
       onTap: () => _pickTime(context),
       borderRadius: BorderRadius.circular(4),
@@ -288,7 +288,7 @@ class DateTimeField extends StatelessWidget {
             Text(
               value == null ? ' ' : formatShortDate(value),
               style: textTheme.bodyMedium?.copyWith(
-                color: greyed ? muted : null,
+                color: grayed ? muted : null,
               ),
             ),
             // "Not set" smaller than a time, so it does not read as one,
@@ -298,7 +298,7 @@ class DateTimeField extends StatelessWidget {
               style: value == null
                   ? textTheme.bodyLarge?.copyWith(color: muted)
                   : textTheme.titleLarge?.copyWith(
-                      color: greyed ? muted : null,
+                      color: grayed ? muted : null,
                     ),
               strutStyle: StrutStyle.fromTextStyle(
                 textTheme.titleLarge!,

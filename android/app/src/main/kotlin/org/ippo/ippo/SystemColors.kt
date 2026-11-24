@@ -8,12 +8,12 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * Tells the Dart side the phone's own accent colour.
+ * Tells the Dart side the phone's own accent color.
  *
- * Since Android 12, the system picks an accent colour (from the wallpaper
+ * Since Android 12, the system picks an accent color (from the wallpaper
  * or the user's choice in system settings) and offers it to apps. Ippo
- * reads it so its colours can match the rest of the phone. This reads a
- * colour only; it touches no files and needs no permission.
+ * reads it so its colors can match the rest of the phone. This reads a
+ * color only; it touches no files and needs no permission.
  *
  * Methods:
  * - `accentColor()`: the system accent as a 32-bit ARGB number, or null on
@@ -38,7 +38,7 @@ class SystemColors(private val activity: Activity) : MethodChannel.MethodCallHan
             return null
         }
         // "system_accent1_500" is the middle shade of the system's main
-        // accent palette. Sent as a Long, because Dart reads the colour as
+        // accent palette. Sent as a Long, because Dart reads the color as
         // an unsigned number.
         return activity.getColor(android.R.color.system_accent1_500).toLong() and 0xFFFFFFFFL
     }

@@ -12,7 +12,7 @@ import 'package:ippo/core/theme.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  group('accent colours', () {
+  group('accent colors', () {
     test('written as #RRGGBB and read back', () {
       const orange = Color(0xFFFB8C00);
       expect(accentColorToHex(orange), '#FB8C00');
@@ -26,7 +26,7 @@ void main() {
       expect(parseAccentColor('#FB8C0'), defaultAccentColor);
     });
 
-    test('every offered colour survives saving and loading', () {
+    test('every offered color survives saving and loading', () {
       for (final choice in accentChoices) {
         final hex = accentColorToHex(choice.color);
         expect(
@@ -38,21 +38,21 @@ void main() {
     });
   });
 
-  group('choosing the accent colour', () {
+  group('choosing the accent color', () {
     const systemBlue = Color(0xFF3366CC);
     const orangeHex = '#FB8C00';
 
-    test('until a colour is picked, the phone\'s colour is used', () {
+    test('until a color is picked, the phone\'s color is used', () {
       expect(chooseAccentColor(null, systemBlue), systemBlue);
       expect(usesSystemAccent(null, systemBlue), isTrue);
     });
 
-    test('"system" uses the phone\'s colour', () {
+    test('"system" uses the phone\'s color', () {
       expect(chooseAccentColor('system', systemBlue), systemBlue);
       expect(usesSystemAccent('system', systemBlue), isTrue);
     });
 
-    test('a picked colour wins over the phone\'s colour', () {
+    test('a picked color wins over the phone\'s color', () {
       expect(
         chooseAccentColor(orangeHex, systemBlue).toARGB32(),
         parseAccentColor(orangeHex).toARGB32(),
@@ -60,7 +60,7 @@ void main() {
       expect(usesSystemAccent(orangeHex, systemBlue), isFalse);
     });
 
-    test('without a phone colour, the default is used', () {
+    test('without a phone color, the default is used', () {
       expect(chooseAccentColor(null, null), defaultAccentColor);
       expect(chooseAccentColor('system', null), defaultAccentColor);
       expect(usesSystemAccent('system', null), isFalse);
@@ -84,14 +84,14 @@ void main() {
     expect(parseThemeMode('sepia'), ThemeMode.system);
   });
 
-  test('every accent-coloured part uses the same main colour', () {
+  test('every accent-colored part uses the same main color', () {
     for (final brightness in Brightness.values) {
       for (final choice in accentChoices) {
         final colors = buildTheme(choice.color, brightness).colorScheme;
         final reason = '${choice.name}, $brightness';
         expect(colors.primaryContainer, colors.primary, reason: reason);
         expect(colors.secondary, colors.primary, reason: reason);
-        // Highlights are a tint between the main colour and background.
+        // Highlights are a tint between the main color and background.
         expect(colors.secondaryContainer, isNot(colors.primary));
         expect(colors.secondaryContainer, isNot(colors.surface));
       }
@@ -121,7 +121,7 @@ void main() {
       defaultDeviceName: 'my-desktop',
     );
 
-    test('theme and colour are kept after a restart', () async {
+    test('theme and color are kept after a restart', () async {
       final firstRun = makeAppState();
       await firstRun.load();
       await firstRun.setThemeMode('dark');
@@ -152,7 +152,7 @@ void main() {
     });
   });
 
-  test('a habit colour is shifted just enough to read on any background', () {
+  test('a habit color is shifted just enough to read on any background', () {
     const amber = Color(0xFFFFB300);
     const white = Color(0xFFFFFFFF);
     const nearBlack = Color(0xFF141414);

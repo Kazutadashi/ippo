@@ -19,6 +19,6 @@ void main() {
 
   test('heights turn into feet and inches and back', () {
     expect(feetAndInches(178), (5, 10));
-    expect(centimetresFrom(5, 10), closeTo(177.8, 1e-9));
+    expect(centimetersFrom(5, 10), closeTo(177.8, 1e-9));
   });
 }

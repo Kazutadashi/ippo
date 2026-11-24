@@ -20,7 +20,7 @@ Contents:
 6. [Text and wording](#6-text-and-wording)
 7. [Numbers, times and units](#7-numbers-times-and-units)
 8. [Icons](#8-icons)
-9. [Colour](#9-colour)
+9. [Color](#9-color)
 10. [Spacing and sizes](#10-spacing-and-sizes)
 11. [Feedback: saving, errors, undo](#11-feedback-saving-errors-undo)
 12. [Empty, loading and problem states](#12-empty-loading-and-problem-states)
@@ -63,15 +63,15 @@ Contents:
   a panel of its own (`surfaceContainer`), so the page starts at a clear
   edge beside it. Screens use the whole width up to 1080, so on a phone
   on its side Home's landscape runs edge to edge; past that (a desktop)
-  they stay centred at a readable width.
+  they stay centered at a readable width.
 - On a short screen (under 500 high, a phone on its side), Home's
   landscape is lower (76), so the tiles come into view.
 - The app draws behind a see-through system navigation bar, so its own
-  colours reach the bottom edge.
+  colors reach the bottom edge.
 
 ### A module screen, top to bottom
 
-1. **Top bar** (`tabAppBar`): a plain bar in the theme's colours, with
+1. **Top bar** (`tabAppBar`): a plain bar in the theme's colors, with
    the module's name ("Sleep") on the left and its one button, if any,
    on the right; if the screen shows one day, a row under it has the
    date and the day picker (`DayBar`: ‹ 📅 Today › »); on a window 600
@@ -80,7 +80,7 @@ Contents:
    landscape: the tabs stay plain, so their content leads. The day is
    the same on every tab (kept in `AppState`). On any day but today, the
    day is shown in a tinted pill, because logging to the wrong day is
-   easy to miss; » goes straight back to today. › and » are greyed out
+   easy to miss; » goes straight back to today. › and » are grayed out
    on today, and nothing in the bar moves as the day changes: the day
    has a fixed width. There is no day after today: no data can be there.
 2. **Cards** (`SectionCard`), one per section, each starting with a
@@ -115,7 +115,7 @@ summits, each shaded on the face turned from the sun or moon), rising
 straight out of the valley with haze at its foot; a farther range
 behind it, paler with the distance; a long line of spruce forest on the
 valley floor; and a few tall spruces close by. (The launcher icon
-is its own drawing in the same night colours: steps climbing toward
+is its own drawing in the same night colors: steps climbing toward
 the rising moon.) So Home looks a
 little different every day, and the same all day long. The
 greeting and the gear sit on its sky, which is kept clear above the
@@ -150,7 +150,7 @@ be. A number that needs explaining, or that does not help decide
 anything today, does not belong on Home.
 
 - **The week grid** ("Last 7 days", `WeekGrid`): the days across the
-  top, the day shown in the accent colour with a soft column behind
+  top, the day shown in the accent color with a soft column behind
   it, and one row per module, named with
   its unit on the left ("Habits (%)", "Food (kcal)", "Exercises",
   "Steps (k)", "Sleep (h)"), with one short value per day, like a small
@@ -160,18 +160,18 @@ anything today, does not belong on Home.
 - **One tile per module** (`IppoModule.homeTile`, drawn by
   `HomeTileCard`). Every tile has the same four parts, in the same
   places, so tiles side by side line up:
-  1. the header: the module's icon in the accent colour and its title
-     in small grey capitals ("FOOD");
-  2. **today's value**, large (digits large, units small and grey:
+  1. the header: the module's icon in the accent color and its title
+     in small gray capitals ("FOOD");
+  2. **today's value**, large (digits large, units small and gray:
      `ValueText`), with a word after it that says what it is: "4 of 8
      done", "1267 kcal of 2000", "6,390 steps", "7 h 8 min slept";
   3. **one mark**, in a row of fixed height: one dot per habit in its
-     own colour; protein, carbs and fat with bars against their daily
+     own color; protein, carbs and fat with bars against their daily
      amounts (red past them); a badge for the day's workout ("4
      exercises today" or "Rest day"); last night as one bar from
      bedtime to waking up. With nothing logged, a short note takes its
      place, saying exactly what is missing ("Bedtime not logged");
-  4. **one or two rows** (`TileRow`): a grey label at the left and its
+  4. **one or two rows** (`TileRow`): a gray label at the left and its
      number at the right edge, so numbers line up down a tile and
      across a row of tiles: "Best streak 30 days", "Left today 733
      kcal" (or "Over the limit", in red), "Awake for 8 h 52 min", then
@@ -208,7 +208,7 @@ measures over time.
 day shown (not the day itself, which is not over: half a day would
 pull every average down; so these match the tiles' "Avg (7 days)"),
 your usual (the 28 days before those), and an arrow for which way it
-moved, never coloured, since up or down is not good or bad in itself.
+moved, never colored, since up or down is not good or bad in itself.
 Only days with something logged count, so a gap never looks like a
 zero; the usual waits for 7 days of data, and a change within 5 % (1 %
 for weight, which moves slowly) is shown as steady. A last line says on how many of those 35 days anything was
@@ -222,7 +222,7 @@ The charts are meant to be read like figures in a paper, on a phone:
   card per module (in the order of `allModules`), with one row per
   chart: its name and unit, its change per week over the last 30 days,
   a small line of those days (`ChartSparkline`), and its latest 7-day
-  mean, labelled. Tapping a row opens the chart on a screen of its own
+  mean, labeled. Tapping a row opens the chart on a screen of its own
   (`ChartScreen`). A module offers its charts with `IppoModule.charts`,
   as `ChartSpec`s: one value per day logged, and optionally a limit, a
   recommended band or spans (bedtime to waking up). The core draws them
@@ -245,7 +245,7 @@ The charts are meant to be read like figures in a paper, on a phone:
   grid lines, dates as Mondays, months or years. Measurements zoom in
   on their values, so a change of a kilogram shows; bars start at zero,
   so a bar's length is its value.
-- **Four numbers sum up the period**, labelled: Mean, SD (the sample
+- **Four numbers sum up the period**, labeled: Mean, SD (the sample
   standard deviation), Per week (the slope of the least-squares line,
   only with 3 values over 7 days or more), and how many values. Tapping
   or dragging across a plot reads out one day in their place.
@@ -255,7 +255,7 @@ The charts are meant to be read like figures in a paper, on a phone:
 - **Every mark is in the legend**, and a band from a published source
   names it in a note under the chart (sleep: 7–9 h, Hirshkowitz et al.,
   2015).
-- Accent colour and theme greys only, never colour alone: every mark
+- Accent color and theme grays only, never color alone: every mark
   differs in shape too (dot, bar, line, dashes, band).
 
 ### Daily amounts and the calorie limit
@@ -268,14 +268,14 @@ user's calorie limit, with protein by body weight when known); see
 `lib/modules/food/daily_references.dart` for every source. They are
 averages for adults, never presented as targets, until the user sets
 a goal of their own: **Daily goals** (the Total card's header button) has a
-field per nutrient (protein, carbs, sugars, added sugars, fibre, fat,
+field per nutrient (protein, carbs, sugars, added sugars, fiber, fat,
 saturated fat, salt), empty for the reference amount, shown as the
 hint. A new goal counts from today. The Food page's **All nutrients**
 opens every other nutrient of the day the same way.
 
 Bars turn red past a **most** (energy, fat, saturated and trans fat,
 sugars, salt, sodium, cholesterol) only; past a **least** (protein,
-fibre, vitamins, minerals) they stay in the accent colour, since more is
+fiber, vitamins, minerals) they stay in the accent color, since more is
 fine. Salt and sodium are the same thing in two units (salt is 2.5 ×
 sodium), always shown in step, whichever one a label gave.
 
@@ -301,7 +301,7 @@ citations. A rule of thumb is called one.
 
 Body measurements are shown in **metric or imperial** units (Settings,
 metric by default; `units.dart`); the data is always metric. Food
-amounts stay in grams and millilitres, as on labels everywhere.
+amounts stay in grams and milliliters, as on labels everywhere.
 
 ### Forms (adding or changing one thing)
 
@@ -366,8 +366,8 @@ the same:
 | Kind | Looks like | Use |
 | --- | --- | --- |
 | **Editable** | An outlined box with a label on its border | `TextField` (the theme adds the outline), `TimeField` for times, `DateTimeField` when the date matters too |
-| **Information** | Plain text: a small grey label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `HomeTileCard` on Home |
-| **Note** | Plain grey text | `NoteText`, for short notes and empty states |
+| **Information** | Plain text: a small gray label above a larger value | `InfoValue`, or `InfoRow` for several side by side; `InfoText` for long text such as paths; `HomeTileCard` on Home |
+| **Note** | Plain gray text | `NoteText`, for short notes and empty states |
 | **Problem** | Plain red text that says what is wrong | `ProblemText` |
 | **Action** | A button: filled, text, or floating | See section 4 |
 
@@ -383,7 +383,7 @@ Rules:
 - A field that has nothing yet shows "Not set". Saving skips it, so the
   data never holds a value nobody entered.
 - A value that is **only a suggestion** (the usual wake-up time) is shown
-  grey and marked "Suggested", so it is never mistaken for a saved one.
+  gray and marked "Suggested", so it is never mistaken for a saved one.
 - Tapping a `DateTimeField` opens the **clock** straight away and works
   out the date; its calendar button changes the date, which is rarely
   needed.
@@ -394,12 +394,12 @@ Rules:
   that is required says so when it is missing.
 - One word for one thing everywhere: Energy, Protein, Carbs, Fat.
 - A setting that cannot be changed any more is shown as **information**
-  with a note saying why, never as a greyed-out control.
+  with a note saying why, never as a grayed-out control.
 - Choices between a few options use a `SegmentedButton` filling the
   card's width (`expandedInsets: EdgeInsets.zero`), never a dropdown, so
   every option is visible.
-- A control that is not a text field (a choice, a row of colours) gets
-  a small grey `FieldLabel` above it ("Theme", "Accent colour").
+- A control that is not a text field (a choice, a row of colors) gets
+  a small gray `FieldLabel` above it ("Theme", "Accent color").
 - Settings that change rarely (a device's name) are shown as
   information with an **Edit** button in the header, which opens a
   small window with the field. They do not sit on screen as open text
@@ -422,7 +422,7 @@ Rules:
 - At most **one filled button** is in view on a card or form, so the
   main action is obvious. An action repeated on every card (an exercise's
   **Add**) is **tonal** (`FilledButton.tonal`), and the second of two
-  create buttons is the quieter (outlined) one, so accent colour stays
+  create buttons is the quieter (outlined) one, so accent color stays
   scarce.
 - A Save on a module's own screen says **Saved** (disabled, with a ✓)
   when nothing is waiting to be saved, which also confirms that saving
@@ -446,13 +446,17 @@ Rules:
 - Numbers that only make sense side by side, such as the sets of an
   exercise, go in a **small table that names every row and column**:
   a column per set ("Set 1", "Set 2"), the unit in the corner ("reps"),
-  a row for the day shown, and the last session under it in grey, so
+  a row for the day shown, and the last session under it in gray, so
   it is plain what each number is and whether the day went better.
   Tapping a number of the day shown opens it for changing.
 
 
 ## 6. Text and wording
 
+- **American English** everywhere (color, gray, center, fiber,
+  analyze), in the app, the docs and the code. The only exceptions are
+  words read from real labels ("Fibre" on an EU label), quoted titles,
+  and values already saved in people's files.
 - **Sentence case** everywhere: "Went to bed", "New exercise", not "Went
   To Bed".
 - **Plain, everyday words.** "Went to bed", not "sleep onset"; "Nothing
@@ -468,15 +472,15 @@ Text styles (from the theme's text styles):
 | Use | Style |
 | --- | --- |
 | Home greeting | `headlineSmall` |
-| Home tile values | `headlineSmall` digits, `labelLarge` grey units and note (set by `HomeTileCard` with `ValueText`) |
-| Home tile lines | `bodySmall`, grey; labels above numbers `labelSmall`, grey |
-| Home tile titles | `labelSmall` capitals, grey (set by `HomeTileCard`) |
-| Home date | `titleMedium`, grey (`onSurfaceVariant`) |
+| Home tile values | `headlineSmall` digits, `labelLarge` gray units and note (set by `HomeTileCard` with `ValueText`) |
+| Home tile lines | `bodySmall`, gray; labels above numbers `labelSmall`, gray |
+| Home tile titles | `labelSmall` capitals, gray (set by `HomeTileCard`) |
+| Home date | `titleMedium`, gray (`onSurfaceVariant`) |
 | Card titles | `titleMedium` (set by `CardHeader`) |
 | Information values | `titleMedium` (set by `InfoValue`) |
-| Information labels | `labelMedium`, grey (set by `InfoValue`) |
-| Notes | `bodyMedium`, grey (set by `NoteText`) |
-| Small print (device id) | `bodySmall`, grey (`InfoText` with `isSmallPrint`) |
+| Information labels | `labelMedium`, gray (set by `InfoValue`) |
+| Notes | `bodyMedium`, gray (set by `NoteText`) |
+| Small print (device id) | `bodySmall`, gray (`InfoText` with `isSmallPrint`) |
 
 Every style uses digits of equal width (set once in `buildTheme`), so
 numbers line up in columns and values that change do not shift.
@@ -522,7 +526,7 @@ by themselves unless the user picked another day.
 | Home | `home` (outlined when not selected) |
 | Habits | `check_circle_outline` |
 | Done / not done (habit grid) | `check` / `close` |
-| Covered by the habit's frequency (habit grid) | a small dot in the habit's colour (`CoveredMark`), on any day not done (✗ or nothing marked) where every stretch of the habit's period through it was kept: the chain held. It comes from the days around it, so a tap cannot remove it; tapping it gives ✓. "Every other day" with ✓ Monday and ✓ Wednesday covers Tuesday; with ✗ Wednesday too, the chain broke and neither is covered |
+| Covered by the habit's frequency (habit grid) | a small dot in the habit's color (`CoveredMark`), on any day not done (✗ or nothing marked) where every stretch of the habit's period through it was kept: the chain held. It comes from the days around it, so a tap cannot remove it; tapping it gives ✓. "Every other day" with ✓ Monday and ✓ Wednesday covers Tuesday; with ✗ Wednesday too, the chain broke and neither is covered |
 | Food, food eaten | `restaurant` |
 | Food totals (energy) | `local_fire_department` |
 | Your foods (a list) | `list_alt` |
@@ -544,39 +548,39 @@ by themselves unless the user picked another day.
 | Charts | `show_chart` (the button on Home) |
 | Weight | `monitor_weight_outlined` |
 
-Card headers show their icon in the accent colour. Home tiles use their
+Card headers show their icon in the accent color. Home tiles use their
 module's icon, so a glance says which tab a tile belongs to.
 
 
-## 9. Colour
+## 9. Color
 
-1. **The phone's colours by default.** On Android 12 and later, Ippo
-   uses the phone's system accent colour, so it matches the rest of the
+1. **The phone's colors by default.** On Android 12 and later, Ippo
+   uses the phone's system accent color, so it matches the rest of the
    phone. Users can pick another in Settings > Appearance.
-2. **One accent shade.** Every accent-coloured part (filled buttons,
+2. **One accent shade.** Every accent-colored part (filled buttons,
    floating buttons, header icons, text buttons) uses the same main
-   colour. Highlights (the selected tab or option) use a light tint of
-   it. `buildTheme` enforces this; never set colours by hand.
+   color. Highlights (the selected tab or option) use a light tint of
+   it. `buildTheme` enforces this; never set colors by hand.
 3. **Light, dark, or system mode.** Every screen must look right in both
    light and dark mode.
 4. **Red only for problems and deleting.** Use the theme's `error`
-   colour, never a hand-picked red.
-5. **Never colour alone.** Red text also says what is wrong in words.
-6. **Colours users pick for their own things.** A habit can have its
-   own colour, used only for its name and its ✓ marks, so habits are
-   easy to tell apart. Without one it uses the accent colour. Such
-   colours come from the same list as the accent colours, are picked
+   color, never a hand-picked red.
+5. **Never color alone.** Red text also says what is wrong in words.
+6. **Colors users pick for their own things.** A habit can have its
+   own color, used only for its name and its ✓ marks, so habits are
+   easy to tell apart. Without one it uses the accent color. Such
+   colors come from the same list as the accent colors, are picked
    with `ColorCircle`s, and keep their hue in light and dark mode, made
    only as much lighter or darker as it takes to read on the background
    (`Habit.displayColor`, `readableOn`): a yellow habit is a deeper
    yellow in light mode. Nothing else on the screen takes them.
-8. **Pure white text in dark mode**, for the clearest contrast; grey
-   text stays grey. **True black** is an option in Settings for OLED
-   screens: the background is black, cards the darkest greys.
-9. **One colour for the whole app.** Modules have no colours of their
+8. **Pure white text in dark mode**, for the clearest contrast; gray
+   text stays gray. **True black** is an option in Settings for OLED
+   screens: the background is black, cards the darkest grays.
+9. **One color for the whole app.** Modules have no colors of their
    own: tab icons, tile icons, bars and badges all use the accent, and
    tiles sit on the plain card surface. The app stays calm, and the
-   only other colours on screen are the ones users picked for their
+   only other colors on screen are the ones users picked for their
    habits.
 10. **Flat cards.** Cards have no shadow and sit on a slightly different
    surface (`surfaceContainer`), the same in light and dark mode.
@@ -650,7 +654,7 @@ Fixed sizes:
 | --- | --- |
 | Nothing logged yet | A note in the card: "No naps on this day.", "Nothing logged on this day." |
 | Nothing exists yet (no exercises) | A note explaining the first step: "Tap \"New exercise\" to start." |
-| Loading | A centred progress circle, only while the app starts |
+| Loading | A centered progress circle, only while the app starts |
 | No data folder | A short explanation and a button leading to Settings |
 | Unreadable data | A red line under the day bar: "2 entries in the data could not be read and are not shown." |
 
@@ -671,7 +675,7 @@ Sources:
 **Touch**
 
 - Tap targets are at least 48 × 48 (Android). Flutter's buttons are,
-  with the theme's standard density; custom controls (colour circles)
+  with the theme's standard density; custom controls (color circles)
   are made 48 too.
 - The one exception is the **day grids**: the habit grid's cells and
   the columns of Home's week. Seven days must fit across a phone, so
@@ -685,20 +689,20 @@ Sources:
 - Things that are read together are one item for screen readers
   (`MergeSemantics` on Home tiles); chips and habit names say what a tap
   does ("Set 1: 20 reps", "Edit habit").
-- Colour swatches, grid cells and other custom controls have a
-  `Semantics` label ("Orange accent colour", "Read 10 pages, Mon 16 Nov:
+- Color swatches, grid cells and other custom controls have a
+  `Semantics` label ("Orange accent color", "Read 10 pages, Mon 16 Nov:
   done").
 
 **Contrast**
 
 - Text is at least 4.5:1 against its background (3:1 for large text),
   marks and outlines 3:1 (WCAG 1.4.3 and 1.4.11).
-- Contrast comes from the theme; do not put text on hand-picked colours.
-  A user's colour (a habit's, the accent) is passed through
+- Contrast comes from the theme; do not put text on hand-picked colors.
+  A user's color (a habit's, the accent) is passed through
   `readableOn` with `textContrast` before it is used for text.
 - White text on the landscape (Home's header) sits on a faint dark
   backing or shadow, in light mode too.
-- Nothing is told by colour alone: a habit's day is also filled, an
+- Nothing is told by color alone: a habit's day is also filled, an
   outline or a dash, and read out by name.
 
 **Text size**
@@ -768,8 +772,8 @@ Before a screen is done:
       or an action (section 3).
 - [ ] Actions are where section 4 says.
 - [ ] Wording, numbers and icons follow sections 6 to 8.
-- [ ] It looks right in light and dark mode, with the system colour and
-      with a picked colour.
+- [ ] It looks right in light and dark mode, with the system color and
+      with a picked color.
 - [ ] `test/screens_fit_test.dart` passes (narrow screen, light and dark,
       long names).
 - [ ] It was looked at on a phone.

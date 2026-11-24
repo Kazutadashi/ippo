@@ -9,7 +9,7 @@ import '../../core/number_input.dart';
 const int maximumUnitNameLength = 30;
 
 /// A serving size: [count] pieces called [unit] weigh [amount] grams (or
-/// millilitres). For "9 chips (28 g)": unit `chips`, count 9, amount 28.
+/// milliliters). For "9 chips (28 g)": unit `chips`, count 9, amount 28.
 ///
 /// It lets amounts be entered in the label's own unit ("9 chips") as
 /// well as in grams. See `serving` in "Module: food" of
@@ -50,10 +50,10 @@ class FoodServing {
   /// How many pieces are in one serving: 9 for "9 chips".
   final double count;
 
-  /// How many grams (or millilitres) one serving weighs: 28.
+  /// How many grams (or milliliters) one serving weighs: 28.
   final double amount;
 
-  /// The grams (or millilitres) in one piece.
+  /// The grams (or milliliters) in one piece.
   double get amountPerUnit => amount / count;
 
   /// Turns the serving size into event data.

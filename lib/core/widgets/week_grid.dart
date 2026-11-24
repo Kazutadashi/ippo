@@ -9,7 +9,7 @@ import '../dates.dart';
 import '../module.dart';
 import 'info_tile.dart';
 
-/// One labelled row of the grid.
+/// One labeled row of the grid.
 typedef WeekGridRow = ({String title, IconData icon, WeekRow row});
 
 /// The width of the column of row names ("Habits", "Exercise").
@@ -21,7 +21,7 @@ const double _rowHeight = 22;
 /// Seven days at a glance: the days across the top, and under them one
 /// row per module, named with its unit on the left ("Sleep (h)"), with
 /// one value per day, like a small table. The day shown is picked out
-/// in the accent colour, with a soft column behind it; tapping another
+/// in the accent color, with a soft column behind it; tapping another
 /// day's column shows that day, and the seven days stay where they are.
 class WeekGrid extends StatelessWidget {
   /// Creates the grid for the seven days ending on [end], with [day]
@@ -183,7 +183,7 @@ class WeekGrid extends StatelessWidget {
   }
 
   /// One module's row: its name with its unit, then a value per day,
-  /// the day shown in the accent colour, and a quiet dash for a day
+  /// the day shown in the accent color, and a quiet dash for a day
   /// without data.
   Widget _row(BuildContext context, WeekGridRow row, int shownIndex) {
     final theme = Theme.of(context);

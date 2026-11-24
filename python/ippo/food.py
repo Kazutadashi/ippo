@@ -204,7 +204,7 @@ def diary_marks(events):
     return result[result.index.notna()]
 
 
-#: How much salt (sodium chloride) holds a unit of sodium, as EU labelling
+#: How much salt (sodium chloride) holds a unit of sodium, as EU labeling
 #: law counts it (Regulation (EU) No 1169/2011, Annex I, point 11).
 SALT_PER_SODIUM = 2.5
 

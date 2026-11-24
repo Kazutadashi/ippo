@@ -9,7 +9,7 @@ import 'package:material_ui/material_ui.dart';
 /// big one inside and a smaller one outside. Material's own dumbbell has
 /// thin plates and stands at an angle, which reads oddly at small sizes.
 ///
-/// It takes its size and colour from the surrounding [IconTheme], like
+/// It takes its size and color from the surrounding [IconTheme], like
 /// an [Icon], so it can go anywhere an icon goes: the tab bar, a tile, a
 /// card header.
 class DumbbellIcon extends StatelessWidget {
@@ -19,7 +19,7 @@ class DumbbellIcon extends StatelessWidget {
   /// The width and height, or null for the icon theme's size.
   final double? size;
 
-  /// The colour, or null for the icon theme's colour.
+  /// The color, or null for the icon theme's color.
   final Color? color;
 
   @override

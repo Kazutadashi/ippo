@@ -39,7 +39,7 @@ it.
 
 | Package | Maintained by | What it does | Why we need it |
 | --- | --- | --- | --- |
-| `pandas` | pandas team | Tables of data, with dates, grouping and CSV files. | It is what most people analyse data with in Python, so the tables are ready to use. |
+| `pandas` | pandas team | Tables of data, with dates, grouping and CSV files. | It is what most people analyze data with in Python, so the tables are ready to use. |
 | `pyarrow` (optional) | Apache Arrow project | Writes Apache Parquet files. | Parquet is the standard file format for tables in data science (pandas, R, Polars, DuckDB, Spark), and keeps each column's type. Only installed on request (`pip install ".[parquet]"`); without it the export writes CSV only. |
 
 The scripts in `python/examples/` also use `matplotlib`, the standard
@@ -49,7 +49,7 @@ need it.
 ## Artwork
 
 The launcher icon (steps climbing toward the rising moon, in three
-ridges, in the Home header's night colours) was drawn for Ippo. Its source is
+ridges, in the Home header's night colors) was drawn for Ippo. Its source is
 `docs/artwork/launcher-icon.svg`; the same shapes are the vector layers
 in `android/app/src/main/res/drawable/ic_launcher_*.xml`. The PNGs for
 older Android (`mipmap-*/ic_launcher.png`) are the middle 72 × 72 of

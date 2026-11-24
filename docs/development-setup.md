@@ -196,7 +196,7 @@ To sign releases with your own key:
      -alias ippo -keyalg RSA -keysize 4096 -validity 36500
    ```
 
-   The name and organisation it asks for go into a certificate anyone
+   The name and organization it asks for go into a certificate anyone
    can read from the APK, so a generic name ("Ippo") is enough.
 
 2. Next to it, make `key.properties`:

@@ -21,7 +21,7 @@ No account, no ads, and it never goes online.
       <b>Logging a day</b>
     </td>
     <td align="center" width="33%">
-      <img src="docs/images/details.gif" width="250" alt="Ippo in detail: the charts, a weight chart over a week and a month, every nutrient of the day, and the accent colour in Settings."><br>
+      <img src="docs/images/details.gif" width="250" alt="Ippo in detail: the charts, a weight chart over a week and a month, every nutrient of the day, and the accent color in Settings."><br>
       <b>Charts and details</b>
     </td>
   </tr>
@@ -52,7 +52,7 @@ to see how it went.
 **Habits.** Tick off your habits each day in a grid of the last few
 weeks. Not every habit has to be daily: set one to a few times a week,
 or every few days, and the days in between won't count against you.
-Give each habit its own colour, and a note if its name is short. Home
+Give each habit its own color, and a note if its name is short. Home
 shows your best streak.
 
 **Food.** Save the foods you eat often, with the numbers from their
@@ -87,7 +87,7 @@ month or year, or pick any dates you like. At the top, a short summary
 compares your last week with the four weeks before it.
 
 **Make it look the way you like.** Pick light or dark, with true black
-for OLED screens. Use your phone's accent colour or choose your own,
+for OLED screens. Use your phone's accent color or choose your own,
 and switch between metric and imperial, or 24- and 12-hour time.
 
 Want to look around first? Tap **Show example data** on the welcome

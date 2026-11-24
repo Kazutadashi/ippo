@@ -19,7 +19,7 @@ import 'widgets/info_tile.dart';
 export 'charts/chart_data.dart';
 export 'demo/demo_plan.dart' show DemoEvent, DemoPlan;
 export 'trends.dart' show TrendMeasure;
-export 'widgets/info_tile.dart' show LabelledValues, TileDetail, TileRow;
+export 'widgets/info_tile.dart' show LabeledValues, TileDetail, TileRow;
 
 /// A module: one area of the app, such as the food diary.
 abstract class IppoModule {
@@ -39,14 +39,14 @@ abstract class IppoModule {
 
   /// The module's icon as a widget, for the tab bar, its Home tile and
   /// its cards. It is [icon] unless a module draws its own; either way it
-  /// takes its size and colour from the surrounding `IconTheme`.
+  /// takes its size and color from the surrounding `IconTheme`.
   Widget buildIcon() => Icon(icon);
 
   /// Builds the module's main screen.
   Widget buildScreen(AppState appState);
 
   /// The module's tile on Home for [day]: today's value, one small mark,
-  /// and a line or two of grey text, the 7-day average last. See
+  /// and a line or two of gray text, the 7-day average last. See
   /// [HomeTile].
   ///
   /// [day] is today (see `currentDay` in `dates.dart`) unless the user

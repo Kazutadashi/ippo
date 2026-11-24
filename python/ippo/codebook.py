@@ -9,7 +9,7 @@ For each column it gives:
 - ``description``: what one value is, in a sentence;
 - ``unit``: the unit as a UCUM code (https://ucum.org), such as ``kg``,
   ``kcal`` or ``h``; empty when the column has no unit;
-- ``codes``: identifiers from recognised vocabularies, where one fits:
+- ``codes``: identifiers from recognized vocabularies, where one fits:
   INFOODS tagnames (FAO/UN food component identifiers), USDA FoodData
   Central nutrient ids and numbers, and LOINC codes.
 
@@ -79,7 +79,7 @@ NUTRIENTS = {
     "carbohydrates_g": Nutrient("Carbohydrate, by difference", "g", "CHOCDF", 1005, "205"),
     "sugars_g": Nutrient("Sugars, total", "g", "SUGAR", 2000, "269"),
     "added_sugars_g": Nutrient("Added sugars", "g", note="No standard code confirmed."),
-    "fiber_g": Nutrient("Dietary fibre, total", "g", "FIBTG", 1079, "291"),
+    "fiber_g": Nutrient("Dietary fiber, total", "g", "FIBTG", 1079, "291"),
     "fat_g": Nutrient("Fat, total", "g", "FAT", 1004, "204"),
     "saturated_fat_g": Nutrient("Saturated fatty acids, total", "g", "FASAT", 1258, "606"),
     "monounsaturated_fat_g": Nutrient("Monounsaturated fatty acids, total", "g", "FAMS", 1292, "645"),
@@ -180,7 +180,7 @@ TABLES = {
         Column("value_type", "string", "What is recorded each day: yes_no, number, duration or time_of_day."),
         Column("unit", "string", "For number habits, the user's unit label, such as pages. Only a label."),
         Column("description", "string", "The user's description."),
-        Column("color", "string", "Display colour, #RRGGBB."),
+        Column("color", "string", "Display color, #RRGGBB."),
         Column("times", "integer", "Frequency: done this many times ..."),
         Column("per_days", "integer", "... in this many days (1 per 1 is daily)."),
         Column("archived", "boolean", "True if hidden from the app without being deleted."),
@@ -205,7 +205,7 @@ TABLES = {
         Column(
             "measured_in",
             "string",
-            "g (grams) or ml (millilitres; UCUM mL); nutrient columns are per 100 of these.",
+            "g (grams) or ml (milliliters; UCUM mL); nutrient columns are per 100 of these.",
         ),
         Column("serving_unit", "string", "The label's name for one piece, such as slices."),
         Column("serving_count", "number", "How many pieces make one serving."),
@@ -222,7 +222,7 @@ TABLES = {
         Column("food_id", "string", "The food (see foods); empty for a quick entry."),
         Column("quick", "boolean", "True for a quick entry: a name and nutrients typed directly."),
         Column("amount", "number", "How much was eaten, in measured_in units."),
-        Column("measured_in", "string", "g or ml (millilitres; UCUM mL)."),
+        Column("measured_in", "string", "g or ml (milliliters; UCUM mL)."),
         Column("unit_count", "number", "How many pieces, when entered in the food's serving unit."),
         Column("unit_name", "string", "The name of those pieces."),
         _NOTE,

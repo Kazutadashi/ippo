@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// A module's tile on the home screen, and labelled numbers.
+/// A module's tile on the home screen, and labeled numbers.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -8,7 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'section_card.dart';
 import 'value_text.dart';
 
-/// One labelled number, such as "Fat" and "6 g".
+/// One labeled number, such as "Fat" and "6 g".
 class TileDetail {
   /// Creates a detail.
   const TileDetail(this.value, {required this.label, this.badge});
@@ -36,7 +36,7 @@ class TileRow {
   final String value;
 
   /// Whether the number is a warning, such as calories over the limit:
-  /// it is then shown in the theme's error colour.
+  /// it is then shown in the theme's error color.
   final bool isWarning;
 }
 
@@ -52,7 +52,7 @@ const double tilePadding = 12;
 /// The least height of the mark's row, before text scaling: room for
 /// two small lines and a bar (Protein, "73 g", and its bar), the
 /// tallest mark. Every tile
-/// keeps the row, even without a mark, so the grey lines under it start
+/// keeps the row, even without a mark, so the gray lines under it start
 /// at the same height in every tile.
 const double _markRowHeight = 42;
 
@@ -68,7 +68,7 @@ const double _markRowHeight = 42;
 /// 3. the mark: one small picture, such as a dot per habit, in a row of
 ///    fixed height, or a short note in its place when there is nothing
 ///    to draw;
-/// 4. the rows: one or two rows of a grey label and a number, with the
+/// 4. the rows: one or two rows of a gray label and a number, with the
 ///    numbers lined up at the right edge, the usual always last ("Daily
 ///    avg (7 days)  1326 kcal").
 class HomeTileCard extends StatelessWidget {
@@ -190,7 +190,7 @@ class HomeTileCard extends StatelessWidget {
     );
   }
 
-  /// One row: the label in grey at the left, the number at the right
+  /// One row: the label in gray at the left, the number at the right
   /// edge, so numbers line up down the tile and across a row of tiles.
   Widget _row(TileRow row, TextTheme textTheme, ColorScheme colors) {
     return Padding(
@@ -277,11 +277,11 @@ class HomeTileCard extends StatelessWidget {
   }
 }
 
-/// Labelled numbers in equal columns, every one aligned left, with a
-/// small grey label above each value, such as Protein, Carbs and Fat.
-class LabelledValues extends StatelessWidget {
+/// Labeled numbers in equal columns, every one aligned left, with a
+/// small gray label above each value, such as Protein, Carbs and Fat.
+class LabeledValues extends StatelessWidget {
   /// Creates the columns for [details], at most four.
-  const LabelledValues({super.key, required this.details});
+  const LabeledValues({super.key, required this.details});
 
   /// The values and their labels.
   final List<TileDetail> details;
@@ -294,16 +294,16 @@ class LabelledValues extends StatelessWidget {
       children: [
         for (var index = 0; index < shown.length; index++) ...[
           if (index > 0) const SizedBox(width: Spacing.small),
-          Expanded(child: _LabelledValue(detail: shown[index])),
+          Expanded(child: _LabeledValue(detail: shown[index])),
         ],
       ],
     );
   }
 }
 
-/// One small grey label with its value under it.
-class _LabelledValue extends StatelessWidget {
-  const _LabelledValue({required this.detail});
+/// One small gray label with its value under it.
+class _LabeledValue extends StatelessWidget {
+  const _LabeledValue({required this.detail});
 
   final TileDetail detail;
 
@@ -348,7 +348,7 @@ class _LabelledValue extends StatelessWidget {
   }
 }
 
-/// A small rounded mark, such as `+2`, in the theme's accent colour.
+/// A small rounded mark, such as `+2`, in the theme's accent color.
 class _Badge extends StatelessWidget {
   const _Badge({required this.text});
 

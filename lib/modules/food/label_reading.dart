@@ -37,7 +37,7 @@ class LabelReading {
   final String? ingredients;
 
   /// Names in pasted JSON that Ippo does not know, so they were left
-  /// out, such as a misspelt nutrient. Shown, so nothing is dropped
+  /// out, such as a misspelled nutrient. Shown, so nothing is dropped
   /// silently.
   final List<String> unusedNames;
 

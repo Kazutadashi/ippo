@@ -44,7 +44,7 @@ const String saltKey = 'salt_g';
 const String sodiumKey = 'sodium_mg';
 
 /// How much salt (sodium chloride) holds a unit of sodium: salt is 2.5
-/// times the sodium, as EU labelling law counts it (Regulation (EU)
+/// times the sodium, as EU labeling law counts it (Regulation (EU)
 /// No 1169/2011, Annex I, point 11).
 const double saltPerSodium = 2.5;
 
@@ -63,7 +63,7 @@ const List<NutrientKind> allNutrientKinds = [
     'g',
     partOf: 'carbohydrates_g',
   ),
-  NutrientKind('fiber_g', 'Fibre', 'g'),
+  NutrientKind('fiber_g', 'Fiber', 'g'),
   NutrientKind('fat_g', 'Fat', 'g'),
   NutrientKind('saturated_fat_g', 'Saturated fat', 'g', partOf: 'fat_g'),
   NutrientKind(

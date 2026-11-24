@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /// The part of the settings screen for light or dark mode and the accent
-/// colour.
+/// color.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -12,7 +12,7 @@ import '../widgets/color_circles.dart';
 import '../widgets/color_wheel.dart';
 import '../widgets/section_card.dart';
 
-/// Lets the user pick light, dark or system mode, and an accent colour.
+/// Lets the user pick light, dark or system mode, and an accent color.
 class AppearanceSection extends StatelessWidget {
   /// Creates the section.
   const AppearanceSection({super.key, required this.appState});
@@ -33,35 +33,35 @@ class AppearanceSection extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
 
     final swatches = <Widget>[
-      // The phone's own colour comes first, when it has one.
+      // The phone's own color comes first, when it has one.
       if (systemAccent != null)
         ColorCircle(
           choice: AccentChoice(
             'System',
             accentAsShown(systemAccent, brightness, matchSystem: true),
           ),
-          purpose: 'accent colour',
+          purpose: 'accent color',
           isSelected: isSystemChosen,
           icon: Icons.smartphone,
           onTap: () => appState.setAccentColor(systemAccentSetting),
         ),
-      // Each colour as the app will show it in this mode (softer than the
-      // raw colour on dark), so what is tapped is what the app becomes.
+      // Each color as the app will show it in this mode (softer than the
+      // raw color on dark), so what is tapped is what the app becomes.
       for (final choice in accentChoices)
         ColorCircle(
           choice: AccentChoice(
             choice.name,
             accentAsShown(choice.color, brightness),
           ),
-          purpose: 'accent colour',
+          purpose: 'accent color',
           isSelected:
               !isSystemChosen && choice.color.toARGB32() == accent.toARGB32(),
           onTap: () => appState.setAccentColor(accentColorToHex(choice.color)),
         ),
-      // Any other colour, from a wheel.
+      // Any other color, from a wheel.
       CustomColorCircle(
         color: isSystemChosen || isPresetColor(accent) ? null : accent,
-        purpose: 'accent colour',
+        purpose: 'accent color',
         onPicked: (color) => appState.setAccentColor(accentColorToHex(color)),
         asShown: (color) => accentAsShown(color, brightness),
       ),
@@ -96,7 +96,7 @@ class AppearanceSection extends StatelessWidget {
           onSelectionChanged: (choice) =>
               appState.setThemeMode(choice.single.name),
         ),
-        // For OLED screens: true black instead of dark grey.
+        // For OLED screens: true black instead of dark gray.
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('True black in dark mode'),
@@ -137,11 +137,11 @@ class AppearanceSection extends StatelessWidget {
               appState.setClockStyle(choice.single ? '12h' : '24h'),
         ),
         const SizedBox(height: 20),
-        const FieldLabel('Accent colour'),
+        const FieldLabel('Accent color'),
         ColorCircleGrid(circles: swatches),
         if (systemAccent != null) ...[
           const SizedBox(height: 12),
-          const NoteText('The first colour follows your phone.'),
+          const NoteText('The first color follows your phone.'),
         ],
       ],
     );

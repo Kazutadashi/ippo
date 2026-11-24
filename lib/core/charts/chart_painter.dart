@@ -6,9 +6,9 @@
 ///
 /// The look follows the habits of scientific plots, kept calm for a small
 /// screen: the raw values are drawn faint and small, so the eye goes to
-/// the running mean drawn strong over them; every axis is labelled with
+/// the running mean drawn strong over them; every axis is labeled with
 /// round numbers; nothing is decorative. Everything is drawn in the
-/// accent colour and the theme's greys, as the rest of the app.
+/// accent color and the theme's grays, as the rest of the app.
 library;
 
 import 'dart:math' as math;
@@ -161,9 +161,9 @@ TextPainter _measure(String text, TextStyle style, TextScaler textScaler) {
   )..layout();
 }
 
-/// The colours a plot is drawn in, from the theme.
+/// The colors a plot is drawn in, from the theme.
 class ChartColors {
-  /// Creates the colours.
+  /// Creates the colors.
   const ChartColors({
     required this.data,
     required this.grid,
@@ -172,7 +172,7 @@ class ChartColors {
     required this.selection,
   });
 
-  /// Takes the colours from [scheme]: the accent for the data, greys for
+  /// Takes the colors from [scheme]: the accent for the data, grays for
   /// the rest.
   factory ChartColors.of(ColorScheme scheme) => ChartColors(
     data: scheme.primary,
@@ -182,7 +182,7 @@ class ChartColors {
     selection: scheme.onSurface,
   );
 
-  /// The data's colour: the values faint, the mean line full.
+  /// The data's color: the values faint, the mean line full.
   final Color data;
 
   /// Grid lines.
@@ -216,10 +216,10 @@ class ChartPainter extends CustomPainter {
   /// What to draw.
   final ChartPlot plot;
 
-  /// The colours to draw it in.
+  /// The colors to draw it in.
   final ChartColors colors;
 
-  /// The style of the axis labels (its colour is replaced).
+  /// The style of the axis labels (its color is replaced).
   final TextStyle labelStyle;
 
   /// How much larger text is shown.
@@ -263,7 +263,7 @@ class ChartPainter extends CustomPainter {
     );
   }
 
-  /// Grid lines across at each round value, labelled on the left.
+  /// Grid lines across at each round value, labeled on the left.
   void _paintValueAxis(Canvas canvas, ChartLayout layout) {
     final gridPaint = Paint()
       ..color = colors.grid

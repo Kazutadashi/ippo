@@ -84,7 +84,7 @@ class AppSettings {
   /// `system`, `light` or `dark`, or null for the default (system).
   final String? themeMode;
 
-  /// The accent colour as `#RRGGBB`, or null for the default.
+  /// The accent color as `#RRGGBB`, or null for the default.
   final String? accentColor;
 
   /// How times are shown: `24h` ("19:30") or `12h` ("7:30 pm"), or null
@@ -104,12 +104,13 @@ class AppSettings {
   bool get usesImperialUnits => units == 'imperial';
 
   /// The order habits are listed in: `added` (as they were added) or
-  /// `colour` (similar colours together), or null for the default
+  /// `color` (similar colors together), or null for the default
   /// (as added).
   final String? habitOrder;
 
-  /// Whether habits are listed by colour.
-  bool get sortsHabitsByColour => habitOrder == 'colour';
+  /// Whether habits are listed by color.
+  // The saved value stays 'colour', as written in existing settings files.
+  bool get sortsHabitsByColor => habitOrder == 'colour';
 
   /// Whether times are shown on a 12-hour clock.
   bool get uses12HourClock => clockStyle == '12h';

@@ -76,7 +76,7 @@ enum GoalKind {
   /// A most, such as fat or salt: going past it is going over.
   atMost('at_most'),
 
-  /// A least, such as protein or fibre: going past it is fine.
+  /// A least, such as protein or fiber: going past it is fine.
   atLeast('at_least');
 
   const GoalKind(this.name);
@@ -241,7 +241,7 @@ class BodyLog {
   /// The year of birth, or null if not given.
   final int? birthYear;
 
-  /// Height in centimetres, or null if not given.
+  /// Height in centimeters, or null if not given.
   final double? heightCm;
 
   /// Every weighing, including deleted ones, by date.

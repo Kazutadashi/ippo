@@ -302,7 +302,7 @@ class _ThisDeviceSection extends StatelessWidget {
 }
 
 /// A small window for typing a new device name. Closes with the name, or
-/// with nothing if cancelled.
+/// with nothing if canceled.
 class _RenameDialog extends StatefulWidget {
   const _RenameDialog({required this.currentName});
 

@@ -31,7 +31,7 @@ import java.util.concurrent.Executors
  *
  * Methods:
  * - `pickFolder()`: opens the folder picker. Returns the folder's URI as a
- *   string, or null if the user cancelled. Access to any previously chosen
+ *   string, or null if the user canceled. Access to any previously chosen
  *   folder is given back, so the app only ever holds access to one folder.
  * - `savedFolder()`: the folder chosen earlier, or null if there is none.
  *   Android itself remembers which folder access it granted, so the app
@@ -144,7 +144,7 @@ class StorageBridge(private val activity: Activity) : MethodChannel.MethodCallHa
 
         val folderUri = data?.data
         if (resultCode != Activity.RESULT_OK || folderUri == null) {
-            result.success(null) // The user cancelled. That is not an error.
+            result.success(null) // The user canceled. That is not an error.
             return
         }
         try {

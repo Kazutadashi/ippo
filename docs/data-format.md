@@ -46,7 +46,7 @@ This has a few useful effects:
 
 Four rules guide every module:
 
-1. **Record what happened, not a judgement.** Store "lights out at
+1. **Record what happened, not a judgment.** Store "lights out at
    23:40", not "went to bed on time: yes". Goals live separately and
    can change without changing history.
 2. **Everything has a stable id.** Entries point to the id of a habit,
@@ -182,7 +182,7 @@ Every event has these fields, in this order:
 | `recorded_at` | string | When the event was written, as a [timestamp](#timestamps). |
 | `device_id` | string | The id of the device that wrote the event. Always the same as the file name. |
 | `device_name` | string | The device's name at the time, chosen by the user, for example `"my-phone"`. Only for display. |
-| `app_version` | string, optional | The version of the app that wrote the event, for example `"0.1.0"`. Lets an analysis tell which app behaviour produced a value. Missing in events written before it was recorded. |
+| `app_version` | string, optional | The version of the app that wrote the event, for example `"0.1.0"`. Lets an analysis tell which app behavior produced a value. Missing in events written before it was recorded. |
 | `time_zone` | string, optional | The [IANA time zone](https://www.iana.org/time-zones) the device was set to, for example `"Asia/Tokyo"`. The offset in each timestamp gives the exact moment; the zone name also tells a daylight saving change from a trip. Missing when the device could not say. |
 | `module` | string | The module the event belongs to: `"habits"`, `"exercise"`, `"food"`, `"body"`, `"time_tracking"` or `"sleep"`. |
 | `type` | string | What happened, for example `"habit_created"`. Each module lists its types below. |
@@ -378,7 +378,7 @@ record a value for it.
 | `target` | object, optional | The goal. See below. If missing, any recorded value counts as done. |
 | `frequency` | object | How often the goal applies: `{"times": 1, "per_days": 1}` means once a day; `{"times": 3, "per_days": 7}` means three times a week; `{"times": 1, "per_days": 3}` means every 3 days. Whole numbers, `times` at least 1 and at most `per_days`, `per_days` at most 365; anything else is read as every day. Changed later with `habit_changed`. |
 | `description` | string, optional | What the habit means, in the user's words, such as what a short name stands for. The app shows it in the habit's form. Changed with `habit_changed` (`null` clears it). |
-| `color` | string, optional | A display colour, `"#RRGGBB"`. Missing or `null` means the app's accent colour. |
+| `color` | string, optional | A display color, `"#RRGGBB"`. Missing or `null` means the app's accent color. |
 | `archived` | boolean, optional | `true` hides the habit without deleting it. Usually set later with `habit_changed`. |
 
 **When a habit is due.** A habit is due on a day until it has been done
@@ -537,7 +537,7 @@ holds the same table and writes it into every export.
 | `carbohydrates_g` | carbohydrate, by difference | `g` | `CHOCDF` | 1005 (205) |
 | `sugars_g` | sugars, total (part of carbohydrates) | `g` | `SUGAR` | 2000 (269) |
 | `added_sugars_g` | added sugars (part of carbohydrates) | `g` | – | – |
-| `fiber_g` | dietary fibre, total | `g` | `FIBTG` | 1079 (291) |
+| `fiber_g` | dietary fiber, total | `g` | `FIBTG` | 1079 (291) |
 | `fat_g` | fat, total | `g` | `FAT` | 1004 (204) |
 | `saturated_fat_g` | saturated fatty acids (part of fat) | `g` | `FASAT` | 1258 (606) |
 | `monounsaturated_fat_g` | monounsaturated fatty acids (part of fat) | `g` | `FAMS` | 1292 (645) |
@@ -596,7 +596,7 @@ example, looks lower than it was.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `name` | string | For example `"Rolled oats"`. |
-| `measured_in` | string | `"g"` for grams or `"ml"` for millilitres. |
+| `measured_in` | string | `"g"` for grams or `"ml"` for milliliters. |
 | `nutrients_per_100` | object | Nutrients per 100 g or per 100 ml, using the fields above. |
 | `serving` | object, optional | The serving size from the label. See below. |
 | `ingredients` | string, optional | The ingredients, as written on the label. |
@@ -696,7 +696,7 @@ The `_changed` and `_deleted` events for starts and stops are named
 | --- | --- | --- |
 | `name` | string | For example `"Reading"`. |
 | `category` | string, optional | A group, for example `"Leisure"`, used to combine activities in charts. |
-| `color` | string, optional | A display colour, `"#RRGGBB"`. |
+| `color` | string, optional | A display color, `"#RRGGBB"`. |
 
 ### `activity_started`
 
@@ -826,7 +826,7 @@ before it; a missing field keeps the earlier value.
 | --- | --- | --- |
 | `sex` | string, optional | `"female"` or `"male"`; the BMR formula differs. |
 | `birth_year` | integer, optional | The year of birth, for the age. |
-| `height_cm` | number, optional | Height in centimetres. |
+| `height_cm` | number, optional | Height in centimeters. |
 
 ### `weight_recorded`
 
@@ -861,7 +861,7 @@ the reference amount the app otherwise compares against.
 | `date` | date | The first day it applies to. |
 | `nutrient` | string | The nutrient's field name (see "Nutrients"), such as `"fat_g"`. |
 | `amount` | number, optional | The amount a day, in the nutrient's unit. Missing means the goal was removed: the reference amount applies again. |
-| `kind` | string | `"at_most"` (a limit: more is going over, as for fat or salt) or `"at_least"` (a minimum: more is fine, as for protein or fibre). |
+| `kind` | string | `"at_most"` (a limit: more is going over, as for fat or salt) or `"at_least"` (a minimum: more is fine, as for protein or fiber). |
 
 As with the energy limit, the goal on a day is the one with the latest
 `date` on or before it (of two with the same `date`, the one recorded

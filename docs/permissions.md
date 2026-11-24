@@ -41,9 +41,9 @@ back its access to the old one. You can also remove the access in
 Android's settings for the app. The code for this is in
 `android/app/src/main/kotlin/org/ippo/ippo/StorageBridge.kt`.
 
-**System colours.** On Android 12 and later, Ippo reads the phone's
-accent colour so it can match the rest of the phone. This only reads a
-colour value; it needs no permission. The code is in
+**System colors.** On Android 12 and later, Ippo reads the phone's
+accent color so it can match the rest of the phone. This only reads a
+color value; it needs no permission. The code is in
 `android/app/src/main/kotlin/org/ippo/ippo/SystemColors.kt`.
 
 The main manifest (`android/app/src/main/AndroidManifest.xml`) has a

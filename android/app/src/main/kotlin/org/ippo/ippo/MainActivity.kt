@@ -11,7 +11,7 @@ import io.flutter.plugin.common.MethodChannel
  * The app's single Android screen. Flutter draws everything inside it.
  *
  * Its only extra job is connecting [StorageBridge] (files),
- * [SystemColors] (the phone's accent colour) and [SystemTimeZone] (the
+ * [SystemColors] (the phone's accent color) and [SystemTimeZone] (the
  * name of the phone's time zone) to the Dart code.
  */
 class MainActivity : FlutterActivity() {

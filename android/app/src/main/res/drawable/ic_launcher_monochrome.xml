@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- Ippo's launcher icon in one colour, for the themed icons of Android 13
+<!-- Ippo's launcher icon in one color, for the themed icons of Android 13
      and later: the system tints it. The moon and each ridge of steps are
      drawn side by side, not over each other, and the ridges grow fainter
-     with the distance, so the layers still show in a single colour. -->
+     with the distance, so the layers still show in a single color. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"

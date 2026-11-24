@@ -186,7 +186,7 @@ class _ChartRow extends StatelessWidget {
                     ChartSparkline(plot: plot),
                   ],
                   const SizedBox(width: Spacing.medium),
-                  // The latest mean, labelled, so the number is never a
+                  // The latest mean, labeled, so the number is never a
                   // guess. Both shrink a little rather than wrap.
                   SizedBox(
                     width: 76,

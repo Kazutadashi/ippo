@@ -451,7 +451,7 @@ class _DayEntryState extends State<_DayEntry> {
   }
 }
 
-/// A small "✓ Saved", in grey: everything shown is saved.
+/// A small "✓ Saved", in gray: everything shown is saved.
 class _SavedNote extends StatelessWidget {
   const _SavedNote();
 
@@ -556,7 +556,7 @@ class _LastNightCard extends StatelessWidget {
   }
 }
 
-/// A nap's icon: a lying figure on a soft circle in the accent colour.
+/// A nap's icon: a lying figure on a soft circle in the accent color.
 class _NapIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

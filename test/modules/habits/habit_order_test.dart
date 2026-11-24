@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Tests for [inHabitOrder]: as added, or by colour.
+/// Tests for [inHabitOrder]: as added, or by color.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -19,7 +19,7 @@ void main() {
   );
 
   final habits = [
-    habit('Grey', const Color(0xFF757575)),
+    habit('Gray', const Color(0xFF757575)),
     habit('Blue', const Color(0xFF1E88E5)),
     habit('Red', const Color(0xFFE53935)),
     habit('Accent', null),
@@ -31,16 +31,16 @@ void main() {
 
   test('as added, the order does not change', () {
     expect(
-      names(inHabitOrder(habits, byColour: false, accent: Colors.orange)),
+      names(inHabitOrder(habits, byColor: false, accent: Colors.orange)),
       names(habits),
     );
   });
 
-  test('by colour: around the wheel, greys last, ties as added', () {
+  test('by color: around the wheel, grays last, ties as added', () {
     expect(
-      names(inHabitOrder(habits, byColour: true, accent: Colors.orange)),
+      names(inHabitOrder(habits, byColor: true, accent: Colors.orange)),
       // The accent (orange) sorts as orange.
-      ['Red', 'Red too', 'Accent', 'Green', 'Blue', 'Grey'],
+      ['Red', 'Red too', 'Accent', 'Green', 'Blue', 'Gray'],
     );
   });
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// Picking any colour from a wheel, for when none of the preset colour
+/// Picking any color from a wheel, for when none of the preset color
 /// circles is right.
 library;
 
@@ -11,8 +11,8 @@ import 'package:material_ui/material_ui.dart';
 import '../theme.dart';
 import 'color_circles.dart';
 
-/// Opens a window with a colour wheel, starting at [initial]. Returns the
-/// chosen colour, or null if cancelled. Its preview shows the colour as
+/// Opens a window with a color wheel, starting at [initial]. Returns the
+/// chosen color, or null if canceled. Its preview shows the color as
 /// [asShown] turns it, as the app will show it.
 Future<Color?> showColorWheel(
   BuildContext context, {
@@ -25,9 +25,9 @@ Future<Color?> showColorWheel(
   );
 }
 
-/// The last circle in a row of colour circles: a rainbow that opens the
-/// colour wheel. When [color] (a colour not among the presets) is the
-/// chosen one, it shows that colour with a tick instead.
+/// The last circle in a row of color circles: a rainbow that opens the
+/// color wheel. When [color] (a color not among the presets) is the
+/// chosen one, it shows that color with a tick instead.
 class CustomColorCircle extends StatelessWidget {
   /// Creates the circle.
   const CustomColorCircle({
@@ -38,17 +38,17 @@ class CustomColorCircle extends StatelessWidget {
     required this.asShown,
   });
 
-  /// The chosen colour if it is a custom one, or null.
+  /// The chosen color if it is a custom one, or null.
   final Color? color;
 
-  /// What the colour is for, read out by screen readers.
+  /// What the color is for, read out by screen readers.
   final String purpose;
 
-  /// Called with the colour picked on the wheel.
+  /// Called with the color picked on the wheel.
   final ValueChanged<Color> onPicked;
 
-  /// Turns a picked colour into the one the app shows (see
-  /// [accentAsShown] and [habitColourAsShown]), so the circle and the
+  /// Turns a picked color into the one the app shows (see
+  /// [accentAsShown] and [habitColorAsShown]), so the circle and the
   /// wheel's preview match what the app will look like.
   final Color Function(Color) asShown;
 
@@ -66,16 +66,16 @@ class CustomColorCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final picked = color;
-    // The chosen colour as the app shows it.
+    // The chosen color as the app shows it.
     final chosen = picked == null ? null : asShown(picked);
     return Semantics(
-      label: 'Other $purpose: pick from a colour wheel',
+      label: 'Other $purpose: pick from a color wheel',
       selected: chosen != null,
       button: true,
       child: ColorSwatchButton(
         isSelected: chosen != null,
         onTap: () => _open(context),
-        // A rainbow until a custom colour is chosen.
+        // A rainbow until a custom color is chosen.
         swatch: chosen == null
             ? const BoxDecoration(gradient: SweepGradient(colors: _hueColors))
             : BoxDecoration(color: chosen),
@@ -110,13 +110,13 @@ const List<Color> _hueColors = [
 const double _wheelSide = 220;
 
 /// The wheel: hue goes around it, and strength (saturation) out from
-/// the pale centre to the rim. A slider below sets the brightness.
+/// the pale center to the rim. A slider below sets the brightness.
 class _ColorWheelDialog extends StatefulWidget {
   const _ColorWheelDialog({required this.initial, required this.asShown});
 
   final Color initial;
 
-  /// Turns the picked colour into the one the app shows, for the
+  /// Turns the picked color into the one the app shows, for the
   /// preview.
   final Color Function(Color) asShown;
 
@@ -127,15 +127,15 @@ class _ColorWheelDialog extends StatefulWidget {
 class _ColorWheelDialogState extends State<_ColorWheelDialog> {
   late HSVColor _color = HSVColor.fromColor(widget.initial);
 
-  /// Picks the colour under [position], a point in a wheel [side] wide.
-  /// A point outside the rim picks the colour at the rim.
+  /// Picks the color under [position], a point in a wheel [side] wide.
+  /// A point outside the rim picks the color at the rim.
   void _pickAt(Offset position, double side) {
     final radius = side / 2;
-    final fromCentre = position - Offset(radius, radius);
+    final fromCenter = position - Offset(radius, radius);
     // The angle, measured clockwise from the right, as the wheel is
     // drawn; from 0 to 360 degrees.
-    final degrees = (atan2(fromCentre.dy, fromCentre.dx) * 180 / pi) % 360;
-    final saturation = min(fromCentre.distance / radius, 1.0);
+    final degrees = (atan2(fromCenter.dy, fromCenter.dx) * 180 / pi) % 360;
+    final saturation = min(fromCenter.distance / radius, 1.0);
     setState(() {
       _color = _color.withHue(degrees).withSaturation(saturation);
     });
@@ -145,7 +145,7 @@ class _ColorWheelDialogState extends State<_ColorWheelDialog> {
   Widget build(BuildContext context) {
     final color = _color.toColor();
     return AlertDialog(
-      title: const Text('Pick a colour'),
+      title: const Text('Pick a color'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -179,7 +179,7 @@ class _ColorWheelDialogState extends State<_ColorWheelDialog> {
               Container(
                 width: 40,
                 height: 40,
-                // As the app will show it, not the raw colour.
+                // As the app will show it, not the raw color.
                 decoration: BoxDecoration(
                   color: widget.asShown(color),
                   shape: BoxShape.circle,
@@ -218,18 +218,18 @@ class _WheelPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final radius = size.width / 2;
-    final centre = Offset(radius, radius);
-    final circle = Rect.fromCircle(center: centre, radius: radius);
+    final center = Offset(radius, radius);
+    final circle = Rect.fromCircle(center: center, radius: radius);
     // Hues around the rim...
     canvas.drawCircle(
-      centre,
+      center,
       radius,
       Paint()
         ..shader = const SweepGradient(colors: _hueColors).createShader(circle),
     );
-    // ...fading to white at the centre...
+    // ...fading to white at the center...
     canvas.drawCircle(
-      centre,
+      center,
       radius,
       Paint()
         ..shader = const RadialGradient(
@@ -238,14 +238,14 @@ class _WheelPainter extends CustomPainter {
     );
     // ...and darkened by the brightness slider.
     canvas.drawCircle(
-      centre,
+      center,
       radius,
       Paint()..color = Color.fromRGBO(0, 0, 0, 1 - color.value),
     );
-    // The ring marking the chosen colour.
+    // The ring marking the chosen color.
     final angle = color.hue * pi / 180;
     final marker =
-        centre + Offset(cos(angle), sin(angle)) * radius * color.saturation;
+        center + Offset(cos(angle), sin(angle)) * radius * color.saturation;
     canvas
       ..drawCircle(
         marker,

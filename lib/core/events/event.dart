@@ -110,7 +110,7 @@ class Event {
 
   /// The version of the app that wrote the event, such as `0.1.0`, or
   /// null for events written before it was recorded. Lets an analysis
-  /// tell which app behaviour produced a value.
+  /// tell which app behavior produced a value.
   final String? appVersion;
 
   /// The IANA time zone the device was set to when the event was

@@ -147,7 +147,7 @@ void main() {
     });
 
     test(
-      'a colour is saved as #RRGGBB, and only real changes are written',
+      'a color is saved as #RRGGBB, and only real changes are written',
       () async {
         const orange = Color(0xFFFB8C00);
         final habitId = (await actions.createHabit('Read', color: orange)).id;
@@ -157,7 +157,7 @@ void main() {
         // Saving without changing anything writes nothing.
         expect(await actions.changeHabit(habit, 'Read', orange), isNull);
 
-        // Only the colour changed, so only the colour is written.
+        // Only the color changed, so only the color is written.
         final changed = await actions.changeHabit(habit, 'Read', null);
         expect(changed!.data['changes'], {'color': null});
         habit = (await logFromDisk()).habits[habitId]!;
@@ -165,7 +165,7 @@ void main() {
       },
     );
 
-    test('without a colour, a habit uses the accent colour', () async {
+    test('without a color, a habit uses the accent color', () async {
       final habitId = (await actions.createHabit('Read')).id;
       final habit = (await logFromDisk()).habits[habitId]!;
       final theme = ThemeData(colorSchemeSeed: Colors.teal);

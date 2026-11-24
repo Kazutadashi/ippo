@@ -99,7 +99,7 @@ Future<String?> savedAndroidFolder() async {
 
 /// Opens Android's folder picker so the user can choose the data folder.
 ///
-/// Returns the chosen folder's URI, or null if the user cancelled.
+/// Returns the chosen folder's URI, or null if the user canceled.
 /// Android remembers the permission, so the same folder keeps working
 /// after the app restarts. Throws [DataFolderException] on failure.
 Future<String?> pickAndroidFolder() async {

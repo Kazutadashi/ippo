@@ -1,7 +1,7 @@
 # Data principles
 
 Ippo exists to collect good longitudinal data: years of everyday
-observations that a person, a statistician or a researcher can analyse
+observations that a person, a statistician or a researcher can analyze
 with confidence. The screens matter, because data that is a chore to log
 is never logged, but **the data is the product**. Every change to the
 app is judged first by what it does to the data.
@@ -16,7 +16,7 @@ export years from now, and must be able to trust and understand every
 value without asking anyone.
 
 
-## 1. Record observations, not judgements
+## 1. Record observations, not judgments
 
 Store what happened ("went to bed at 23:40", "8 reps"), never a verdict
 ("on time", "good workout"). Goals, targets and scores are kept apart
@@ -35,7 +35,7 @@ A table that adds things up says whether its total is complete
 (`<nutrient>_complete`). Whether a logged day is *complete* (every
 meal, every set) cannot be known, so the data never claims it: it
 records what was logged and when (`logging_activity` in the Python
-package), and leaves the judgement to the analysis.
+package), and leaves the judgment to the analysis.
 
 ## 3. Raw values, fixed units, standard codes
 
@@ -44,7 +44,7 @@ package), and leaves the judgement to the analysis.
   codebook. Units are converted for display only.
 - Values that are copies at a moment (a food entry's nutrients) are
   copied, so editing the food later never rewrites past days.
-- Every measure that has a code in a recognised vocabulary carries it
+- Every measure that has a code in a recognized vocabulary carries it
   in the codebook: INFOODS and USDA FoodData Central for nutrients,
   LOINC for clinical measures, UCUM for units. A code is added only
   after checking it against the official source; an unconfirmed code is

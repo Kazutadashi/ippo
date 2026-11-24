@@ -18,7 +18,7 @@ import 'add_set_row.dart';
 /// table of sets, and the row to add one.
 ///
 /// The table says what every number is: a column per set ("Set 1",
-/// "Set 2"), a row for the day shown, and under it, in grey, the last
+/// "Set 2"), a row for the day shown, and under it, in gray, the last
 /// session before it, so it is plain whether the day went better.
 class ExerciseCard extends StatelessWidget {
   /// Creates the card.

@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/// The app's look: light or dark, and the accent colour the user chose.
+/// The app's look: light or dark, and the accent color the user chose.
 library;
 
 import 'package:material_ui/material_ui.dart';
 
-/// One accent colour the user can pick.
+/// One accent color the user can pick.
 class AccentChoice {
   /// Creates a choice named [name] with [color].
   const AccentChoice(this.name, this.color);
 
-  /// The colour's name, read out by screen readers.
+  /// The color's name, read out by screen readers.
   final String name;
 
-  /// The colour itself.
+  /// The color itself.
   final Color color;
 }
 
-/// The colours offered for the accent and for habits, around the colour
-/// wheel from red to pink, then brown and grey. Any other colour can be
+/// The colors offered for the accent and for habits, around the color
+/// wheel from red to pink, then brown and gray. Any other color can be
 /// picked from the wheel (see `color_wheel.dart`).
 const List<AccentChoice> accentChoices = [
   AccentChoice('Red', Color(0xFFE53935)),
@@ -36,26 +36,26 @@ const List<AccentChoice> accentChoices = [
   AccentChoice('Purple', Color(0xFF8E24AA)),
   AccentChoice('Pink', Color(0xFFD81B60)),
   AccentChoice('Brown', Color(0xFF6D4C41)),
-  AccentChoice('Grey', Color(0xFF757575)),
+  AccentChoice('Gray', Color(0xFF757575)),
 ];
 
 /// Whether [color] is one of [accentChoices].
 bool isPresetColor(Color color) =>
     accentChoices.any((choice) => choice.color.toARGB32() == color.toARGB32());
 
-/// The accent colour until the user picks one, when the phone has no
-/// system colour (Linux, or Android before version 12).
+/// The accent color until the user picks one, when the phone has no
+/// system color (Linux, or Android before version 12).
 const Color defaultAccentColor = Color(0xFF00897B);
 
-/// The saved accent setting meaning "use the phone's system colour".
+/// The saved accent setting meaning "use the phone's system color".
 const String systemAccentSetting = 'system';
 
-/// Works out which accent colour to use.
+/// Works out which accent color to use.
 ///
 /// [savedSetting] is the setting from `settings.json`: `system`, a
-/// `#RRGGBB` colour, or null if never set. [systemAccent] is the phone's
-/// own accent, or null if it has none. Until the user picks a colour,
-/// the phone's colour is used, so Ippo matches the rest of the phone.
+/// `#RRGGBB` color, or null if never set. [systemAccent] is the phone's
+/// own accent, or null if it has none. Until the user picks a color,
+/// the phone's color is used, so Ippo matches the rest of the phone.
 Color chooseAccentColor(String? savedSetting, Color? systemAccent) {
   final wantsSystem =
       savedSetting == null || savedSetting == systemAccentSetting;
@@ -65,21 +65,21 @@ Color chooseAccentColor(String? savedSetting, Color? systemAccent) {
   return parseAccentColor(savedSetting);
 }
 
-/// Returns true if the system colour is in use (see [chooseAccentColor]).
+/// Returns true if the system color is in use (see [chooseAccentColor]).
 bool usesSystemAccent(String? savedSetting, Color? systemAccent) {
   final wantsSystem =
       savedSetting == null || savedSetting == systemAccentSetting;
   return wantsSystem && systemAccent != null;
 }
 
-/// Matches a colour written as `#RRGGBB`.
+/// Matches a color written as `#RRGGBB`.
 final RegExp _hexColorPattern = RegExp(r'^#[0-9A-Fa-f]{6}$');
 
-/// Reads a colour saved by [accentColorToHex]. Returns
-/// [defaultAccentColor] if [hex] is missing or not a `#RRGGBB` colour.
+/// Reads a color saved by [accentColorToHex]. Returns
+/// [defaultAccentColor] if [hex] is missing or not a `#RRGGBB` color.
 Color parseAccentColor(String? hex) => parseHexColor(hex) ?? defaultAccentColor;
 
-/// Reads a colour written as `#RRGGBB`. Returns null if [hex] is not
+/// Reads a color written as `#RRGGBB`. Returns null if [hex] is not
 /// one, for example missing or from a tool that wrote something else.
 Color? parseHexColor(Object? hex) {
   if (hex is! String || !_hexColorPattern.hasMatch(hex)) {
@@ -106,21 +106,21 @@ ThemeMode parseThemeMode(String? name) {
   return ThemeMode.system;
 }
 
-/// Builds the app's theme from the [accent] colour, light or dark.
+/// Builds the app's theme from the [accent] color, light or dark.
 ///
-/// Flutter works out a full set of colours from the accent: a main
-/// colour for buttons, plus "container" colours for other things. Left
+/// Flutter works out a full set of colors from the accent: a main
+/// color for buttons, plus "container" colors for other things. Left
 /// alone, those come out as several different shades (for example
 /// bright orange, pale peach and brown), which looks unrelated. So every
-/// accent-coloured part uses the one main colour here, and highlights
+/// accent-colored part uses the one main color here, and highlights
 /// such as the selected tab use a light tint of it.
 ///
-/// The main colour is the accent adjusted for light or dark mode, so
+/// The main color is the accent adjusted for light or dark mode, so
 /// text on it stays readable. "Fidelity" keeps it close to the chosen
-/// colour. See `lib/core/widgets/section_card.dart` for the rest of the
+/// color. See `lib/core/widgets/section_card.dart` for the rest of the
 /// look.
 ///
-/// With [matchSystem], the colours are worked out the way Android works
+/// With [matchSystem], the colors are worked out the way Android works
 /// out its own ("tonal spot"), so they match the rest of the phone.
 ///
 /// In dark mode, text is pure white rather than the theme's tinted
@@ -128,7 +128,7 @@ ThemeMode parseThemeMode(String? name) {
 /// deep navy, the night sky of the Home landscape, so every screen
 /// belongs with it and cards stand out from the page. With [trueBlack],
 /// the background is true black instead (which saves power on OLED
-/// screens), and cards are the darkest greys that still show their
+/// screens), and cards are the darkest grays that still show their
 /// edges.
 ThemeData buildTheme(
   Color accent,
@@ -145,7 +145,7 @@ ThemeData buildTheme(
   );
   final main = generated.primary;
   final onMain = generated.onPrimary;
-  // A light tint of the main colour over the background.
+  // A light tint of the main color over the background.
   final tint = Color.alphaBlend(
     main.withValues(alpha: 0.25),
     generated.surface,
@@ -154,7 +154,7 @@ ThemeData buildTheme(
   // The dark surfaces, page first, then each card level a step lighter.
   final darkSurfaces = trueBlack ? _trueBlackSurfaces : _nightSurfaces;
   final colorScheme = generated.copyWith(
-    // Main text pure white in dark mode; grey text stays grey.
+    // Main text pure white in dark mode; gray text stays gray.
     onSurface: isDark ? Colors.white : null,
     surface: isDark ? darkSurfaces[0] : null,
     surfaceContainerLowest: isDark ? darkSurfaces[1] : null,
@@ -194,7 +194,7 @@ ThemeData buildTheme(
       // and example ("2 slices") show before anything is typed.
       floatingLabelBehavior: FloatingLabelBehavior.always,
     ),
-    // Choices (Female/Male, Grams/Millilitres): the chosen one filled
+    // Choices (Female/Male, Grams/Milliliters): the chosen one filled
     // with the accent tint and its label in the accent, the others
     // plain with a quieter label, so the choice is what stands out.
     segmentedButtonTheme: SegmentedButtonThemeData(
@@ -229,10 +229,10 @@ ThemeData buildTheme(
     chipTheme: ChipThemeData(backgroundColor: tint, side: BorderSide.none),
     // A slightly lower title bar than Material's 64, so more of each
     // screen is content; the same on every screen.
-    // It also keeps the page's colour when content scrolls under it:
-    // Material would switch it to a lighter grey, which looks like a
+    // It also keeps the page's color when content scrolls under it:
+    // Material would switch it to a lighter gray, which looks like a
     // stray box (on the Habits grid in landscape, for example). A plain
-    // colour here is used whether or not anything is under it.
+    // color here is used whether or not anything is under it.
     appBarTheme: AppBarTheme(
       toolbarHeight: 52,
       backgroundColor: colorScheme.surface,
@@ -254,7 +254,7 @@ const List<Color> _nightSurfaces = [
   Color(0xFF243148),
 ];
 
-/// The true-black surfaces: a black page, and the darkest greys that
+/// The true-black surfaces: a black page, and the darkest grays that
 /// still show a card's edge.
 const List<Color> _trueBlackSurfaces = [
   Colors.black,
@@ -293,12 +293,12 @@ TextTheme _withTabularDigits(TextTheme textTheme) {
   );
 }
 
-/// The accent colour as the app really shows it, for the accent [seed]
+/// The accent color as the app really shows it, for the accent [seed]
 /// in light or dark mode ([brightness]). [buildTheme] does not use the
-/// chosen colour as it is: it turns it into a shade that reads well in
-/// that mode (softer on dark). So colour swatches show this, and what is
+/// chosen color as it is: it turns it into a shade that reads well in
+/// that mode (softer on dark). So color swatches show this, and what is
 /// tapped is what the app looks like. With [matchSystem], as Android
-/// works out its own colours (for the phone's system colour).
+/// works out its own colors (for the phone's system color).
 Color accentAsShown(
   Color seed,
   Brightness brightness, {
@@ -321,9 +321,9 @@ Color accentAsShown(
 /// work them out again on every redraw.
 final Map<(int, Brightness, bool), Color> _shownAccents = {};
 
-/// A habit colour as the app really shows it in [theme]: made readable
+/// A habit color as the app really shows it in [theme]: made readable
 /// on the cards (see [readableOn]). Swatches for habits show this.
-Color habitColourAsShown(Color color, ThemeData theme) =>
+Color habitColorAsShown(Color color, ThemeData theme) =>
     readableOn(color, theme.colorScheme.surfaceContainer);
 
 /// The contrast that marks and large text need against their background
@@ -337,9 +337,9 @@ const double textContrast = 4.5;
 /// [color], made only as much lighter or darker as it takes to stand out
 /// against [background] by at least [minimum]: [readableContrast] (3:1)
 /// for marks and large text, [textContrast] (4.5:1) for ordinary text. Its hue stays,
-/// so a habit's colour is still its own: on a light card a yellow
+/// so a habit's color is still its own: on a light card a yellow
 /// becomes a deeper yellow, on a dark card a navy becomes a brighter
-/// blue. A colour that already stands out is returned as it is.
+/// blue. A color that already stands out is returned as it is.
 Color readableOn(
   Color color,
   Color background, {
@@ -359,7 +359,7 @@ Color readableOn(
   return hsl.toColor();
 }
 
-/// How much two colours differ in brightness, from 1 (the same) to 21
+/// How much two colors differ in brightness, from 1 (the same) to 21
 /// (black on white), as WCAG defines it.
 double contrastRatio(Color first, Color second) {
   final a = first.computeLuminance();

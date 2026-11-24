@@ -193,11 +193,11 @@ class InfoValue extends StatelessWidget {
   }
 }
 
-/// Information that may be long, such as a folder path: a small grey
+/// Information that may be long, such as a folder path: a small gray
 /// label above the text, which wraps instead of shrinking.
 ///
 /// With [isSelectable], the text can be selected and copied, which helps
-/// for ids and paths. With [isSmallPrint], it is small and grey, for
+/// for ids and paths. With [isSmallPrint], it is small and gray, for
 /// details such as a long id that few people need to read.
 class InfoText extends StatelessWidget {
   /// Creates the information block.
@@ -248,7 +248,7 @@ class InfoText extends StatelessWidget {
   }
 }
 
-/// A small grey label above a control, such as "Theme" above a choice
+/// A small gray label above a control, such as "Theme" above a choice
 /// of light or dark.
 class FieldLabel extends StatelessWidget {
   /// Creates the label.

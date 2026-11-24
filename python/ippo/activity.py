@@ -5,7 +5,7 @@ studying missing data.
 Whether a day's data is complete cannot be known: a day with one meal
 logged may be a day of one meal, or a day the rest was not written down.
 This table does not guess. It records what can be known, so an analysis
-can model logging behaviour itself: how many events were written about
+can model logging behavior itself: how many events were written about
 each day and module, when the first and last were written, and how many
 days after the day the first one came (logging from memory, days later,
 is less reliable than logging as it happens).

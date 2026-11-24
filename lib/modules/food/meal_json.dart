@@ -5,7 +5,7 @@
 ///
 /// Each food is written exactly as for "Fill in from a label" (see
 /// `label_json.dart` and `docs/food-labels.md`), plus `amount`: how much
-/// was eaten, in grams (or millilitres for a drink):
+/// was eaten, in grams (or milliliters for a drink):
 ///
 /// ```json
 /// {
@@ -223,7 +223,7 @@ I will send photos of nutrition labels and how much I ate of each food. Turn the
 
 Rules:
 - One entry in "foods" per food I ate, in the order I list them.
-- "amount": how much I ate of that food, in its measured_in units (grams, or millilitres for drinks), as a plain number.
+- "amount": how much I ate of that food, in its measured_in units (grams, or milliliters for drinks), as a plain number.
 - "time": when I ate, as HH:MM in 24 hours, only if I tell you; otherwise leave it out.
 $oneFood''';
 }

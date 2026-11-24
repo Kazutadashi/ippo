@@ -20,7 +20,7 @@ import '../habit_frequency.dart';
 import '../habit_log.dart';
 import '../habit_marks.dart';
 
-/// The form for a habit: its name, how often, and its colour, with a
+/// The form for a habit: its name, how often, and its color, with a
 /// preview of how it will look in the grid.
 class HabitFormScreen extends StatefulWidget {
   /// Creates the form for a new habit, or for changing [habit].
@@ -46,7 +46,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
     text: widget.habit?.description ?? '',
   );
 
-  /// The picked colour, or null for the accent colour.
+  /// The picked color, or null for the accent color.
   late Color? _color = widget.habit?.color;
 
   /// How often, when one of the presets is chosen; null when "Other" is.
@@ -151,35 +151,35 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
     );
   }
 
-  /// "Default" (the accent colour) first, then the same colours as the
-  /// accent colours in Settings, then any colour from a wheel.
+  /// "Default" (the accent color) first, then the same colors as the
+  /// accent colors in Settings, then any color from a wheel.
   List<Widget> _colorCircles(BuildContext context) {
     final picked = _color?.toARGB32();
     return [
       ColorCircle(
         choice: AccentChoice('Default', Theme.of(context).colorScheme.primary),
-        purpose: 'habit colour, the same as the accent colour',
+        purpose: 'habit color, the same as the accent color',
         icon: Icons.auto_awesome,
         isSelected: picked == null,
         onTap: () => setState(() => _color = null),
       ),
-      // Each colour as it will show on the cards, not the raw colour.
+      // Each color as it will show on the cards, not the raw color.
       for (final choice in accentChoices)
         ColorCircle(
           choice: AccentChoice(
             choice.name,
-            habitColourAsShown(choice.color, Theme.of(context)),
+            habitColorAsShown(choice.color, Theme.of(context)),
           ),
-          purpose: 'habit colour',
+          purpose: 'habit color',
           isSelected: picked == choice.color.toARGB32(),
           onTap: () => setState(() => _color = choice.color),
         ),
-      // Any other colour, from a wheel.
+      // Any other color, from a wheel.
       CustomColorCircle(
         color: _color == null || isPresetColor(_color!) ? null : _color,
-        purpose: 'habit colour',
+        purpose: 'habit color',
         onPicked: (color) => setState(() => _color = color),
-        asShown: (color) => habitColourAsShown(color, Theme.of(context)),
+        asShown: (color) => habitColorAsShown(color, Theme.of(context)),
       ),
     ];
   }
@@ -301,7 +301,7 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
               ProblemText(_frequencyProblem!),
             ],
             const SizedBox(height: 20),
-            const FieldLabel('Colour'),
+            const FieldLabel('Color'),
             ColorCircleGrid(circles: _colorCircles(context)),
             const SizedBox(height: 20),
             const FieldLabel('Preview'),
@@ -403,7 +403,7 @@ class _Option extends StatelessWidget {
   }
 }
 
-/// The habit as it will look in the grid: its name in its colour, how
+/// The habit as it will look in the grid: its name in its color, how
 /// often under it, and four days to tap through ✓, ✗ and nothing, as in
 /// the grid. Only a preview: nothing here is saved.
 class _HabitPreview extends StatefulWidget {
@@ -416,7 +416,7 @@ class _HabitPreview extends StatefulWidget {
   /// The name typed so far; empty shows the example name.
   final String name;
 
-  /// The picked colour, or null for the accent.
+  /// The picked color, or null for the accent.
   final Color? color;
 
   /// How often, or null while "Other" holds no valid frequency.
@@ -472,7 +472,7 @@ class _HabitPreviewState extends State<_HabitPreview> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
-    // A habit that is never saved, only to get its colours.
+    // A habit that is never saved, only to get its colors.
     final habit = Habit(
       id: '',
       name: widget.name.isEmpty ? 'Read 10 pages' : widget.name,
@@ -542,7 +542,7 @@ class _PreviewDay extends StatelessWidget {
   /// chain held around it), so it shows as fine.
   final bool isCovered;
 
-  /// The habit's colour.
+  /// The habit's color.
   final Color color;
 
   final VoidCallback onTap;

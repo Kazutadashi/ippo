@@ -43,7 +43,7 @@ enum SkyPhase {
   }
 }
 
-/// The colours of one sky and its land.
+/// The colors of one sky and its land.
 class _Palette {
   const _Palette({
     required this.sky,
@@ -246,12 +246,12 @@ class _SkyPainter extends CustomPainter {
 
     // The sun or moon, above the range, right of the greeting and left
     // of the gear, so it never sits behind either.
-    final lightCentre = Offset(
+    final lightCenter = Offset(
       w * (0.58 + random.nextDouble() * 0.2),
       y(palette.isSun ? 0.02 : -0.06),
     );
     final radius = land * 0.13;
-    _stars(canvas, size, Random(seed + 1), lightCentre, radius * 1.8);
+    _stars(canvas, size, Random(seed + 1), lightCenter, radius * 1.8);
     // A shooting star every night and every dusk.
     if (phase == SkyPhase.night || phase == SkyPhase.dusk) {
       _shootingStar(canvas, size, Random(seed + 2));
@@ -262,7 +262,7 @@ class _SkyPainter extends CustomPainter {
       // so the mountains made from the numbers after it keep their shape.
       random.nextInt(3);
     }
-    _sunOrMoon(canvas, lightCentre, radius);
+    _sunOrMoon(canvas, lightCenter, radius);
     if (phase == SkyPhase.day || phase == SkyPhase.dawn) {
       _birds(canvas, size, Random(seed + 3), clearTop * 0.8);
     }
@@ -277,7 +277,7 @@ class _SkyPainter extends CustomPainter {
       w,
       y,
       land,
-      lightCentre.dx,
+      lightCenter.dx,
       ridgeBase: y(0.60),
       ridgeHeight: land * 0.46,
       foot: y(0.80),
@@ -292,7 +292,7 @@ class _SkyPainter extends CustomPainter {
       w,
       y,
       land,
-      lightCentre.dx,
+      lightCenter.dx,
       ridgeBase: y(0.66),
       ridgeHeight: land * 0.56,
       foot: y(0.88),
@@ -334,7 +334,7 @@ class _SkyPainter extends CustomPainter {
     _nearTrees(canvas, Random(seed + 6), w, hill.groundAt, land);
 
     // Fade into the page, so the cards below start on plain ground.
-    // It reaches the plain page colour a little before the bottom and
+    // It reaches the plain page color a little before the bottom and
     // runs one pixel past it, so no sliver of dark ground shows at the
     // edge when the height falls between two screen pixels.
     final fade = Rect.fromLTRB(0, y(0.74), w, h + 1);
@@ -354,12 +354,12 @@ class _SkyPainter extends CustomPainter {
   /// summits. The mountains are bare rock, with snow only on the tops,
   /// above a ragged snowline, so the tallest peaks carry the most. Each
   /// mountain's face turned from the light is in shadow (darker rock,
-  /// grey-blue snow), and haze lies at its foot. [lightX] is where the
+  /// gray-blue snow), and haze lies at its foot. [lightX] is where the
   /// sun or moon is across the view.
   ///
   /// The ridge rises up to [ridgeHeight] above [ridgeBase], and the
   /// mountains reach down to [foot]. [distance], from 0 to 1, blends
-  /// every colour toward the sky at the horizon: 0 for the near range,
+  /// every color toward the sky at the horizon: 0 for the near range,
   /// more for one farther away.
   void _range(
     Canvas canvas,
@@ -485,7 +485,7 @@ class _SkyPainter extends CustomPainter {
     return faces;
   }
 
-  /// Each summit of [ridge] (higher than both neighbours: a smaller y)
+  /// Each summit of [ridge] (higher than both neighbors: a smaller y)
   /// with the valley that follows it, as point indexes.
   static List<(int, int)> _faces(List<Offset> ridge) {
     final faces = <(int, int)>[];
@@ -536,7 +536,7 @@ class _SkyPainter extends CustomPainter {
   }
 
   /// The hill we look out from: a broad, rounded brow across the bottom
-  /// of the view, highest a little off centre and falling away to both
+  /// of the view, highest a little off center and falling away to both
   /// sides. The land beyond it is lower, so its top hides the near part
   /// of the valley. Returns its shape and, for any x, the height of its
   /// top there, so trees can stand on it.
@@ -707,7 +707,7 @@ class _SkyPainter extends CustomPainter {
     final massifs = [
       for (var index = 0; index < 2 + random.nextInt(3); index++)
         (
-          centre: random.nextDouble(),
+          center: random.nextDouble(),
           spread: 0.12 + random.nextDouble() * 0.18,
           size: 0.6 + random.nextDouble() * 0.4,
         ),
@@ -720,7 +720,7 @@ class _SkyPainter extends CustomPainter {
       // range never drops below a third, so it runs on unbroken.
       var shape = 0.35;
       for (final massif in massifs) {
-        final distance = (x - massif.centre) / massif.spread;
+        final distance = (x - massif.center) / massif.spread;
         shape = max(shape, massif.size * exp(-distance * distance));
       }
       // The detail, from 0 (lowest) to 1 (highest), adds the summits.
@@ -861,14 +861,14 @@ class _SkyPainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    final centre = Offset(
+    final center = Offset(
       size.width * (0.15 + random.nextDouble() * 0.3),
       top + random.nextDouble() * 10,
     );
     final count = 2 + random.nextInt(3);
     for (var bird = 0; bird < count; bird++) {
       final at =
-          centre + Offset(bird * 11.0, (bird.isEven ? 0 : 5) + bird * 2.0);
+          center + Offset(bird * 11.0, (bird.isEven ? 0 : 5) + bird * 2.0);
       final span = 3.5 + random.nextDouble() * 1.5;
       canvas.drawPath(
         Path()
@@ -892,25 +892,25 @@ class _SkyPainter extends CustomPainter {
 
   /// The sun (a soft glow) or the moon (a glow, a shade for roundness and
   /// faint craters for texture).
-  void _sunOrMoon(Canvas canvas, Offset centre, double radius) {
+  void _sunOrMoon(Canvas canvas, Offset center, double radius) {
     final light = palette.light;
     canvas
       ..drawCircle(
-        centre,
+        center,
         radius * 2.0,
         Paint()..color = light.withValues(alpha: 0.07),
       )
       ..drawCircle(
-        centre,
+        center,
         radius * 1.45,
         Paint()..color = light.withValues(alpha: 0.12),
       )
-      ..drawCircle(centre, radius, Paint()..color = light);
+      ..drawCircle(center, radius, Paint()..color = light);
     if (palette.isSun) {
       return;
     }
     canvas.drawCircle(
-      centre + Offset(radius * 0.25, radius * 0.2),
+      center + Offset(radius * 0.25, radius * 0.2),
       radius * 0.94,
       Paint()..color = const Color(0xFFB9B29C).withValues(alpha: 0.2),
     );
@@ -924,7 +924,7 @@ class _SkyPainter extends CustomPainter {
     ];
     for (final (dx, dy, size, opacity) in craters) {
       canvas.drawCircle(
-        centre + Offset(dx * radius, dy * radius),
+        center + Offset(dx * radius, dy * radius),
         size * radius,
         Paint()..color = const Color(0xFF8F8A78).withValues(alpha: opacity),
       );

@@ -317,7 +317,7 @@ List<DateTick> dateTicks(DateTime first, DateTime last) {
         !month.isAfter(last);
         month = DateTime(month.year, month.month + 1)
       )
-        // Counted from January, so the same months are labelled each year.
+        // Counted from January, so the same months are labeled each year.
         if ((month.month - 1) % monthsApart == 0)
           DateTick(month, _monthLabel(month)),
     ];

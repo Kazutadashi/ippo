@@ -12,7 +12,7 @@ import 'habit.dart';
 import 'habit_frequency.dart';
 import 'habit_log.dart';
 
-/// One dot per habit, in the habit's own colour: filled when done, a ring
+/// One dot per habit, in the habit's own color: filled when done, a ring
 /// when not marked yet, a faint ring when marked not done, and a tiny dot
 /// on a day it is not due (a habit not meant for every day, waiting for
 /// its next turn).
@@ -136,7 +136,7 @@ const int _rowLimit = 4;
 /// spacing of six instead of spreading across the whole tile.
 const int _fewestPlaces = 6;
 
-/// One habit's dot: filled in its colour when done, a ring of it when not
+/// One habit's dot: filled in its color when done, a ring of it when not
 /// marked yet, a faint ring when marked not done, and a tiny dot when it
 /// is not due that day.
 class _Dot extends StatelessWidget {
@@ -151,7 +151,7 @@ class _Dot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Waiting for its next turn and not done: a tiny dot, centred.
+    // Waiting for its next turn and not done: a tiny dot, centered.
     if (!isDue && mark != DayMark.done) {
       return Center(
         child: FractionallySizedBox(
@@ -168,7 +168,7 @@ class _Dot extends StatelessWidget {
     }
     // Done is filled; the others are only a ring, so done and not done
     // differ in shape, not only in how pale they are: easy to tell apart
-    // at a glance, also with weak eyesight or colour blindness.
+    // at a glance, also with weak eyesight or color blindness.
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
@@ -195,7 +195,7 @@ class BoldCheck extends StatelessWidget {
   /// The width and height.
   final double size;
 
-  /// The colour, such as the habit's own.
+  /// The color, such as the habit's own.
   final Color color;
 
   @override
@@ -234,8 +234,8 @@ class _CheckPainter extends CustomPainter {
 
 /// The mark for a day marked not done that the habit's frequency still
 /// covers, because the chain held around it (see
-/// [HabitFrequency.coversDay]): a small dot in the habit's colour. Quiet,
-/// not a ✓, so it never looks like something to tick, and not the grey
+/// [HabitFrequency.coversDay]): a small dot in the habit's color. Quiet,
+/// not a ✓, so it never looks like something to tick, and not the gray
 /// ✗ of a day that broke the chain.
 class CoveredMark extends StatelessWidget {
   /// Creates the mark for a grid whose marks are [size] wide, in the
@@ -245,7 +245,7 @@ class CoveredMark extends StatelessWidget {
   /// The size of the other marks, such as a ✓; the dot is half of it.
   final double size;
 
-  /// The habit's colour.
+  /// The habit's color.
   final Color color;
 
   @override

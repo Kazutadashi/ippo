@@ -47,11 +47,11 @@ String formatNutrientAmount(double amount, String unit) {
   return '$number $unit';
 }
 
-/// A thin bar as full as [share], in the accent colour on a pale track.
+/// A thin bar as full as [share], in the accent color on a pale track.
 /// Past 1 it is full; for a most ([isLimit], such as fat or salt) it
-/// then turns red, the theme's colour for problems, so going over shows
-/// at a glance. For a least (protein, fibre) more is fine: it stays in
-/// the accent colour.
+/// then turns red, the theme's color for problems, so going over shows
+/// at a glance. For a least (protein, fiber) more is fine: it stays in
+/// the accent color.
 class ShareBar extends StatelessWidget {
   /// Creates the bar.
   const ShareBar({
@@ -104,7 +104,7 @@ class ShareBar extends StatelessWidget {
   }
 }
 
-/// Nutrients side by side in equal columns: a small grey label, the
+/// Nutrients side by side in equal columns: a small gray label, the
 /// amount, and a thin bar of how much of the daily amount it is. With
 /// [showsReference], "of 50 g" under each bar says what full means.
 class NutrientBars extends StatelessWidget {

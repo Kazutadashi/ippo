@@ -95,11 +95,11 @@ weeks = codes.groupby(last_year.index.to_period("W")).apply(
     lambda week: week.set_axis(week.index.weekday).reindex(range(7))
 ).unstack().T
 figure, axis = plt.subplots(figsize=(11, 2.4))
-colours = matplotlib.colors.ListedColormap(["#e9ecef", "#ffa8a8", "#2f9e44"])
-axis.imshow(weeks, aspect="auto", cmap=colours, vmin=0, vmax=2)
+colors = matplotlib.colors.ListedColormap(["#e9ecef", "#ffa8a8", "#2f9e44"])
+axis.imshow(weeks, aspect="auto", cmap=colors, vmin=0, vmax=2)
 axis.set_yticks(range(7), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
 axis.set_xticks([])
-axis.set_title(f'"{habit}", last year: green done, red said no, grey nothing recorded')
+axis.set_title(f'"{habit}", last year: green done, red said no, gray nothing recorded')
 figure.tight_layout()
 figure.savefig(out / "3_habit_calendar.png", dpi=110)
 

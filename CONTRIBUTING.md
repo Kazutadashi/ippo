@@ -35,6 +35,12 @@ security problems have nowhere to hide.
   `json_serializable`). Write the code by hand so readers can see it.
 - Prefer a few extra lines that are clear over a short line that is not.
 
+### Spell it the American way
+- Use American English in code, comments, docs and on screen: `color`,
+  `gray`, `center`, `fiber`, `analyze`. Text that quotes something real
+  (an EU label's "Fibre") and values already saved in data files keep
+  their own spelling.
+
 ### Name things well
 - Use full, descriptive names: `completedHabits`, not `ch` or `cHabs`.
 - Functions are named for what they do: `loadEventsFromFolder()`.
@@ -87,7 +93,7 @@ Features (habits, calisthenics, meals, ...) are **modules**.
 
 Every screen follows the rules in [`docs/design.md`](docs/design.md):
 what fields, information and buttons look like, where actions go, how
-lists and colours work, and how to check a screen. Build screens from
+lists and colors work, and how to check a screen. Build screens from
 the pieces in `lib/core/widgets/section_card.dart`, and keep
 `test/screens_fit_test.dart` passing when you add a module.
 

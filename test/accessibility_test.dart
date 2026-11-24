@@ -4,7 +4,7 @@
 // light and dark mode, with the demo data loaded:
 //
 // * tap targets at least 48 × 48 (Android's guidance);
-// * every tap target labelled for screen readers;
+// * every tap target labeled for screen readers;
 // * text contrast at least 4.5:1 (3:1 for large text), as WCAG 2.2 AA asks;
 // * no layout cut off with text 1.5 and 2 times as large.
 //
@@ -130,7 +130,7 @@ void main() {
         semantics.dispose();
       });
 
-      testWidgets('$name: tap targets are labelled', (tester) async {
+      testWidgets('$name: tap targets are labeled', (tester) async {
         final semantics = tester.ensureSemantics();
         await showScreen(tester, entry.value, brightness: brightness);
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));

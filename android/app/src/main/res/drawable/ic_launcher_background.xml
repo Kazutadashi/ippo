@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- The back of Ippo's launcher icon: the Home header's night sky, its
-     stars and the rising moon, in the header's colours
+     stars and the rising moon, in the header's colors
      (lib/core/widgets/sky_header.dart). The steps in front are
-     ic_launcher_foreground.xml. Flat colours only. The source drawing is
+     ic_launcher_foreground.xml. Flat colors only. The source drawing is
      docs/artwork/launcher-icon.svg. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"

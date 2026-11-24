@@ -108,7 +108,7 @@ class _FoodDiaryScreenState extends State<FoodDiaryScreen> with FollowsToday {
 
   /// One meal's row: tap it to change it, or swipe it left to remove
   /// it. The food's name stands out; its time and amount are smaller and
-  /// grey under it; its energy sits on the right, in one column, so it is
+  /// gray under it; its energy sits on the right, in one column, so it is
   /// easy to scan.
   Widget _entryRow(FoodEntry entry) {
     final textTheme = Theme.of(context).textTheme;
@@ -362,7 +362,7 @@ class _LastMealLine extends StatelessWidget {
 }
 
 /// What shows behind a meal while it is swiped away: a bin on red, the
-/// theme's colour for deleting.
+/// theme's color for deleting.
 class _RemoveBackground extends StatelessWidget {
   const _RemoveBackground();
 

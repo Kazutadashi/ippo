@@ -12,7 +12,7 @@ backups/
   Monthly copies of each device's event file. They repeat what is in
   events/, so leave them out of an analysis.
 
-To analyse the data, copy this folder to your computer. Ippo's source
+To analyze the data, copy this folder to your computer. Ippo's source
 code includes a small Python package that turns the events into tidy
 tables (habits, food, exercise sets, sleep, and one row per day), and
 the full description of the format in docs/data-format.md.

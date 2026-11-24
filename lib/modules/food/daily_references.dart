@@ -10,7 +10,7 @@
 ///   1169/2011, Annex XIII, part B), for 2000 kcal a day.
 /// - Vitamins and minerals: the EU's nutrient reference values (the same
 ///   regulation, Annex XIII, part A).
-/// - Fibre: the European Food Safety Authority's adequate intake for
+/// - Fiber: the European Food Safety Authority's adequate intake for
 ///   adults, 25 g (the EU has no reference intake for it).
 /// - Cholesterol and added sugars: the US daily values (21 CFR 101.9),
 ///   as the EU has none.
@@ -122,7 +122,7 @@ const List<String> goalNutrients = [
 ];
 
 /// The nutrients whose daily amount is a most: eating more than it is
-/// going over, shown in red. For the others (protein, fibre, vitamins and
+/// going over, shown in red. For the others (protein, fiber, vitamins and
 /// minerals) the amount is a least, and more is fine.
 const Set<String> limitNutrients = {
   energyKey,

@@ -217,7 +217,7 @@ void main() {
     expect(greetingFor(DateTime(2026, 1, 2, 1, 30)), 'Good evening');
   });
 
-  testWidgets('dark mode and the accent colour are applied', (tester) async {
+  testWidgets('dark mode and the accent color are applied', (tester) async {
     await startApp(
       tester,
       before: (appState) async {
@@ -228,14 +228,14 @@ void main() {
 
     final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.themeMode, ThemeMode.dark);
-    // The theme is built from the chosen colour.
+    // The theme is built from the chosen color.
     final darkPrimary = app.darkTheme!.colorScheme.primary;
     final defaultPrimary = makeTheme(const Color(0xFF00897B));
     expect(darkPrimary, isNot(defaultPrimary));
   });
 }
 
-/// The dark theme's main colour for [accent], for comparing.
+/// The dark theme's main color for [accent], for comparing.
 Color makeTheme(Color accent) => ColorScheme.fromSeed(
   seedColor: accent,
   brightness: Brightness.dark,

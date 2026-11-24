@@ -49,7 +49,7 @@ class AppState extends ChangeNotifier {
   /// The device name used until the user picks one.
   final String defaultDeviceName;
 
-  /// The phone's own accent colour, or null if it has none. See
+  /// The phone's own accent color, or null if it has none. See
   /// `system_colors.dart`.
   final Color? systemAccentColor;
 
@@ -67,7 +67,7 @@ class AppState extends ChangeNotifier {
 
   // The device's IANA time zone, written into each new event; null if
   // not known. Read again whenever the app comes back to the front, in
-  // case the user travelled.
+  // case the user traveled.
   String? _timeZone;
   bool _isLoading = true;
 
@@ -140,7 +140,7 @@ class AppState extends ChangeNotifier {
   /// The data folder becomes a [MemoryDataFolder] holding them. Anything
   /// added, changed or deleted during the demo stays in memory, and is
   /// gone when the demo ends or the app closes. Settings such as the
-  /// accent colour are still saved as usual.
+  /// accent color are still saved as usual.
   Future<void> startDemo(String eventFileText) async {
     if (isDemo) {
       return;
@@ -413,7 +413,7 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(themeMode: themeMode),
   );
 
-  /// Saves the accent colour, written as `#RRGGBB`.
+  /// Saves the accent color, written as `#RRGGBB`.
   Future<void> setAccentColor(String hexColor) => _changeDisplaySetting(
     (settings) => settings.copyWith(accentColor: hexColor),
   );
@@ -423,7 +423,7 @@ class AppState extends ChangeNotifier {
     (settings) => settings.copyWith(clockStyle: clockStyle),
   );
 
-  /// Lists habits `added` (as they were added) or by `colour`.
+  /// Lists habits `added` (as they were added) or by `color`.
   Future<void> setHabitOrder(String order) =>
       _changeDisplaySetting((settings) => settings.copyWith(habitOrder: order));
 

@@ -27,7 +27,7 @@ class HabitActions {
   final AppState appState;
 
   /// Creates a yes/no habit, done as often as [frequency] says (every
-  /// day if not given), drawn in [color] (null for the accent colour).
+  /// day if not given), drawn in [color] (null for the accent color).
   /// Returns the event, whose id is the habit's.
   Future<Event> createHabit(
     String name, {
@@ -44,9 +44,9 @@ class HabitActions {
     });
   }
 
-  /// Gives [habit] the name [newName], the colour [newColor] (null for
-  /// the accent colour) and, if given, the frequency [newFrequency]. Only what actually changed is written, so a
-  /// rename on one device and a new colour on another both survive.
+  /// Gives [habit] the name [newName], the color [newColor] (null for
+  /// the accent color) and, if given, the frequency [newFrequency]. Only what actually changed is written, so a
+  /// rename on one device and a new color on another both survive.
   /// Returns null if nothing changed.
   Future<Event?> changeHabit(
     Habit habit,

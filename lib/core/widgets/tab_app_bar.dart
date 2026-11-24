@@ -21,7 +21,7 @@ const double _wideBar = 600;
 const double _narrowWidth = 400;
 
 /// A tab's top bar: the tab's name and its buttons, as a plain [AppBar]
-/// in the theme's colours. Only Home has the landscape; the tabs stay
+/// in the theme's colors. Only Home has the landscape; the tabs stay
 /// plain, so their content leads.
 ///
 /// For a tab about one [day], the date and the day bar go on a row under

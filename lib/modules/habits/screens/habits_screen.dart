@@ -324,7 +324,7 @@ class _HabitName extends StatelessWidget {
 }
 
 /// A day at the top of a column: weekday and day of the month, with
-/// today in the accent colour.
+/// today in the accent color.
 class _DayHeader extends StatelessWidget {
   const _DayHeader({
     required this.day,
@@ -421,7 +421,7 @@ class _DayCell extends StatelessWidget {
     final date = formatDate(day);
     final mark = log.markOn(habit.id, date);
     // A day not done where the chain held around it needed nothing: a
-    // dot in the habit's colour, whether it is marked ✗ or not at all.
+    // dot in the habit's color, whether it is marked ✗ or not at all.
     // It comes from the days around it, so tapping cannot take it away.
     final isCovered = mark != DayMark.done && log.isCoveredOn(habit, date);
     final Widget icon;
@@ -442,7 +442,7 @@ class _DayCell extends StatelessWidget {
         );
         meaning = 'not done';
       case DayMark.none:
-        // Today, an empty ring in the habit's colour: a box waiting to be
+        // Today, an empty ring in the habit's color: a box waiting to be
         // ticked. Past days, only a quiet dot, so the grid stays calm.
         icon = isToday
             ? Icon(
@@ -495,7 +495,7 @@ class _DayCell extends StatelessWidget {
 }
 
 /// The top bar's button for the order of the habits: as added, or by
-/// colour (similar colours together). The choice is saved, and Home's
+/// color (similar colors together). The choice is saved, and Home's
 /// tile follows it.
 class _OrderButton extends StatelessWidget {
   const _OrderButton({required this.appState});
@@ -504,7 +504,7 @@ class _OrderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final byColour = appState.settings?.sortsHabitsByColour ?? false;
+    final byColor = appState.settings?.sortsHabitsByColor ?? false;
     return PopupMenuButton<String>(
       tooltip: 'Order of the habits',
       icon: const Icon(Icons.sort),
@@ -512,13 +512,13 @@ class _OrderButton extends StatelessWidget {
       itemBuilder: (context) => [
         CheckedPopupMenuItem(
           value: 'added',
-          checked: !byColour,
+          checked: !byColor,
           child: const Text('As added'),
         ),
         CheckedPopupMenuItem(
           value: 'colour',
-          checked: byColour,
-          child: const Text('By colour'),
+          checked: byColor,
+          child: const Text('By color'),
         ),
       ],
     );

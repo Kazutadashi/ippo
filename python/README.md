@@ -8,7 +8,7 @@ Parquet files).
 Every column of every table is described in the codebook
 (`ippo/codebook.py`): its type, its meaning, its unit as a
 [UCUM](https://ucum.org) code, and, where one fits, its code in a
-recognised vocabulary: INFOODS tagnames and USDA FoodData Central ids
+recognized vocabulary: INFOODS tagnames and USDA FoodData Central ids
 for nutrients, LOINC for body weight and daily steps. The tables use
 the codebook's types, so a column's dtype never depends on whether it
 happens to hold values.
@@ -94,7 +94,7 @@ tables never fill a gap in for you:
   `<nutrient>_complete`: whether every entry that day gave that
   nutrient.
 
-Some common ways to handle it: analyse only days where the module was
+Some common ways to handle it: analyze only days where the module was
 logged; compare results with and without days logged late; and say in
 the results how many days were used out of how many in the period.
 

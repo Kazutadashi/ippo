@@ -153,7 +153,7 @@ class SourcesScreen extends StatelessWidget {
               ('Carbohydrate (scales)', '260 g'),
               ('Sugars (scales)', '90 g'),
               ('Protein (or 0.83 g per kg)', '50 g'),
-              ('Fibre', '25 g'),
+              ('Fiber', '25 g'),
               ('Salt', '6 g'),
               ('Cholesterol', '300 mg'),
               ('Added sugars (scales)', '50 g'),
@@ -162,7 +162,7 @@ class SourcesScreen extends StatelessWidget {
                 'These are the amounts on food labels across the EU: '
                 'averages for adults, not targets for any one person. '
                 'Vitamins and minerals use the EU nutrient reference '
-                'values. The EU has none for fibre, cholesterol and added '
+                'values. The EU has none for fiber, cholesterol and added '
                 'sugars, so those come from EFSA and the US.',
             sources: [
               'Regulation (EU) No 1169/2011 on the provision of food '
@@ -289,7 +289,7 @@ class _Source extends StatelessWidget {
   }
 }
 
-/// A small heading in the accent colour, above a table or the sources.
+/// A small heading in the accent color, above a table or the sources.
 class _Heading extends StatelessWidget {
   const _Heading(this.text);
 

@@ -46,8 +46,8 @@ class DayBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isToday = day == today();
-    // The colour of the bar it sits in: white on a sky band, the text
-    // colour on a plain page.
+    // The color of the bar it sits in: white on a sky band, the text
+    // color on a plain page.
     final foreground = IconTheme.of(context).color ?? colors.onSurface;
     // Compact, so it fits in a screen's top bar next to the title.
     return Row(
@@ -80,14 +80,14 @@ class DayBar extends StatelessWidget {
             ),
           ),
         ),
-        // Greyed out on today: there is nothing ahead to show.
+        // Grayed out on today: there is nothing ahead to show.
         IconButton(
           tooltip: 'Next day',
           icon: const Icon(Icons.chevron_right),
           onPressed: isToday ? null : () => onChanged(addDays(day, 1)),
         ),
         // Straight to today, always in its place at the end, as in
-        // calendar apps: greyed out on today, so nothing appears or moves.
+        // calendar apps: grayed out on today, so nothing appears or moves.
         IconButton(
           tooltip: 'Go to today',
           icon: const Icon(Icons.keyboard_double_arrow_right),

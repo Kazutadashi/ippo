@@ -9,7 +9,7 @@ import 'package:material_ui/material_ui.dart';
 /// it: the icon for sleep. Material's moons are thin or lopsided at small
 /// sizes; this one is cut from two circles, so its curves are even.
 ///
-/// It takes its size and colour from the surrounding [IconTheme], like
+/// It takes its size and color from the surrounding [IconTheme], like
 /// an [Icon], so it can go anywhere an icon goes.
 class MoonIcon extends StatelessWidget {
   /// Creates the icon; [size] and [color] override the [IconTheme].
@@ -18,7 +18,7 @@ class MoonIcon extends StatelessWidget {
   /// The width and height, or null for the icon theme's size.
   final double? size;
 
-  /// The colour, or null for the icon theme's colour.
+  /// The color, or null for the icon theme's color.
   final Color? color;
 
   @override
@@ -60,18 +60,18 @@ class _MoonPainter extends CustomPainter {
     );
 
     // A small four-pointed star in the cut-out, as in a night sky.
-    const centre = Offset(19, 6);
+    const center = Offset(19, 6);
     const reach = 2.8;
     const waist = 0.7;
     final star = Path()
-      ..moveTo(centre.dx, centre.dy - reach)
-      ..lineTo(centre.dx + waist, centre.dy - waist)
-      ..lineTo(centre.dx + reach, centre.dy)
-      ..lineTo(centre.dx + waist, centre.dy + waist)
-      ..lineTo(centre.dx, centre.dy + reach)
-      ..lineTo(centre.dx - waist, centre.dy + waist)
-      ..lineTo(centre.dx - reach, centre.dy)
-      ..lineTo(centre.dx - waist, centre.dy - waist)
+      ..moveTo(center.dx, center.dy - reach)
+      ..lineTo(center.dx + waist, center.dy - waist)
+      ..lineTo(center.dx + reach, center.dy)
+      ..lineTo(center.dx + waist, center.dy + waist)
+      ..lineTo(center.dx, center.dy + reach)
+      ..lineTo(center.dx - waist, center.dy + waist)
+      ..lineTo(center.dx - reach, center.dy)
+      ..lineTo(center.dx - waist, center.dy - waist)
       ..close();
     canvas.drawPath(star, paint);
   }

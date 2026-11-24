@@ -66,7 +66,7 @@ Details:
 - Anything left out is simply not filled in. Nothing is guessed.
 - Numbers written as text (`"9"`, `"1,5"`) are read; negative numbers
   and `null` are left out.
-- Names Ippo does not know (a misspelt nutrient, a `brand`) are listed
+- Names Ippo does not know (a misspelled nutrient, a `brand`) are listed
   under the box as "Not used", so nothing is dropped silently.
 - If the text is not JSON in this shape, it is read as label text
   (below).
@@ -121,7 +121,7 @@ works.
 ## Label text
 
 Ippo reads the text line by line and ignores anything it does not
-recognise. It understands:
+recognize. It understands:
 
 - **US-style labels:** "Serving size 9 chips (28g)", "Calories 150",
   "Total Fat 9g", "Saturated Fat 1.5g", "Sodium 170mg", "Total

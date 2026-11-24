@@ -24,7 +24,7 @@ import 'core/units.dart';
 Future<void> main() async {
   // Needed before talking to Android (to find the settings folder).
   WidgetsFlutterBinding.ensureInitialized();
-  // Draw behind the system navigation bar, so the app's own colours run
+  // Draw behind the system navigation bar, so the app's own colors run
   // to the bottom edge instead of stopping at a black band.
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -71,7 +71,7 @@ class _IppoAppState extends State<IppoApp> {
   late final AppLifecycleListener _lifecycle;
 
   // The themes built last, and what they were built from. Building a
-  // theme takes a moment, so it is only done again when the colour or
+  // theme takes a moment, so it is only done again when the color or
   // mode changes, not on every save.
   String? _themeKey;
   ThemeData? _lightTheme;
@@ -117,7 +117,7 @@ class _IppoAppState extends State<IppoApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Redraw when the settings change, so a new theme or accent colour
+    // Redraw when the settings change, so a new theme or accent color
     // shows at once.
     return ListenableBuilder(
       listenable: widget.appState,

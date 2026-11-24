@@ -332,7 +332,7 @@ String _valueText(ChartSpec spec, ChartPlot plot, DayValue? value) {
   return value.date == plot.partialDay ? '$text so far' : text;
 }
 
-/// Small numbers side by side, each with a grey label above: the label
+/// Small numbers side by side, each with a gray label above: the label
 /// says what the number is, so none needs explaining.
 class _StatRow extends StatelessWidget {
   const _StatRow({required this.stats});

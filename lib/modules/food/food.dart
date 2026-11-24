@@ -64,7 +64,7 @@ class Food {
   /// The food's name.
   final String name;
 
-  /// `g` for grams or `ml` for millilitres.
+  /// `g` for grams or `ml` for milliliters.
   final String measuredIn;
 
   /// The nutrients in 100 g or 100 ml.
@@ -80,7 +80,7 @@ class Food {
   /// copy of its name and nutrients.
   final bool isDeleted;
 
-  /// The nutrients in [amount] grams or millilitres of this food.
+  /// The nutrients in [amount] grams or milliliters of this food.
   Nutrients nutrientsFor(double amount) =>
       nutrientsPer100.scaledBy(amount / 100);
 }

@@ -52,7 +52,7 @@ class Habit {
       id: record.id,
       name: name,
       valueType: valueType,
-      // A colour that is not `#RRGGBB` is treated as no colour.
+      // A color that is not `#RRGGBB` is treated as no color.
       color: parseHexColor(record.fields['color']),
       isArchived: record.fields['archived'] == true,
       isDeleted: record.isDeleted,
@@ -76,13 +76,13 @@ class Habit {
   /// What is recorded each day: `yes_no`, `number`, ...
   final String valueType;
 
-  /// The colour the user picked, or null to use the accent colour.
+  /// The color the user picked, or null to use the accent color.
   final Color? color;
 
-  /// The colour to draw the habit in, on a screen with [theme].
+  /// The color to draw the habit in, on a screen with [theme].
   ///
-  /// Without a colour of its own, a habit uses the accent colour. A
-  /// picked colour keeps its hue in light and dark mode alike, made just
+  /// Without a color of its own, a habit uses the accent color. A
+  /// picked color keeps its hue in light and dark mode alike, made just
   /// light or dark enough to read on the background: a yellow habit is
   /// a deeper yellow in light mode.
   Color displayColor(ThemeData theme) {
@@ -90,10 +90,10 @@ class Habit {
     if (color == null) {
       return theme.colorScheme.primary;
     }
-    return habitColourAsShown(color, theme);
+    return habitColorAsShown(color, theme);
   }
 
-  /// The colour for the habit's name in [theme]: its own colour (or the
+  /// The color for the habit's name in [theme]: its own color (or the
   /// accent), made dark or light enough to read as text (4.5:1 on the
   /// cards), which is more than marks such as ticks need.
   Color textColor(ThemeData theme) => readableOn(

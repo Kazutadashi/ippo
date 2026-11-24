@@ -2,7 +2,7 @@
 
 /// Showing body measurements in metric or imperial units.
 ///
-/// The data is always metric (kilograms, centimetres), so an analysis
+/// The data is always metric (kilograms, centimeters), so an analysis
 /// never mixes units; only what is shown and typed changes.
 library;
 
@@ -16,8 +16,8 @@ bool showImperialUnits = false;
 /// Kilograms in one pound, by definition.
 const double kilogramsPerPound = 0.45359237;
 
-/// Centimetres in one inch, by definition.
-const double centimetresPerInch = 2.54;
+/// Centimeters in one inch, by definition.
+const double centimetersPerInch = 2.54;
 
 /// The unit weights are typed and shown in: `kg` or `lb`.
 String get weightUnit => showImperialUnits ? 'lb' : 'kg';
@@ -35,12 +35,12 @@ double kilogramsFromShown(double shown) =>
 String formatWeight(double kilograms) =>
     '${formatAmount(roundToTenth(weightInShownUnit(kilograms)))} $weightUnit';
 
-/// [centimetres] as whole feet and inches: (5, 10) for 178 cm.
-(int, int) feetAndInches(double centimetres) {
-  final inches = (centimetres / centimetresPerInch).round();
+/// [centimeters] as whole feet and inches: (5, 10) for 178 cm.
+(int, int) feetAndInches(double centimeters) {
+  final inches = (centimeters / centimetersPerInch).round();
   return (inches ~/ 12, inches % 12);
 }
 
-/// Feet and inches turned into centimetres for the data.
-double centimetresFrom(int feet, double inches) =>
-    (feet * 12 + inches) * centimetresPerInch;
+/// Feet and inches turned into centimeters for the data.
+double centimetersFrom(int feet, double inches) =>
+    (feet * 12 + inches) * centimetersPerInch;

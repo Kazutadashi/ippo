@@ -11,7 +11,7 @@ import 'package:material_ui/material_ui.dart';
 final RegExp _numberPattern = RegExp(r'\d[\d.,:/ ]*\d|\d');
 
 /// Shows [value] with its numbers in [style] and its words (units such
-/// as "kcal", "h", "min", "ago") smaller and grey.
+/// as "kcal", "h", "min", "ago") smaller and gray.
 ///
 /// In a value, the numbers carry the information and the units are only
 /// context; giving them the same size makes "9 h 15 min ago" read like a

@@ -89,7 +89,7 @@ class FoodActions {
   /// The food's name and the nutrients for this amount are copied into
   /// the entry.
   ///
-  /// [amount] is always in grams (or millilitres). If the user typed the
+  /// [amount] is always in grams (or milliliters). If the user typed the
   /// amount in the label's unit ("9 chips"), [unitCount] and [unitName]
   /// keep that too.
   Future<Event> recordFoodEntry({

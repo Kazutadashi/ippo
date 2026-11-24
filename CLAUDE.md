@@ -22,7 +22,7 @@ thousand miles begins with a single step"). A personal health app meant
 to become a generic, open-source app that
 other people can use and extend. It is built from modules:
 
-1. Habits: yes/no check-offs in a grid, each with a colour, a
+1. Habits: yes/no check-offs in a grid, each with a color, a
    frequency (daily, some times a week, every few days) and a
    description; streaks on Home.
 2. Food: a food list with label values (filled in from pasted label
@@ -42,7 +42,7 @@ or durations, and a Loop-style habit strength score.
 
 The main purpose of every module is longitudinal tracking: data must
 be easy to chart and to use for time series and machine learning.
-Record raw observations (not judgements like "good"), stable IDs,
+Record raw observations (not judgments like "good"), stable IDs,
 the day an entry is about, and explicit units.
 
 **The data is the product.** Future data scientists, statisticians and

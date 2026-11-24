@@ -110,7 +110,7 @@ class _ProfileCardState extends State<_ProfileCard> {
     super.dispose();
   }
 
-  /// The height typed in feet and inches, in centimetres, or null.
+  /// The height typed in feet and inches, in centimeters, or null.
   double? _imperialHeight() {
     final feet = int.tryParse(_feet.text.trim()) ?? 0;
     final inches =
@@ -118,7 +118,7 @@ class _ProfileCardState extends State<_ProfileCard> {
     if (feet <= 0 && inches <= 0) {
       return null;
     }
-    return centimetresFrom(feet, inches);
+    return centimetersFrom(feet, inches);
   }
 
   /// A number field with a [label] and a [unit] after the number.

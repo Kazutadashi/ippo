@@ -179,7 +179,7 @@ Duration _totalOf(List<Nap> naps) {
   return total;
 }
 
-/// The night, from bedtime to waking up, in the theme's accent colour.
+/// The night, from bedtime to waking up, in the theme's accent color.
 class _SleepBar extends StatelessWidget {
   const _SleepBar({required this.bedtime, required this.wakeUp});
 

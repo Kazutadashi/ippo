@@ -10,8 +10,8 @@ import '../../core/module.dart';
 import 'habit_frequency.dart';
 import 'habit_log.dart';
 
-/// One made-up habit: its name, its colour (`#RRGGBB`, or null for the
-/// accent colour), how often it gets done (0 to 1), how many days ago it
+/// One made-up habit: its name, its color (`#RRGGBB`, or null for the
+/// accent color), how often it gets done (0 to 1), how many days ago it
 /// was started (null for the first day of the demo), the name it had
 /// before being renamed a few days in (null if never renamed), and how
 /// often it is meant to be done.
@@ -31,8 +31,8 @@ const Map<String, String> _descriptions = {
   'Drink water': 'Eight glasses over the day.',
 };
 
-/// A dozen everyday habits, in colours all around the wheel (so "By
-/// colour" has something to sort), some kept up nearly every day and
+/// A dozen everyday habits, in colors all around the wheel (so "By
+/// color" has something to sort), some kept up nearly every day and
 /// some hard, one started only last week, and four not meant for every
 /// day (three times a week, twice a week, every 3 days, once a week).
 const List<_DemoHabit> _habits = [
@@ -109,7 +109,7 @@ const List<_DemoHabit> _habits = [
     frequency: HabitFrequency.everyDay,
   ),
   (
-    name: 'Practise Spanish',
+    name: 'Practice Spanish',
     color: '#E53935',
     chance: 0.7,
     startedDaysAgo: null,

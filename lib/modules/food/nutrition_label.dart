@@ -28,7 +28,7 @@
 ///
 /// JSON (see `label_json.dart`) is tried first; this reader is for
 /// everything else. It reads line by line and never guesses: a line it
-/// does not recognise is ignored.
+/// does not recognize is ignored.
 library;
 
 import '../../core/number_input.dart';
