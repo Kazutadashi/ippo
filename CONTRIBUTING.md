@@ -70,7 +70,7 @@ security problems have nowhere to hide.
 ## Structure
 
 ### Modules
-Features (habits, calisthenics, meals, ...) are **modules**.
+Features (habits, food, exercise, sleep, ...) are **modules**.
 
 - Each module lives in its own folder and can be understood on its own.
 - The core app knows nothing about any specific module. It only offers

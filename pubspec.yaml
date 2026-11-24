@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 name: ippo
-description: "A personal health app: habits, calisthenics progression, and a meal diary. Plain files, no network."
+description: "A personal health app: habits, food, exercise and sleep. Plain files, no network."
 publish_to: 'none'
 version: 0.1.0+1
 

@@ -1,0 +1,25 @@
+<p>Ippo is a simple, private app for the everyday things that shape your health: your habits, what you eat, your workouts and your sleep. Logging takes a moment. Over weeks and months, Ippo shows you the bigger picture.</p>
+
+<p>Ippo (一歩) means "one step" in Japanese, from the saying "a journey of a thousand miles begins with a single step."</p>
+
+<p><b>What it does</b></p>
+<ul>
+<li><b>Home</b> shows your day in one place, with a small table of the past week.</li>
+<li><b>Habits:</b> tick them off in a grid. A habit can be daily, a few times a week, or every few days, and the days in between won't count against you.</li>
+<li><b>Food:</b> save the foods you eat often, with the numbers from their labels, then log the amount you ate. See the day's calories, protein, carbs, fat, vitamins and minerals against your own goals. Paste a nutrition label, or a whole meal, read by an AI assistant of your choice.</li>
+<li><b>Exercise:</b> sets in reps or seconds, one tap each, next to your last session. Daily steps too.</li>
+<li><b>Sleep:</b> when you woke up and went to bed, and naps.</li>
+<li><b>Charts:</b> weight, calories, protein, steps, sets, sleep and habits over any dates, with a running average and the trend.</li>
+</ul>
+
+<p><b>Your data stays yours</b></p>
+<ul>
+<li>It never goes online. The app does not have internet access. No accounts, no ads, no tracking.</li>
+<li>Your data lives in a folder you choose, as plain text files you can open, copy and keep. Ippo backs them up every month.</li>
+<li>Use it on several devices: point them at the same folder and sync it with a tool such as Syncthing. Each device writes its own file, so syncing never causes conflicts.</li>
+<li>Ready for analysis: a small Python package turns the folder into tidy tables, CSV or Parquet, with every column explained.</li>
+</ul>
+
+<p>Want to look around first? Tap "Show example data" and Ippo fills up with four weeks of made-up days. None of it is saved.</p>
+
+<p>Ippo is free and open source (GPL-3.0-or-later). There's nothing to buy and nothing locked away.</p>
